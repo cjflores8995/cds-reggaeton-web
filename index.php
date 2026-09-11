@@ -100,6 +100,7 @@ $availableCount = count($products);
     <link rel="stylesheet" href="<?php echo e($storeBaseUrl); ?>store.css?v=2">
     <link rel="stylesheet" href="<?php echo e($storeBaseUrl); ?>store-footer.css?v=1">
     <link rel="stylesheet" href="<?php echo e($storeBaseUrl); ?>catalog-toolbar.css?v=1">
+    <link rel="stylesheet" href="<?php echo e($storeBaseUrl); ?>catalog-carousel.css?v=1">
 
     <script>
         window.StoreConfig = <?php
@@ -114,7 +115,7 @@ $availableCount = count($products);
             );
         ?>;
     </script>
-    <script defer src="<?php echo e($storeBaseUrl); ?>store.js?v=3"></script>
+    <script defer src="<?php echo e($storeBaseUrl); ?>store.js?v=4"></script>
 </head>
 <body>
     <div class="promo-strip">
@@ -231,8 +232,8 @@ $availableCount = count($products);
                         <h3>No hay CDs publicados todavía.</h3>
                     </div>
                 <?php else: ?>
-                    <div class="product-grid" id="productGrid">
-                        <?php foreach ($products as $product): ?>
+                    <div class="product-grid" id="productGrid" data-page-size="12">
+                        <?php foreach ($products as $productIndex => $product): ?>
                             <?php
                                 $imageUrl = productImageUrl($product, $storeBaseUrl);
                                 $artist = trim((string)($product['artist'] ?? ''));
@@ -252,7 +253,8 @@ $availableCount = count($products);
                             ?>
 
                             <article
-                                class="product-card"
+                                class="product-card<?php echo $productIndex >= 12 ? ' is-hidden' : ''; ?>"
+                                <?php echo $productIndex >= 12 ? 'hidden' : ''; ?>
                                 data-product-id="<?php echo (int)$product['id']; ?>"
                                 data-newest="<?php echo (int)$product['id']; ?>"
                                 data-artist="<?php echo e(storeLower($artist)); ?>"
@@ -319,6 +321,36 @@ $availableCount = count($products);
                             </article>
                         <?php endforeach; ?>
                     </div>
+
+                    <nav
+                        class="catalog-carousel js-catalog-pagination"
+                        aria-label="Navegación del catálogo"
+                        hidden
+                    >
+                        <button
+                            class="catalog-carousel__arrow catalog-carousel__arrow--prev js-catalog-prev"
+                            type="button"
+                            aria-label="Ver los 12 CDs anteriores"
+                        >
+                            <span aria-hidden="true">←</span>
+                        </button>
+
+                        <div
+                            class="catalog-carousel__status"
+                            aria-live="polite"
+                        >
+                            <strong class="js-catalog-range">1–12 DE <?php echo count($products); ?></strong>
+                            <span class="js-catalog-page">PÁGINA 1</span>
+                        </div>
+
+                        <button
+                            class="catalog-carousel__arrow catalog-carousel__arrow--next js-catalog-next"
+                            type="button"
+                            aria-label="Ver los siguientes 12 CDs"
+                        >
+                            <span aria-hidden="true">→</span>
+                        </button>
+                    </nav>
 
                     <div class="no-results js-no-results" hidden>
                         <p class="eyebrow">SIN RESULTADOS</p>

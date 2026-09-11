@@ -102,7 +102,20 @@
         var visibleCount = query(".js-visible-count");
         var focusSearchButtons = queryAll(".js-focus-search");
 
+        var pagination = query(".js-catalog-pagination");
+        var previousButton = query(".js-catalog-prev");
+        var nextButton = query(".js-catalog-next");
+        var rangeNode = query(".js-catalog-range");
+        var pageNode = query(".js-catalog-page");
+
+        var pageSize =
+            parseInteger(
+                grid.dataset.pageSize || "12"
+            ) || 12;
+
         var selectedArtist = "*";
+        var currentPage = 1;
+        var filteredCards = cards.slice();
 
         cards.forEach(function (card, index) {
             /*
@@ -139,6 +152,7 @@
                         "is-active"
                     );
 
+                    currentPage = 1;
                     applyCatalog();
                 }
             );
@@ -147,19 +161,59 @@
         if (searchInput) {
             searchInput.addEventListener(
                 "input",
-                applyCatalog
+                function () {
+                    currentPage = 1;
+                    applyCatalog();
+                }
             );
 
             searchInput.addEventListener(
                 "search",
-                applyCatalog
+                function () {
+                    currentPage = 1;
+                    applyCatalog();
+                }
             );
         }
 
         if (sortSelect) {
             sortSelect.addEventListener(
                 "change",
-                applyCatalog
+                function () {
+                    currentPage = 1;
+                    applyCatalog();
+                }
+            );
+        }
+
+        if (previousButton) {
+            previousButton.addEventListener(
+                "click",
+                function () {
+                    if (currentPage <= 1) {
+                        return;
+                    }
+
+                    currentPage--;
+                    renderCatalogPage("previous");
+                }
+            );
+        }
+
+        if (nextButton) {
+            nextButton.addEventListener(
+                "click",
+                function () {
+                    var totalPages =
+                        getTotalPages();
+
+                    if (currentPage >= totalPages) {
+                        return;
+                    }
+
+                    currentPage++;
+                    renderCatalogPage("next");
+                }
             );
         }
 
@@ -168,6 +222,7 @@
                 "click",
                 function () {
                     selectedArtist = "*";
+                    currentPage = 1;
 
                     if (searchInput) {
                         searchInput.value = "";
@@ -243,6 +298,8 @@
                     .split(/\s+/)
                     .filter(Boolean);
 
+            var matchingCards = [];
+
             cards.forEach(function (card) {
                 var cardArtist =
                     normalizeText(
@@ -272,25 +329,38 @@
                         }
                     );
 
-                var isVisible =
+                if (
                     artistMatches &&
-                    searchMatches;
-
-                card.classList.toggle(
-                    "is-hidden",
-                    !isVisible
-                );
-
-                card.hidden = !isVisible;
+                    searchMatches
+                ) {
+                    matchingCards.push(card);
+                }
             });
 
-            sortCards(
-                sortSelect
-                    ? sortSelect.value
-                    : "newest"
-            );
+            var sortedCards =
+                sortCards(
+                    sortSelect
+                        ? sortSelect.value
+                        : "newest"
+                );
 
-            updateCatalogResultState();
+            filteredCards =
+                sortedCards.filter(
+                    function (card) {
+                        return (
+                            matchingCards.indexOf(card) !== -1
+                        );
+                    }
+                );
+
+            var totalPages =
+                getTotalPages();
+
+            if (currentPage > totalPages) {
+                currentPage = totalPages;
+            }
+
+            renderCatalogPage();
         }
 
         function sortCards(mode) {
@@ -387,6 +457,8 @@
             sorted.forEach(function (card) {
                 grid.appendChild(card);
             });
+
+            return sorted;
         }
 
         function newestCompare(a, b) {
@@ -414,29 +486,166 @@
             );
         }
 
-        function updateCatalogResultState() {
-            var visibleCards =
-                cards.filter(
-                    function (card) {
-                        return !card.hidden;
-                    }
+        function getTotalPages() {
+            if (filteredCards.length === 0) {
+                return 1;
+            }
+
+            return Math.ceil(
+                filteredCards.length /
+                pageSize
+            );
+        }
+
+        function renderCatalogPage(direction) {
+            var totalMatches =
+                filteredCards.length;
+
+            var totalPages =
+                getTotalPages();
+
+            var start =
+                (currentPage - 1) *
+                pageSize;
+
+            var end =
+                Math.min(
+                    start + pageSize,
+                    totalMatches
                 );
+
+            cards.forEach(function (card) {
+                card.hidden = true;
+                card.classList.add(
+                    "is-hidden"
+                );
+            });
+
+            filteredCards
+                .slice(start, end)
+                .forEach(function (card) {
+                    card.hidden = false;
+                    card.classList.remove(
+                        "is-hidden"
+                    );
+                });
 
             if (visibleCount) {
                 visibleCount.textContent =
-                    String(
-                        visibleCards.length
-                    );
+                    String(totalMatches);
             }
 
             if (noResults) {
                 noResults.hidden =
-                    visibleCards.length !== 0;
+                    totalMatches !== 0;
             }
+
+            updatePagination(
+                totalMatches,
+                totalPages,
+                start,
+                end
+            );
+
+            animateGrid(direction);
+        }
+
+        function updatePagination(
+            totalMatches,
+            totalPages,
+            start,
+            end
+        ) {
+            var needsPagination =
+                totalMatches > pageSize;
+
+            if (pagination) {
+                pagination.hidden =
+                    !needsPagination;
+            }
+
+            if (previousButton) {
+                previousButton.classList.toggle(
+                    "is-inactive",
+                    currentPage <= 1
+                );
+
+                previousButton.disabled =
+                    currentPage <= 1;
+
+                previousButton.setAttribute(
+                    "aria-hidden",
+                    currentPage <= 1
+                        ? "true"
+                        : "false"
+                );
+            }
+
+            if (nextButton) {
+                nextButton.classList.toggle(
+                    "is-inactive",
+                    currentPage >= totalPages
+                );
+
+                nextButton.disabled =
+                    currentPage >= totalPages;
+
+                nextButton.setAttribute(
+                    "aria-hidden",
+                    currentPage >= totalPages
+                        ? "true"
+                        : "false"
+                );
+            }
+
+            if (rangeNode) {
+                rangeNode.textContent =
+                    totalMatches === 0
+                        ? "0 DE 0"
+                        : (
+                            String(start + 1) +
+                            "–" +
+                            String(end) +
+                            " DE " +
+                            String(totalMatches)
+                        );
+            }
+
+            if (pageNode) {
+                pageNode.textContent =
+                    "PÁGINA " +
+                    String(currentPage) +
+                    " DE " +
+                    String(totalPages);
+            }
+        }
+
+        function animateGrid(direction) {
+            grid.classList.remove(
+                "is-page-next",
+                "is-page-previous"
+            );
+
+            if (!direction) {
+                return;
+            }
+
+            /*
+             * Reinicia la animación para que cada cambio de página
+             * tenga una transición breve tipo carrusel.
+             */
+            void grid.offsetWidth;
+
+            grid.classList.add(
+                direction === "next"
+                    ? "is-page-next"
+                    : "is-page-previous"
+            );
         }
 
         /*
          * Deja la página sincronizada al cargarla.
+         * Solo se muestran 12 CDs como máximo.
          */
         applyCatalog();
     }

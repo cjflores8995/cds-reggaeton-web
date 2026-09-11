@@ -1,44 +1,32 @@
-ESTADO DISPONIBLE / VENDIDO - TIENDA CDS REGGAETON
+CATÁLOGO DE 12 CDs + NAVEGACIÓN TIPO CARRUSEL
 
-Revisado contra la rama develop antes de preparar el cambio.
+Base revisada contra la rama develop actual antes de generar los archivos.
 
-REEMPLAZAR COMPLETOS:
-- config.php
-- admin.php
-- admin-modern.css
-- postupdate.php
+REEMPLAZAR:
 - index.php
-- product.php
+- store.js
 
-MODELO:
-- stock = 1  -> Disponible
-- stock = 0  -> Vendido
-- sold_at     -> Fecha/hora en que se marcó vendido
-- active      -> Se conserva para ocultar productos manualmente
+NUEVO:
+- catalog-carousel.css
 
-ADMIN:
-- Disponibles aparecen primero.
-- Vendidos aparecen en una sección separada debajo.
-- La portada de un vendido queda opaca/gris.
-- "Marcar como vendido" no elimina el producto ni sus imágenes.
-- "Restaurar como disponible" vuelve a stock = 1.
-- Editar CD incluye el selector Disponibilidad.
-- El buscador filtra disponibles y vendidos.
+COMPORTAMIENTO:
+- Máximo 12 CDs visibles por página.
+- Si hay 12 o menos, no aparece navegación.
+- Si hay más de 12, aparece una barra con flecha izquierda/derecha.
+- En la primera página la flecha izquierda queda oculta.
+- En la última página la flecha derecha queda oculta.
+- Si existen 25+ CDs, en páginas intermedias aparecen ambas flechas.
+- Se muestra el rango actual: 1–12 DE 14, 13–14 DE 14, etc.
+- Búsqueda, artista y ordenamiento trabajan sobre TODOS los CDs.
+- Al buscar/filtrar/ordenar se vuelve automáticamente a la primera página.
+- La cantidad superior sigue mostrando el total de resultados filtrados, no solo los 12 visibles.
+- Las transiciones son breves y respetan prefers-reduced-motion.
 
-FRONTEND:
-- index.php solo consulta active = 1 AND stock = 1.
-- product.php solo abre productos active = 1 AND stock = 1.
-- Los vendidos no aparecen en catálogo, filtros ni productos relacionados.
-- Un enlace antiguo directo a un vendido devuelve "Este CD no está disponible".
-- Checkout ya valida stock = 1, por lo que se mantiene protegido.
-
-MIGRACIÓN:
-config.php crea de forma compatible las columnas modernas que falten:
-artist, album, release_year, stock, sold_at, cd_condition, case_condition, active.
+PENDIENTES DE INFRAESTRUCTURA (NO IMPLEMENTADOS AQUÍ):
+- Azure App Service con despliegue automático desde main.
+- Presupuesto de hosting objetivo < USD 15/mes.
+- Azure Blob Storage para las imágenes.
+- Optimización WebP / resize antes de subir imágenes a Blob.
 
 Después de copiar:
-1. Ctrl + F5 en admin.php.
-2. Marca un CD como vendido.
-3. Comprueba que pase a la sección Vendidos con portada opaca.
-4. Abre el frontend y confirma que ya no aparezca.
-5. Restaura el CD y verifica que vuelva a mostrarse.
+Ctrl + F5 en la tienda.

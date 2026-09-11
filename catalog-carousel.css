@@ -1,16 +1,17 @@
 /*
- * REGGAETON LAB — catálogo por páginas tipo carrusel.
- * Muestra como máximo 12 CDs por vista.
+ * REGGAETON LAB — navegación de catálogo más visible.
+ * Mantiene el sistema monocromático blanco / negro.
  */
 
 .catalog-carousel {
-    min-height: 58px;
+    min-height: 76px;
     display: grid;
-    grid-template-columns: 58px minmax(0, 1fr) 58px;
+    grid-template-columns: 84px minmax(0, 1fr) 84px;
     align-items: stretch;
-    margin-top: 14px;
-    border: 1px solid var(--soft-line);
-    background: var(--paper);
+    margin-top: 22px;
+    border: 1px solid var(--ink);
+    background: var(--ink);
+    color: var(--white);
 }
 
 .catalog-carousel[hidden] {
@@ -18,36 +19,55 @@
 }
 
 .catalog-carousel__arrow {
+    position: relative;
     min-width: 0;
     padding: 0;
     border: 0;
-    background: var(--paper);
-    color: var(--ink);
+    background: var(--ink);
+    color: var(--white);
     cursor: pointer;
-    font-size: 25px;
+    font-size: 31px;
     line-height: 1;
     transition:
-        background .15s ease,
-        color .15s ease,
-        opacity .15s ease;
+        background .16s ease,
+        color .16s ease,
+        opacity .16s ease;
+}
+
+.catalog-carousel__arrow span {
+    display: inline-block;
+    transition: transform .16s ease;
 }
 
 .catalog-carousel__arrow--prev {
-    border-right: 1px solid var(--soft-line);
+    border-right: 1px solid #333333;
 }
 
 .catalog-carousel__arrow--next {
-    border-left: 1px solid var(--soft-line);
+    border-left: 1px solid #333333;
 }
 
 .catalog-carousel__arrow:hover:not(:disabled) {
-    background: var(--ink);
-    color: var(--white);
+    background: var(--white);
+    color: var(--ink);
 }
 
+.catalog-carousel__arrow--prev:hover:not(:disabled) span {
+    transform: translateX(-4px);
+}
+
+.catalog-carousel__arrow--next:hover:not(:disabled) span {
+    transform: translateX(4px);
+}
+
+/*
+ * La flecha inactiva permanece visible de forma tenue.
+ * Así la barra se siente equilibrada y el usuario entiende
+ * que existe navegación en ambos sentidos.
+ */
 .catalog-carousel__arrow.is-inactive,
 .catalog-carousel__arrow:disabled {
-    opacity: 0;
+    opacity: .22;
     cursor: default;
     pointer-events: none;
 }
@@ -57,21 +77,38 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 12px;
-    padding: 0 18px;
+    gap: 18px;
+    padding: 0 24px;
     text-align: center;
 }
 
-.catalog-carousel__status strong,
-.catalog-carousel__status span {
-    font-size: 9px;
-    font-weight: 700;
-    letter-spacing: .1em;
+.catalog-carousel__status strong {
+    color: var(--white);
+    font-size: 13px;
+    font-weight: 800;
+    letter-spacing: .13em;
     text-transform: uppercase;
 }
 
 .catalog-carousel__status span {
-    color: var(--muted);
+    position: relative;
+    padding-left: 18px;
+    color: #bdbdbd;
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: .13em;
+    text-transform: uppercase;
+}
+
+.catalog-carousel__status span::before {
+    content: "";
+    position: absolute;
+    top: 50%;
+    left: 0;
+    width: 1px;
+    height: 18px;
+    background: #454545;
+    transform: translateY(-50%);
 }
 
 .product-grid.is-page-next {
@@ -108,25 +145,33 @@
 
 @media (max-width: 640px) {
     .catalog-carousel {
-        grid-template-columns: 48px minmax(0, 1fr) 48px;
-        min-height: 52px;
-        margin-top: 10px;
+        min-height: 64px;
+        grid-template-columns: 60px minmax(0, 1fr) 60px;
+        margin-top: 14px;
     }
 
     .catalog-carousel__arrow {
-        font-size: 21px;
+        font-size: 25px;
     }
 
     .catalog-carousel__status {
-        gap: 6px;
-        padding: 0 8px;
+        gap: 5px;
+        padding: 0 10px;
         flex-direction: column;
-        line-height: 1.15;
+        line-height: 1.1;
     }
 
-    .catalog-carousel__status strong,
+    .catalog-carousel__status strong {
+        font-size: 10px;
+    }
+
     .catalog-carousel__status span {
+        padding-left: 0;
         font-size: 8px;
+    }
+
+    .catalog-carousel__status span::before {
+        display: none;
     }
 }
 
@@ -134,5 +179,9 @@
     .product-grid.is-page-next,
     .product-grid.is-page-previous {
         animation: none;
+    }
+
+    .catalog-carousel__arrow span {
+        transition: none;
     }
 }

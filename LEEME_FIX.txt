@@ -1,0 +1,21 @@
+CORRECCIÓN - COMPRAR POR WHATSAPP
+
+Reemplaza completos:
+- ordernotes.php
+- checkout.js
+
+CAUSA CORREGIDA:
+La cotización funciona, pero el checkout final entra a orderSaveMessage().
+La implementación anterior usaba mb_substr() directamente. En un PHP sin la extensión mbstring,
+eso produce un Fatal Error HTML; checkout.js intenta parsearlo como JSON y muestra
+"La respuesta del servidor no es válida".
+
+La nueva versión:
+- no depende de mbstring;
+- garantiza JSON desde el endpoint;
+- usa INSERT preparado para Orders;
+- si el log de Orders falla, WhatsApp sigue abriéndose;
+- registra errores técnicos en el error_log del servidor en vez de contaminar el JSON;
+- conserva validación de stock, precios, envío y WhatsApp.
+
+Después de copiar, haz Ctrl+F5 en checkout.php.

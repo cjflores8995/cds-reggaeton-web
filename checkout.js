@@ -104,7 +104,14 @@
         try {
             data = text ? JSON.parse(text) : {};
         } catch (error) {
-            throw new Error("La respuesta del servidor no es válida.");
+            console.error(
+                "Respuesta no JSON de ordernotes.php:",
+                text
+            );
+
+            throw new Error(
+                "No se pudo finalizar la compra. El servidor devolvió una respuesta inválida."
+            );
         }
 
         if (!response.ok || data.ok !== true) {

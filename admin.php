@@ -9,6 +9,26 @@ function adminEsc($value){
     return htmlspecialchars((string)$value, ENT_QUOTES, "UTF-8");
 }
 
+function adminNormalizeSocialUrl($value){
+    $value = trim((string)$value);
+
+    if($value === ""){
+        return "";
+    }
+
+    if(!filter_var($value, FILTER_VALIDATE_URL)){
+        return null;
+    }
+
+    $scheme = strtolower((string)parse_url($value, PHP_URL_SCHEME));
+
+    if($scheme !== "http" && $scheme !== "https"){
+        return null;
+    }
+
+    return $value;
+}
+
 function adminIsLoggedIn(){
     global $username, $password;
 
@@ -409,6 +429,30 @@ if(isset($_GET["settings"])){
             $cfg->servientregaoutsidequito = round($outsideQuitoShipping, 2);
         }
 
+        $socialFields = [
+            "socialtiktok" => "TikTok",
+            "socialyoutube" => "YouTube",
+            "socialinstagram" => "Instagram",
+            "socialfacebook" => "Facebook"
+        ];
+
+        foreach($socialFields as $socialField => $socialLabel){
+            $socialValue = adminNormalizeSocialUrl(
+                $_POST[$socialField] ?? ""
+            );
+
+            if($socialValue === null){
+                $adminMessage =
+                    "La URL de " .
+                    $socialLabel .
+                    " no es válida. Usa una dirección que empiece con http:// o https://.";
+                $adminMessageType = "error";
+                continue;
+            }
+
+            $cfg->$socialField = $socialValue;
+        }
+
         $cfg->currencysymbol = trim((string)($_POST["currencysymbol"] ?? "$"));
         $cfg->baseurl = trim((string)($_POST["baseurl"] ?? $baseurl));
         $cfg->enablerecentpostsliders = (int)($_POST["enablerecentpostsliders"] ?? 0);
@@ -479,6 +523,10 @@ if(isset($_GET["settings"])){
         $adminwhatsapp = $saleswhatsapp;
         $servientregaquito = (float)($cfg->servientregaquito ?? 2.60);
         $servientregaoutsidequito = (float)($cfg->servientregaoutsidequito ?? 5.90);
+        $socialtiktok = trim((string)($cfg->socialtiktok ?? ""));
+        $socialyoutube = trim((string)($cfg->socialyoutube ?? ""));
+        $socialinstagram = trim((string)($cfg->socialinstagram ?? ""));
+        $socialfacebook = trim((string)($cfg->socialfacebook ?? ""));
     }
 }
 
@@ -971,6 +1019,68 @@ if(isset($_GET["editpost"])){
                                 value="<?php echo adminEsc(number_format((float)($cfg->servientregaoutsidequito ?? 5.90), 2, ".", "")); ?>"
                                 required
                             >
+                        </div>
+                    </div>
+                </section>
+
+                <section class="admin-form-card">
+                    <h2>Redes sociales</h2>
+                    <p class="admin-muted">
+                        Los enlaces configurados aquí aparecen automáticamente en el pie de página de la tienda.
+                        Si Instagram o Facebook están vacíos, no se muestran.
+                    </p>
+
+                    <div class="admin-form-grid">
+                        <div class="full">
+                            <label>TikTok</label>
+                            <input
+                                type="url"
+                                name="socialtiktok"
+                                placeholder="https://www.tiktok.com/@usuario"
+                                value="<?php echo adminEsc($cfg->socialtiktok ?? "https://www.tiktok.com/@reggaeton.el.real"); ?>"
+                            >
+                        </div>
+
+                        <div class="full">
+                            <label>YouTube</label>
+                            <input
+                                type="url"
+                                name="socialyoutube"
+                                placeholder="https://www.youtube.com/@canal"
+                                value="<?php echo adminEsc($cfg->socialyoutube ?? "https://www.youtube.com/@instrumentalesyalgomas7923"); ?>"
+                            >
+                        </div>
+
+                        <div class="full">
+                            <label>Instagram</label>
+                            <input
+                                type="url"
+                                name="socialinstagram"
+                                placeholder="https://www.instagram.com/usuario"
+                                value="<?php echo adminEsc($cfg->socialinstagram ?? ""); ?>"
+                            >
+                        </div>
+
+                        <div class="full">
+                            <label>Facebook</label>
+                            <input
+                                type="url"
+                                name="socialfacebook"
+                                placeholder="https://www.facebook.com/pagina"
+                                value="<?php echo adminEsc($cfg->socialfacebook ?? ""); ?>"
+                            >
+                        </div>
+
+                        <div class="full">
+                            <label>WhatsApp</label>
+                            <input
+                                type="text"
+                                value="+<?php echo adminEsc($cfg->saleswhatsapp ?? "593959696235"); ?>"
+                                readonly
+                            >
+                            <div class="admin-muted" style="margin-top:-7px;margin-bottom:14px;">
+                                Se usa el mismo WhatsApp de ventas configurado en la sección Compra y envío.
+                            </div>
                         </div>
                     </div>
                 </section>

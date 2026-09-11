@@ -36,6 +36,7 @@ $storeBaseUrl = checkoutBaseUrl();
     <title>Finalizar compra | <?php echo checkoutEsc($websitetitle); ?></title>
 
     <link rel="stylesheet" href="<?php echo checkoutEsc($storeBaseUrl); ?>store.css?v=2">
+    <link rel="stylesheet" href="<?php echo checkoutEsc($storeBaseUrl); ?>store-footer.css?v=1">
     <link rel="stylesheet" href="<?php echo checkoutEsc($storeBaseUrl); ?>checkout.css?v=1">
 
     <script>
@@ -198,5 +199,7 @@ $storeBaseUrl = checkoutBaseUrl();
             </aside>
         </div>
     </main>
+
+    <?php require __DIR__ . '/store-footer.php'; ?>
 </body>
 </html>

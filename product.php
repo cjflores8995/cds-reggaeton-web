@@ -22,6 +22,13 @@ function money($value): string
     return number_format((float)$value, 2, '.', ',');
 }
 
+function storeUpper(string $value): string
+{
+    return function_exists('mb_strtoupper')
+        ? mb_strtoupper($value, 'UTF-8')
+        : strtoupper($value);
+}
+
 function imageLabel(int $sortOrder): string
 {
     return match ($sortOrder) {
@@ -59,6 +66,7 @@ if ($postId === '') {
 }
 
 $product = null;
+
 $stmt = mysqli_prepare(
     $connection,
     "SELECT * FROM $tableposts WHERE postid = ? AND active = 1 LIMIT 1"
@@ -81,7 +89,7 @@ if (!$product) {
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <title>CD no encontrado</title>
-        <link rel="stylesheet" href="<?php echo e($storeBaseUrl); ?>store.css?v=1">
+        <link rel="stylesheet" href="<?php echo e($storeBaseUrl); ?>store.css?v=2">
     </head>
     <body class="simple-error-page">
         <main class="simple-error">
@@ -97,37 +105,52 @@ if (!$product) {
 
 $tableProductImages = $tableprefix . 'product_images';
 $images = [];
-$imageStatement = mysqli_prepare(
+
+/*
+ * product_images pertenece a la versión moderna de la tienda.
+ * Si la tabla no existe todavía, se usa inmediatamente el formato legacy.
+ */
+$tableImagesExists = mysqli_query(
     $connection,
-    "SELECT image_path, sort_order
-     FROM $tableProductImages
-     WHERE product_id = ?
-     ORDER BY sort_order ASC"
+    "SHOW TABLES LIKE '" . mysqli_real_escape_string($connection, $tableProductImages) . "'"
 );
 
-if ($imageStatement) {
-    $productDatabaseId = (int)$product['id'];
-    mysqli_stmt_bind_param($imageStatement, 'i', $productDatabaseId);
-    mysqli_stmt_execute($imageStatement);
-    $imageResult = mysqli_stmt_get_result($imageStatement);
+if ($tableImagesExists && mysqli_num_rows($tableImagesExists) > 0) {
+    $imageStatement = mysqli_prepare(
+        $connection,
+        "SELECT image_path, sort_order
+         FROM $tableProductImages
+         WHERE product_id = ?
+         ORDER BY sort_order ASC"
+    );
 
-    while ($image = mysqli_fetch_assoc($imageResult)) {
-        $path = trim((string)$image['image_path']);
+    if ($imageStatement) {
+        $productDatabaseId = (int)$product['id'];
+        mysqli_stmt_bind_param($imageStatement, 'i', $productDatabaseId);
+        mysqli_stmt_execute($imageStatement);
+        $imageResult = mysqli_stmt_get_result($imageStatement);
 
-        if ($path !== '') {
-            $images[] = [
-                'url' => $storeBaseUrl . ltrim($path, '/'),
-                'sort_order' => (int)$image['sort_order'],
-                'label' => imageLabel((int)$image['sort_order'])
-            ];
+        while ($image = mysqli_fetch_assoc($imageResult)) {
+            $path = trim((string)$image['image_path']);
+
+            if ($path !== '') {
+                $images[] = [
+                    'url' => $storeBaseUrl . ltrim($path, '/'),
+                    'sort_order' => (int)$image['sort_order'],
+                    'label' => imageLabel((int)$image['sort_order'])
+                ];
+            }
         }
-    }
 
-    mysqli_stmt_close($imageStatement);
+        mysqli_stmt_close($imageStatement);
+    }
 }
 
 if (count($images) === 0) {
-    $mainPicture = legacyImageUrl((string)($product['picture'] ?? ''), $storeBaseUrl);
+    $mainPicture = legacyImageUrl(
+        (string)($product['picture'] ?? ''),
+        $storeBaseUrl
+    );
 
     if ($mainPicture !== '') {
         $images[] = [
@@ -140,19 +163,28 @@ if (count($images) === 0) {
     $legacyMoreImages = trim((string)($product['moreimages'] ?? ''));
 
     if ($legacyMoreImages !== '') {
-        $paths = array_filter(array_map('trim', explode(',', $legacyMoreImages)));
-        $legacyOrder = 2;
+        $paths = explode(',', $legacyMoreImages);
 
-        foreach ($paths as $path) {
+        for ($index = 0; $index < 4; $index++) {
+            if (!isset($paths[$index])) {
+                continue;
+            }
+
+            $path = trim((string)$paths[$index]);
+
+            if ($path === '') {
+                continue;
+            }
+
+            $sortOrder = $index + 2;
             $url = legacyImageUrl($path, $storeBaseUrl);
 
             if ($url !== '') {
                 $images[] = [
                     'url' => $url,
-                    'sort_order' => $legacyOrder,
-                    'label' => imageLabel($legacyOrder)
+                    'sort_order' => $sortOrder,
+                    'label' => imageLabel($sortOrder)
                 ];
-                $legacyOrder++;
             }
         }
     }
@@ -201,7 +233,10 @@ if ($relatedResult) {
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="description" content="<?php echo e($artist . ' - ' . $album); ?>">
     <title><?php echo e($title . ' | ' . $websitetitle); ?></title>
-    <link rel="stylesheet" href="<?php echo e($storeBaseUrl); ?>store.css?v=1">
+
+    <link rel="stylesheet" href="<?php echo e($storeBaseUrl); ?>store.css?v=2">
+    <link rel="stylesheet" href="<?php echo e($storeBaseUrl); ?>store-footer.css?v=1">
+
     <script>
         window.StoreConfig = <?php
             echo json_encode(
@@ -215,7 +250,7 @@ if ($relatedResult) {
             );
         ?>;
     </script>
-    <script defer src="<?php echo e($storeBaseUrl); ?>store.js?v=1"></script>
+    <script defer src="<?php echo e($storeBaseUrl); ?>store.js?v=2"></script>
 </head>
 <body>
     <div class="promo-strip">
@@ -294,7 +329,7 @@ if ($relatedResult) {
             </div>
 
             <div class="product-detail__info">
-                <p class="eyebrow"><?php echo e(mb_strtoupper($artist, 'UTF-8')); ?></p>
+                <p class="eyebrow"><?php echo e(storeUpper($artist)); ?></p>
                 <h1><?php echo e($album !== '' ? $album : $title); ?></h1>
 
                 <div class="product-detail__subline">
@@ -356,7 +391,9 @@ if ($relatedResult) {
                     <button class="button button--disabled button--wide" type="button" disabled>NO DISPONIBLE</button>
                 <?php endif; ?>
 
-                <p class="single-unit-note">Cada publicación representa un único CD físico. No se permiten cantidades mayores a 1.</p>
+                <p class="single-unit-note">
+                    Cada publicación representa un único CD físico. No se permiten cantidades mayores a 1.
+                </p>
 
                 <?php if ($description !== ''): ?>
                     <div class="product-description">
@@ -398,12 +435,19 @@ if ($relatedResult) {
                         <?php foreach ($relatedProducts as $related): ?>
                             <?php
                                 $relatedPicture = trim((string)($related['picture'] ?? ''));
-                                $relatedImage = $relatedPicture !== ''
-                                    ? $storeBaseUrl . 'pictures/' . ltrim($relatedPicture, '/')
-                                    : $storeBaseUrl . 'images/defaultimg.jpg';
+
+                                if ($relatedPicture !== '') {
+                                    $relatedImage = str_starts_with($relatedPicture, 'pictures/')
+                                        ? $storeBaseUrl . ltrim($relatedPicture, '/')
+                                        : $storeBaseUrl . 'pictures/' . ltrim($relatedPicture, '/');
+                                } else {
+                                    $relatedImage = $storeBaseUrl . 'images/defaultimg.jpg';
+                                }
+
                                 $relatedArtist = trim((string)($related['artist'] ?? ''));
                                 $relatedAlbum = trim((string)($related['album'] ?? ''));
                             ?>
+
                             <article class="product-card">
                                 <a
                                     class="product-card__image-wrap"
@@ -416,16 +460,20 @@ if ($relatedResult) {
                                         loading="lazy"
                                     >
                                 </a>
+
                                 <div class="product-card__body">
                                     <p class="product-card__artist"><?php echo e($relatedArtist); ?></p>
+
                                     <a
                                         class="product-card__title"
                                         href="<?php echo e($storeBaseUrl); ?>product.php?post=<?php echo urlencode((string)$related['postid']); ?>"
                                     >
                                         <?php echo e($relatedAlbum); ?>
                                     </a>
+
                                     <div class="product-card__footer">
                                         <strong class="product-card__price">$<?php echo money($related['normalprice']); ?></strong>
+
                                         <a
                                             class="square-action square-action--link"
                                             href="<?php echo e($storeBaseUrl); ?>product.php?post=<?php echo urlencode((string)$related['postid']); ?>"
@@ -443,23 +491,7 @@ if ($relatedResult) {
         <?php endif; ?>
     </main>
 
-    <footer class="site-footer">
-        <div class="page-shell site-footer__grid">
-            <div>
-                <div class="footer-brand">REGGAETON LAB</div>
-                <p>CDs físicos de reggaetón · Ecuador</p>
-            </div>
-            <div>
-                <p class="footer-label">COMPRA</p>
-                <p>Una unidad por título</p>
-                <p>Pedido por WhatsApp</p>
-            </div>
-            <div>
-                <p class="footer-label">© <?php echo date('Y'); ?></p>
-                <p><?php echo e($websitetitle); ?></p>
-            </div>
-        </div>
-    </footer>
+    <?php require __DIR__ . '/store-footer.php'; ?>
 
     <div class="drawer-backdrop js-cart-backdrop" hidden></div>
 
@@ -469,6 +501,7 @@ if ($relatedResult) {
                 <p class="eyebrow">TU SELECCIÓN</p>
                 <h2>Carrito</h2>
             </div>
+
             <button class="icon-button js-close-cart" type="button" aria-label="Cerrar carrito">×</button>
         </div>
 
@@ -485,41 +518,13 @@ if ($relatedResult) {
                 <strong class="js-cart-total">$0.00</strong>
             </div>
 
-            <div class="checkout-form">
-                <p class="checkout-form__title">DATOS PARA EL PEDIDO</p>
-
-                <label>
-                    <span>Nombre</span>
-                    <input id="checkoutName" type="text" autocomplete="name">
-                </label>
-
-                <label>
-                    <span>Teléfono</span>
-                    <input id="checkoutPhone" type="tel" autocomplete="tel">
-                </label>
-
-                <div class="checkout-form__row">
-                    <label>
-                        <span>Provincia</span>
-                        <input id="checkoutProvince" type="text" autocomplete="address-level1">
-                    </label>
-                    <label>
-                        <span>Ciudad</span>
-                        <input id="checkoutCity" type="text" autocomplete="address-level2">
-                    </label>
-                </div>
-
-                <label>
-                    <span>Dirección</span>
-                    <input id="checkoutAddress" type="text" autocomplete="street-address">
-                </label>
-            </div>
-
-            <button class="button button--whatsapp js-checkout-whatsapp" type="button">
-                ENVIAR PEDIDO POR WHATSAPP
+            <button class="button button--dark button--wide js-checkout-whatsapp" type="button">
+                COMPRAR
             </button>
 
-            <p class="checkout-note">El valor de envío se coordina por WhatsApp y no está incluido en el total.</p>
+            <p class="checkout-note">
+                Continuarás a la página de envío antes de abrir WhatsApp.
+            </p>
         </div>
     </aside>
 </body>

@@ -22,6 +22,10 @@ function productImageUrl(array $product, string $storeBaseUrl): string
     $picture = trim((string)($product['picture'] ?? ''));
 
     if ($picture !== '') {
+        if (str_starts_with($picture, 'pictures/')) {
+            return $storeBaseUrl . ltrim($picture, '/');
+        }
+
         return $storeBaseUrl . 'pictures/' . ltrim($picture, '/');
     }
 
@@ -31,6 +35,20 @@ function productImageUrl(array $product, string $storeBaseUrl): string
 function money($value): string
 {
     return number_format((float)$value, 2, '.', ',');
+}
+
+function storeLower(string $value): string
+{
+    return function_exists('mb_strtolower')
+        ? mb_strtolower($value, 'UTF-8')
+        : strtolower($value);
+}
+
+function storeUpper(string $value): string
+{
+    return function_exists('mb_strtoupper')
+        ? mb_strtoupper($value, 'UTF-8')
+        : strtoupper($value);
 }
 
 if (isset($_GET['post']) && trim((string)$_GET['post']) !== '') {
@@ -69,6 +87,7 @@ if ($artistResult) {
 }
 
 $availableCount = 0;
+
 foreach ($products as $product) {
     if ((int)($product['stock'] ?? 0) === 1) {
         $availableCount++;
@@ -82,7 +101,10 @@ foreach ($products as $product) {
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="description" content="Tienda de CDs físicos de reggaetón en Ecuador.">
     <title><?php echo e($websitetitle); ?></title>
-    <link rel="stylesheet" href="<?php echo e($storeBaseUrl); ?>store.css?v=1">
+
+    <link rel="stylesheet" href="<?php echo e($storeBaseUrl); ?>store.css?v=2">
+    <link rel="stylesheet" href="<?php echo e($storeBaseUrl); ?>store-footer.css?v=1">
+
     <script>
         window.StoreConfig = <?php
             echo json_encode(
@@ -96,7 +118,7 @@ foreach ($products as $product) {
             );
         ?>;
     </script>
-    <script defer src="<?php echo e($storeBaseUrl); ?>store.js?v=1"></script>
+    <script defer src="<?php echo e($storeBaseUrl); ?>store.js?v=2"></script>
 </head>
 <body>
     <div class="promo-strip">
@@ -195,13 +217,14 @@ foreach ($products as $product) {
 
                 <div class="artist-filter" id="artistas" aria-label="Filtrar por artista">
                     <button class="artist-chip is-active" type="button" data-artist-filter="*">TODOS</button>
+
                     <?php foreach ($artists as $artist): ?>
                         <button
                             class="artist-chip"
                             type="button"
-                            data-artist-filter="<?php echo e(mb_strtolower($artist, 'UTF-8')); ?>"
+                            data-artist-filter="<?php echo e(storeLower($artist)); ?>"
                         >
-                            <?php echo e(mb_strtoupper($artist, 'UTF-8')); ?>
+                            <?php echo e(storeUpper($artist)); ?>
                         </button>
                     <?php endforeach; ?>
                 </div>
@@ -222,12 +245,13 @@ foreach ($products as $product) {
                                 $year = (string)($product['release_year'] ?? '');
                                 $stock = (int)($product['stock'] ?? 0);
                                 $price = (float)($product['normalprice'] ?? 0);
-                                $searchText = mb_strtolower(trim($artist . ' ' . $album . ' ' . $year), 'UTF-8');
+                                $searchText = storeLower(trim($artist . ' ' . $album . ' ' . $year));
                             ?>
+
                             <article
                                 class="product-card"
                                 data-product-id="<?php echo (int)$product['id']; ?>"
-                                data-artist="<?php echo e(mb_strtolower($artist, 'UTF-8')); ?>"
+                                data-artist="<?php echo e(storeLower($artist)); ?>"
                                 data-search="<?php echo e($searchText); ?>"
                                 data-year="<?php echo e($year); ?>"
                                 data-price="<?php echo e((string)$price); ?>"
@@ -322,23 +346,7 @@ foreach ($products as $product) {
         </section>
     </main>
 
-    <footer class="site-footer">
-        <div class="page-shell site-footer__grid">
-            <div>
-                <div class="footer-brand">REGGAETON LAB</div>
-                <p>CDs físicos de reggaetón · Ecuador</p>
-            </div>
-            <div>
-                <p class="footer-label">COMPRA</p>
-                <p>Una unidad por título</p>
-                <p>Pedido por WhatsApp</p>
-            </div>
-            <div>
-                <p class="footer-label">© <?php echo date('Y'); ?></p>
-                <p><?php echo e($websitetitle); ?></p>
-            </div>
-        </div>
-    </footer>
+    <?php require __DIR__ . '/store-footer.php'; ?>
 
     <div class="drawer-backdrop js-cart-backdrop" hidden></div>
 
@@ -348,6 +356,7 @@ foreach ($products as $product) {
                 <p class="eyebrow">TU SELECCIÓN</p>
                 <h2>Carrito</h2>
             </div>
+
             <button class="icon-button js-close-cart" type="button" aria-label="Cerrar carrito">×</button>
         </div>
 
@@ -364,41 +373,13 @@ foreach ($products as $product) {
                 <strong class="js-cart-total">$0.00</strong>
             </div>
 
-            <div class="checkout-form">
-                <p class="checkout-form__title">DATOS PARA EL PEDIDO</p>
-
-                <label>
-                    <span>Nombre</span>
-                    <input id="checkoutName" type="text" autocomplete="name">
-                </label>
-
-                <label>
-                    <span>Teléfono</span>
-                    <input id="checkoutPhone" type="tel" autocomplete="tel">
-                </label>
-
-                <div class="checkout-form__row">
-                    <label>
-                        <span>Provincia</span>
-                        <input id="checkoutProvince" type="text" autocomplete="address-level1">
-                    </label>
-                    <label>
-                        <span>Ciudad</span>
-                        <input id="checkoutCity" type="text" autocomplete="address-level2">
-                    </label>
-                </div>
-
-                <label>
-                    <span>Dirección</span>
-                    <input id="checkoutAddress" type="text" autocomplete="street-address">
-                </label>
-            </div>
-
-            <button class="button button--whatsapp js-checkout-whatsapp" type="button">
-                ENVIAR PEDIDO POR WHATSAPP
+            <button class="button button--dark button--wide js-checkout-whatsapp" type="button">
+                COMPRAR
             </button>
 
-            <p class="checkout-note">El valor de envío se coordina por WhatsApp y no está incluido en el total.</p>
+            <p class="checkout-note">
+                Continuarás a la página de envío antes de abrir WhatsApp.
+            </p>
         </div>
     </aside>
 </body>

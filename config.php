@@ -94,6 +94,10 @@ $cfg->adminwhatsapp = "593959696235";
 $cfg->saleswhatsapp = "593959696235";
 $cfg->servientregaquito = 2.60;
 $cfg->servientregaoutsidequito = 5.90;
+$cfg->socialtiktok = "https://www.tiktok.com/@reggaeton.el.real";
+$cfg->socialyoutube = "https://www.youtube.com/@instrumentalesyalgomas7923";
+$cfg->socialinstagram = "";
+$cfg->socialfacebook = "";
 $cfg->currencysymbol = "$";
 $cfg->enablerecentpostsliders = true;
 $cfg->enablefacebookcomment = true;
@@ -180,6 +184,22 @@ if(!isset($cfg->servientregaoutsidequito) || !is_numeric($cfg->servientregaoutsi
     $cfg->servientregaoutsidequito = 5.90;
 }
 
+if(!isset($cfg->socialtiktok)){
+    $cfg->socialtiktok = "https://www.tiktok.com/@reggaeton.el.real";
+}
+
+if(!isset($cfg->socialyoutube)){
+    $cfg->socialyoutube = "https://www.youtube.com/@instrumentalesyalgomas7923";
+}
+
+if(!isset($cfg->socialinstagram)){
+    $cfg->socialinstagram = "";
+}
+
+if(!isset($cfg->socialfacebook)){
+    $cfg->socialfacebook = "";
+}
+
 if(!isset($cfg->currencysymbol)){
     $cfg->currencysymbol = "$";
 }
@@ -223,6 +243,10 @@ $saleswhatsapp = preg_replace('/\D+/', '', (string)$cfg->saleswhatsapp);
 $adminwhatsapp = $saleswhatsapp;
 $servientregaquito = round((float)$cfg->servientregaquito, 2);
 $servientregaoutsidequito = round((float)$cfg->servientregaoutsidequito, 2);
+$socialtiktok = trim((string)$cfg->socialtiktok);
+$socialyoutube = trim((string)$cfg->socialyoutube);
+$socialinstagram = trim((string)$cfg->socialinstagram);
+$socialfacebook = trim((string)$cfg->socialfacebook);
 $currencysymbol = str_replace("u20b9", "₹", (string)$cfg->currencysymbol);
 $baseurl = rtrim((string)$cfg->baseurl, "/") . "/";
 $enablerecentpostsliders = (bool)$cfg->enablerecentpostsliders;

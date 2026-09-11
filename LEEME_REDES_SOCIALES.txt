@@ -1,0 +1,55 @@
+TIENDA CDS REGGAETON - REDES SOCIALES EN FOOTER
+
+Revisado contra la rama develop antes de generar estos archivos.
+
+REEMPLAZAR COMPLETOS:
+- config.php
+- admin.php
+- index.php
+- product.php
+- checkout.php
+
+ARCHIVOS NUEVOS:
+- store-footer.php
+- store-footer.css
+
+CONFIGURACIÓN EN:
+admin.php?settings
+
+Nueva sección: Redes sociales
+- TikTok
+- YouTube
+- Instagram
+- Facebook
+- WhatsApp (solo lectura; utiliza el WhatsApp de ventas)
+
+VALORES INICIALES:
+TikTok:
+https://www.tiktok.com/@reggaeton.el.real
+
+YouTube:
+https://www.youtube.com/@instrumentalesyalgomas7923
+
+Instagram:
+vacío
+
+Facebook:
+vacío
+
+WhatsApp:
+usa saleswhatsapp, actualmente 593959696235
+
+COMPORTAMIENTO:
+- Una red social vacía no aparece en el footer.
+- Instagram y Facebook pueden agregarse más adelante sin cambiar código.
+- WhatsApp usa el mismo número de ventas, evitando configuraciones duplicadas.
+- El footer es compartido por index.php, product.php y checkout.php.
+- Los enlaces sociales se abren en pestaña nueva con rel=noopener noreferrer.
+- WhatsApp abre con un mensaje inicial solicitando información de CDs.
+- No se crea ninguna tabla nueva: todo se guarda en cfg.
+
+Después de copiar:
+1. Ctrl+F5.
+2. Entra a admin.php?settings.
+3. Guarda Settings una vez.
+4. Revisa index.php, product.php y checkout.php.

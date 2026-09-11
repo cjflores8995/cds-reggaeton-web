@@ -120,11 +120,12 @@ function tSep(x){
     function injectArtistSelect($form, artists, selectedArtistId){
         $form.find(".admin-injected-artist-field").remove();
 
+        var $artistAnchor = $form.find(".admin-artist-anchor").first();
         var $categorySelect = $form.find(
             "select[name='catid'], select[name='editcatid']"
         ).first();
 
-        if($categorySelect.length === 0){
+        if($artistAnchor.length === 0 && $categorySelect.length === 0){
             return;
         }
 
@@ -168,6 +169,12 @@ function tSep(x){
         $wrapper.append($label);
         $wrapper.append($select);
         $wrapper.append($help);
+
+        if($artistAnchor.length > 0){
+            $wrapper.insertBefore($artistAnchor);
+            $artistAnchor.remove();
+            return;
+        }
 
         var $categoryLabel = $categorySelect.prev("label");
 

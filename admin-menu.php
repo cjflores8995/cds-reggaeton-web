@@ -101,14 +101,6 @@ function adminMenuClass($section, $current){
         </a>
 
         <a
-            href="<?php echo htmlspecialchars($baseurl . "admin.php?categories", ENT_QUOTES, "UTF-8"); ?>"
-            <?php echo adminMenuClass("categories", $adminActiveSection); ?>
-        >
-            <i class="fa fa-tag"></i>
-            <span>Categories</span>
-        </a>
-
-        <a
             href="<?php echo htmlspecialchars($baseurl . "admin.php?orders", ENT_QUOTES, "UTF-8"); ?>"
             <?php echo adminMenuClass("orders", $adminActiveSection); ?>
         >

@@ -15,10 +15,6 @@ if(
         isset($_POST["editposttitle"]) ? $_POST["editposttitle"] : ""
     );
 
-    $catid = isset($_POST["editcatid"])
-        ? (int)$_POST["editcatid"]
-        : 0;
-
     $artistid = isset($_POST["artistid"])
         ? artistResolveSelectedId($_POST["artistid"])
         : 0;
@@ -68,6 +64,15 @@ if(
 
     $row = mysqli_fetch_assoc($result);
 
+    /*
+     * Category is legacy-only in this store.
+     * All products are Reggaeton CDs, so Edit CD does not expose a category.
+     * We preserve the existing catid silently to avoid changing old data.
+     */
+    $catid = isset($row["catid"])
+        ? (int)$row["catid"]
+        : 0;
+
     $oldpicture = $row["picture"];
     $oldmoreimages = $row["moreimages"];
 
@@ -96,7 +101,7 @@ if(
         $moreimages = productImageSerializeMoreImages($imageResult["slots"]);
         $uploadedPaths = $imageResult["uploaded"];
     }else{
-        //Legacy fallback in case JavaScript is unavailable.
+        // Legacy fallback in case JavaScript is unavailable.
         $moreimages = isset($_POST["moreimagesinput"])
             ? $_POST["moreimagesinput"]
             : $oldmoreimages;

@@ -1011,32 +1011,7 @@ if(isset($_GET["editpost"])){
                         </div>
                     </div>
 
-                    <label>Category</label>
-                    <select name="editcatid">
-                        <option value="0" <?php echo (int)$editRow["catid"] === 0 ? "selected" : ""; ?>>
-                            Uncategorized
-                        </option>
-
-                        <?php
-                        $catResult = mysqli_query(
-                            $connection,
-                            "SELECT id, category FROM $tablecategories ORDER BY category ASC"
-                        );
-
-                        if($catResult){
-                            while($cat = mysqli_fetch_assoc($catResult)){
-                        ?>
-                                <option
-                                    value="<?php echo (int)$cat["id"]; ?>"
-                                    <?php echo (int)$editRow["catid"] === (int)$cat["id"] ? "selected" : ""; ?>
-                                >
-                                    <?php echo adminEsc($cat["category"]); ?>
-                                </option>
-                        <?php
-                            }
-                        }
-                        ?>
-                    </select>
+                    <div class="admin-artist-anchor"></div>
 
                     <label>Content</label>
                     <textarea

@@ -8,6 +8,7 @@ Archivos a colocar en la RAÍZ del proyecto:
 - admin-modern.css            REEMPLAZAR
 - somefunctions.js            REEMPLAZAR
 - productimages.php           REEMPLAZAR
+- postupdate.php              REEMPLAZAR
 
 IMPORTANTE:
 1. El archivo images/admin-menu.php que quedó vacío en GitHub NO se usa.
@@ -27,3 +28,10 @@ Qué corrige:
 - No se puede eliminar un artista con CDs asociados.
 - productimages.php conserva subcarpetas existentes (ej. pictures/products/12/01.jpg)
   en lugar de destruir la ruta con basename().
+
+
+AJUSTE ADICIONAL:
+- Se eliminó Category del formulario Editar CD.
+- Se eliminó Categories del menú visible.
+- El campo catid se conserva únicamente por compatibilidad con la plantilla antigua.
+- Editar CD ya no depende de Category para insertar el selector de Artista.

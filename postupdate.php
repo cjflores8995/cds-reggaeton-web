@@ -1,70 +1,178 @@
 <?php
-include("config.php");
-include("thumbnailgenerator.php");
-include("uilang.php");
+require_once("config.php");
+require_once("uilang.php");
+require_once("productimages.php");
 
-if(isset($_POST["editposttitle"]) && isset($_POST["id"])){
-	$id = mysqli_real_escape_string($connection, $_POST["id"]);
-	$posttitle = mysqli_real_escape_string($connection, $_POST["editposttitle"]);
-	$catid = mysqli_real_escape_string($connection, $_POST["editcatid"]);
-	$normalprice = mysqli_real_escape_string($connection, $_POST["editnormalprice"]);
-	$discountprice = mysqli_real_escape_string($connection, $_POST["editdiscountprice"]);
-	$content = mysqli_real_escape_string($connection, $_POST["editpostcontent"]);
-	$moreoptions = mysqli_real_escape_string($connection, $_POST["moreoptions"]);
-	$moreimages = mysqli_real_escape_string($connection, $_POST["moreimagesinput"]);
-	
-	if($posttitle != "" && $content != ""){
-		
-		$sql = "SELECT * FROM $tableposts WHERE id = $id";
-		$result = mysqli_query($connection, $sql);
-		if(mysqli_num_rows($result) > 0){
-			
-			$row = mysqli_fetch_assoc($result);
-			
-			$oldpicture = $row["picture"];
-			
-			//Picture upload
-			if(isset($_FILES["newpicture"])){
-				$maxsize = 524288;
-				if($_FILES["newpicture"]["size"] == 0){
-					$newpicture = $oldpicture;
-				}else{
-					if($_FILES['newpicture']['error'] > 0) { echo "<div class='alert'>" .uilang("Error during uploading. Try again"). "</div>"; }
-					$extsAllowed = array( 'jpg', 'jpeg', 'png' );
-					$uploadedfile = $_FILES["newpicture"]["name"];
-					$extension = pathinfo($uploadedfile, PATHINFO_EXTENSION);
-					if (in_array($extension, $extsAllowed) ) { 
-						$newpicture = substr(str_shuffle(str_repeat("0123456789abcdefghijklmnopqrstuvwxyz", 5)), 0, 10);
-						$name = "pictures/" . $newpicture .".". $extension;
-						
-						if(($_FILES['newpicture']['size'] >= $maxsize)){
-							createThumbnail($_FILES['newpicture']['tmp_name'], "pictures/" . $newpicture .".". $extension, 512);
-						}else{
-							$result = move_uploaded_file($_FILES['newpicture']['tmp_name'], $name);
-						}
-						?>
-						
-						<div class="alert"><?php echo uilang("Picture upload is OK") ?>.</div>
-						<?php
-						$newpicture = $newpicture .".". $extension;
-						
-						//delete previous media
-						if($oldpicture != ""){
-						if(file_exists("pictures/" . $oldpicture))
-							unlink("pictures/" . $oldpicture);
-						}
-					} else { 
-						echo "<div class='alert'>".uilang("File is not valid. Please try again").".</div>";
-						$newpicture = $oldpicture;
-					}
-				}
-			}else{
-				$newpicture = $oldpicture;
-			}
-			
-			mysqli_query($connection, "UPDATE $tableposts SET title = '$posttitle', catid = $catid, content = '$content', picture = '$newpicture', normalprice='$normalprice', discountprice='$discountprice', options='$moreoptions', moreimages = '$moreimages' WHERE id = $id");
-			echo "<div class='alert'>" .uilang("Post successfully updated."). "</div>";
-		
-		}
-	}	
+if(
+    isset($_POST["editposttitle"]) &&
+    isset($_POST["id"])
+){
+    $id = (int)$_POST["id"];
+
+    $posttitle = mysqli_real_escape_string(
+        $connection,
+        isset($_POST["editposttitle"]) ? $_POST["editposttitle"] : ""
+    );
+
+    $catid = isset($_POST["editcatid"])
+        ? (int)$_POST["editcatid"]
+        : 0;
+
+    $normalprice = mysqli_real_escape_string(
+        $connection,
+        isset($_POST["editnormalprice"]) ? $_POST["editnormalprice"] : "0"
+    );
+
+    $discountprice = mysqli_real_escape_string(
+        $connection,
+        isset($_POST["editdiscountprice"]) ? $_POST["editdiscountprice"] : "0"
+    );
+
+    $content = mysqli_real_escape_string(
+        $connection,
+        isset($_POST["editpostcontent"]) ? $_POST["editpostcontent"] : ""
+    );
+
+    $moreoptions = mysqli_real_escape_string(
+        $connection,
+        isset($_POST["moreoptions"]) ? $_POST["moreoptions"] : ""
+    );
+
+    if($id <= 0){
+        echo "<div class='alert'>Id de producto inválido.</div>";
+        exit;
+    }
+
+    if($posttitle !== "" && $content !== ""){
+        $sql = "SELECT * FROM $tableposts WHERE id = $id LIMIT 1";
+        $result = mysqli_query(
+            $connection,
+            $sql
+        );
+
+        if(!$result || mysqli_num_rows($result) === 0){
+            echo "<div class='alert'>Producto no encontrado.</div>";
+            exit;
+        }
+
+        $row = mysqli_fetch_assoc($result);
+
+        $oldpicture = $row["picture"];
+        $oldmoreimages = $row["moreimages"];
+
+        $newpicture = $oldpicture;
+        $moreimages = $oldmoreimages;
+        $uploadedPaths = [];
+
+        if(
+            isset($_POST["product_image_manager"]) &&
+            $_POST["product_image_manager"] === "1"
+        ){
+            $imageResult = productImageBuildSlotsFromRequest(
+                $oldpicture,
+                $oldmoreimages
+            );
+
+            if(!$imageResult["ok"]){
+                productImageCleanupUploadedPaths(
+                    $imageResult["uploaded"]
+                );
+
+                foreach($imageResult["errors"] as $error){
+                    echo "<div class='alert'>" . htmlspecialchars($error) . "</div>";
+                }
+
+                echo "<script>$(\"#upploadprogresstitle\").hide()</script>";
+                exit;
+            }
+
+            $newpicture = productImagePictureValue(
+                $imageResult["slots"]
+            );
+
+            $moreimages = productImageSerializeMoreImages(
+                $imageResult["slots"]
+            );
+
+            $uploadedPaths = $imageResult["uploaded"];
+        }else{
+            $moreimages = isset($_POST["moreimagesinput"])
+                ? $_POST["moreimagesinput"]
+                : $oldmoreimages;
+
+            if(
+                isset($_FILES["newpicture"]) &&
+                isset($_FILES["newpicture"]["error"]) &&
+                $_FILES["newpicture"]["error"] !== UPLOAD_ERR_NO_FILE
+            ){
+                $savedImage = productImageSaveUploadedFile(
+                    $_FILES["newpicture"]
+                );
+
+                if(!$savedImage["ok"]){
+                    echo "<div class='alert'>" . htmlspecialchars($savedImage["error"]) . "</div>";
+                    echo "<script>$(\"#upploadprogresstitle\").hide()</script>";
+                    exit;
+                }
+
+                if($savedImage["uploaded"]){
+                    $newpicture = basename(
+                        $savedImage["path"]
+                    );
+
+                    $uploadedPaths[] = $savedImage["path"];
+                }
+            }
+        }
+
+        $newpicture = mysqli_real_escape_string(
+            $connection,
+            $newpicture
+        );
+
+        $moreimages = mysqli_real_escape_string(
+            $connection,
+            $moreimages
+        );
+
+        $updateSql =
+            "UPDATE $tableposts SET " .
+            "title = '$posttitle', " .
+            "catid = $catid, " .
+            "content = '$content', " .
+            "picture = '$newpicture', " .
+            "normalprice = '$normalprice', " .
+            "discountprice = '$discountprice', " .
+            "options = '$moreoptions', " .
+            "moreimages = '$moreimages' " .
+            "WHERE id = $id";
+
+        $updateResult = mysqli_query(
+            $connection,
+            $updateSql
+        );
+
+        if(!$updateResult){
+            productImageCleanupUploadedPaths(
+                $uploadedPaths
+            );
+
+            echo "<div class='alert'>No se pudo actualizar el producto.</div>";
+            exit;
+        }
+
+        /*
+         * IMPORTANTE:
+         * No eliminamos automáticamente las imágenes anteriores.
+         *
+         * Una imagen puede estar referenciada por otro producto o por
+         * una posición distinta de la galería. El borrado físico queda
+         * exclusivamente bajo el control de la sección Pictures.
+         */
+
+        echo "<div class='alert'>" .
+             uilang("Post successfully updated.") .
+             "</div>";
+    }
 }
+?>

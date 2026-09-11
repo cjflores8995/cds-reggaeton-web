@@ -1,30 +1,44 @@
-ADMIN - INICIO VISUAL Y BUSCADOR
+ESTADO DISPONIBLE / VENDIDO - TIENDA CDS REGGAETON
 
-Revisado contra la rama develop antes de generar estos archivos.
+Revisado contra la rama develop antes de preparar el cambio.
 
 REEMPLAZAR COMPLETOS:
+- config.php
 - admin.php
-- admin-menu.php
 - admin-modern.css
+- postupdate.php
+- index.php
+- product.php
 
-CAMBIOS:
-1. "Home" cambia a "Inicio" en el menú lateral.
-2. "Home" cambia a "Inicio" como título de la pantalla.
-3. La tabla antigua se reemplaza por tarjetas visuales de administración.
-4. Cada tarjeta muestra:
-   - portada del CD;
-   - artista;
-   - nombre del CD / álbum;
-   - fecha;
-   - precio;
-   - estado: Disponible / Vendido / Oculto;
-   - Editar;
-   - Ver en tienda;
-   - Eliminar CD.
-5. Buscador en tiempo real por nombre del CD, álbum o artista.
-6. La búsqueda ignora mayúsculas, minúsculas y tildes.
-7. Resumen superior: Total / Disponibles / Vendidos.
-8. No se modifica GitHub automáticamente.
+MODELO:
+- stock = 1  -> Disponible
+- stock = 0  -> Vendido
+- sold_at     -> Fecha/hora en que se marcó vendido
+- active      -> Se conserva para ocultar productos manualmente
+
+ADMIN:
+- Disponibles aparecen primero.
+- Vendidos aparecen en una sección separada debajo.
+- La portada de un vendido queda opaca/gris.
+- "Marcar como vendido" no elimina el producto ni sus imágenes.
+- "Restaurar como disponible" vuelve a stock = 1.
+- Editar CD incluye el selector Disponibilidad.
+- El buscador filtra disponibles y vendidos.
+
+FRONTEND:
+- index.php solo consulta active = 1 AND stock = 1.
+- product.php solo abre productos active = 1 AND stock = 1.
+- Los vendidos no aparecen en catálogo, filtros ni productos relacionados.
+- Un enlace antiguo directo a un vendido devuelve "Este CD no está disponible".
+- Checkout ya valida stock = 1, por lo que se mantiene protegido.
+
+MIGRACIÓN:
+config.php crea de forma compatible las columnas modernas que falten:
+artist, album, release_year, stock, sold_at, cd_condition, case_condition, active.
 
 Después de copiar:
-- Ctrl + F5 en http://localhost/TiendaCDsReggaeton/admin.php
+1. Ctrl + F5 en admin.php.
+2. Marca un CD como vendido.
+3. Comprueba que pase a la sección Vendidos con portada opaca.
+4. Abre el frontend y confirma que ya no aparezca.
+5. Restaura el CD y verifica que vuelva a mostrarse.

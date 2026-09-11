@@ -1015,3 +1015,126 @@ tr:hover td{
         grid-template-columns:1fr;
     }
 }
+
+
+/* =========================================================
+   INVENTARIO: DISPONIBLES / VENDIDOS
+   ========================================================= */
+
+.admin-inventory-section{
+    margin:0 0 34px;
+}
+
+.admin-inventory-section__heading{
+    display:flex;
+    align-items:flex-end;
+    justify-content:space-between;
+    gap:18px;
+    margin:0 0 12px;
+    padding:0 0 10px;
+    border-bottom:1px solid var(--admin-line);
+}
+
+.admin-inventory-section__heading > div{
+    display:flex;
+    align-items:baseline;
+    gap:10px;
+}
+
+.admin-inventory-section__heading h2{
+    margin:0;
+    font-size:20px;
+}
+
+.admin-inventory-section__index,
+.admin-inventory-section__count{
+    font-size:9px;
+    font-weight:800;
+    letter-spacing:.09em;
+    text-transform:uppercase;
+}
+
+.admin-inventory-section__index{
+    color:var(--admin-muted);
+}
+
+.admin-inventory-section__count{
+    color:#111111;
+}
+
+.admin-inventory-section__description{
+    margin:-2px 0 14px;
+    color:var(--admin-muted);
+    font-size:11px;
+}
+
+.admin-cd-card--sold .admin-cd-card__image{
+    opacity:.32;
+    filter:grayscale(1);
+}
+
+.admin-cd-card--sold:hover .admin-cd-card__image{
+    transform:none;
+    opacity:.40;
+}
+
+.admin-cd-card--sold .admin-cd-card__image-wrap{
+    background:#ededed;
+}
+
+.admin-cd-card__status.is-sold{
+    background:#ffffff;
+    color:#111111;
+}
+
+.admin-cd-card__actions--single{
+    grid-template-columns:1fr;
+}
+
+.admin-cd-card__inventory-form{
+    width:100%;
+    margin:8px 0 0;
+}
+
+.admin-cd-card__inventory-button{
+    width:100%;
+    min-height:34px;
+    margin:0;
+    padding:8px 10px;
+    border:1px solid #111111;
+    border-radius:0;
+    background:#ffffff;
+    color:#111111;
+    cursor:pointer;
+    font-family:Arial, Helvetica, sans-serif;
+    font-size:9px;
+    font-weight:800;
+    letter-spacing:.05em;
+    text-transform:uppercase;
+}
+
+.admin-cd-card__inventory-button:hover{
+    background:#111111;
+    color:#ffffff;
+}
+
+.admin-cd-card__inventory-button--restore{
+    background:#111111;
+    color:#ffffff;
+}
+
+.admin-cd-card__inventory-button--restore:hover{
+    background:#ffffff;
+    color:#111111;
+}
+
+.admin-inventory-section--sold{
+    padding-top:4px;
+    border-top:2px solid #111111;
+}
+
+@media(max-width:700px){
+    .admin-inventory-section__heading{
+        align-items:flex-start;
+    }
+}

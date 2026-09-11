@@ -60,7 +60,7 @@ $storeBaseUrl = buildStoreBaseUrl();
 $whatsappNumber = preg_replace('/\D+/', '', (string)$adminwhatsapp);
 
 $products = [];
-$productSql = "SELECT * FROM $tableposts WHERE active = 1 ORDER BY id DESC";
+$productSql = "SELECT * FROM $tableposts WHERE active = 1 AND stock = 1 ORDER BY id DESC";
 $productResult = mysqli_query($connection, $productSql);
 
 if ($productResult) {
@@ -74,6 +74,7 @@ $artistSql = "
     SELECT DISTINCT artist
     FROM $tableposts
     WHERE active = 1
+      AND stock = 1
       AND artist IS NOT NULL
       AND TRIM(artist) <> ''
     ORDER BY artist ASC
@@ -86,13 +87,7 @@ if ($artistResult) {
     }
 }
 
-$availableCount = 0;
-
-foreach ($products as $product) {
-    if ((int)($product['stock'] ?? 0) === 1) {
-        $availableCount++;
-    }
-}
+$availableCount = count($products);
 ?>
 <!DOCTYPE html>
 <html lang="es">

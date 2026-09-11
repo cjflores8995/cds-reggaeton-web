@@ -34,6 +34,10 @@ if(
         isset($_POST["editpostcontent"]) ? $_POST["editpostcontent"] : ""
     );
 
+    $stock = isset($_POST["editstock"]) && (int)$_POST["editstock"] === 0
+        ? 0
+        : 1;
+
     $moreoptions = mysqli_real_escape_string(
         $connection,
         isset($_POST["moreoptions"]) ? $_POST["moreoptions"] : ""
@@ -138,7 +142,12 @@ if(
         "normalprice = '$normalprice', " .
         "discountprice = '$discountprice', " .
         "options = '$moreoptions', " .
-        "moreimages = '$moreimages' " .
+        "moreimages = '$moreimages', " .
+        "stock = $stock, " .
+        "sold_at = " .
+            ($stock === 0
+                ? "COALESCE(sold_at, NOW())"
+                : "NULL") . " " .
         "WHERE id = $id";
 
     $updateResult = mysqli_query($connection, $updateSql);

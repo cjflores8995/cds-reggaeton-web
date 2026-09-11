@@ -69,7 +69,7 @@ $product = null;
 
 $stmt = mysqli_prepare(
     $connection,
-    "SELECT * FROM $tableposts WHERE postid = ? AND active = 1 LIMIT 1"
+    "SELECT * FROM $tableposts WHERE postid = ? AND active = 1 AND stock = 1 LIMIT 1"
 );
 
 if ($stmt) {
@@ -214,6 +214,7 @@ $relatedSql = "
     SELECT *
     FROM $tableposts
     WHERE active = 1
+      AND stock = 1
       AND id <> " . (int)$product['id'] . "
     ORDER BY id DESC
     LIMIT 4

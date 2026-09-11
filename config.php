@@ -48,7 +48,15 @@ time VARCHAR(150) NOT NULL,
 options VARCHAR(200) NOT NULL,
 picture VARCHAR(300) NOT NULL,
 moreimages TEXT NOT NULL,
-content TEXT CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL
+content TEXT CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL,
+artist VARCHAR(150) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL DEFAULT '',
+album VARCHAR(200) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL DEFAULT '',
+release_year INT NULL,
+stock TINYINT(1) NOT NULL DEFAULT 1,
+sold_at DATETIME NULL,
+cd_condition VARCHAR(80) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL DEFAULT 'Buen estado',
+case_condition VARCHAR(80) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL DEFAULT 'Buen estado',
+active TINYINT(1) NOT NULL DEFAULT 1
 )");
 
 //Backward-compatible migration for existing installations.
@@ -60,6 +68,123 @@ if($artistColumnResult && mysqli_num_rows($artistColumnResult) == 0){
 $artistIndexResult = mysqli_query($connection, "SHOW INDEX FROM $tableposts WHERE Key_name = 'idx_artistid'");
 if($artistIndexResult && mysqli_num_rows($artistIndexResult) == 0){
     mysqli_query($connection, "ALTER TABLE $tableposts ADD INDEX idx_artistid (artistid)");
+}
+
+if(!function_exists("configEnsurePostColumn")){
+    function configEnsurePostColumn($connection, $tableposts, $columnName, $definition){
+        $safeColumnName = mysqli_real_escape_string(
+            $connection,
+            $columnName
+        );
+
+        $columnResult = mysqli_query(
+            $connection,
+            "SHOW COLUMNS FROM $tableposts LIKE '$safeColumnName'"
+        );
+
+        if(
+            $columnResult &&
+            mysqli_num_rows($columnResult) == 0
+        ){
+            mysqli_query(
+                $connection,
+                "ALTER TABLE $tableposts ADD COLUMN $columnName $definition"
+            );
+        }
+    }
+}
+
+/*
+ * Modern product/catalog columns.
+ * stock is intentionally boolean because every publication represents
+ * exactly one physical CD:
+ *   1 = available
+ *   0 = sold
+ */
+configEnsurePostColumn(
+    $connection,
+    $tableposts,
+    "artist",
+    "VARCHAR(150) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL DEFAULT '' AFTER artistid"
+);
+
+configEnsurePostColumn(
+    $connection,
+    $tableposts,
+    "album",
+    "VARCHAR(200) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL DEFAULT '' AFTER artist"
+);
+
+configEnsurePostColumn(
+    $connection,
+    $tableposts,
+    "release_year",
+    "INT NULL AFTER album"
+);
+
+configEnsurePostColumn(
+    $connection,
+    $tableposts,
+    "stock",
+    "TINYINT(1) NOT NULL DEFAULT 1 AFTER release_year"
+);
+
+configEnsurePostColumn(
+    $connection,
+    $tableposts,
+    "sold_at",
+    "DATETIME NULL AFTER stock"
+);
+
+configEnsurePostColumn(
+    $connection,
+    $tableposts,
+    "cd_condition",
+    "VARCHAR(80) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL DEFAULT 'Buen estado' AFTER sold_at"
+);
+
+configEnsurePostColumn(
+    $connection,
+    $tableposts,
+    "case_condition",
+    "VARCHAR(80) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL DEFAULT 'Buen estado' AFTER cd_condition"
+);
+
+configEnsurePostColumn(
+    $connection,
+    $tableposts,
+    "active",
+    "TINYINT(1) NOT NULL DEFAULT 1 AFTER case_condition"
+);
+
+$stockIndexResult = mysqli_query(
+    $connection,
+    "SHOW INDEX FROM $tableposts WHERE Key_name = 'idx_stock'"
+);
+
+if(
+    $stockIndexResult &&
+    mysqli_num_rows($stockIndexResult) == 0
+){
+    mysqli_query(
+        $connection,
+        "ALTER TABLE $tableposts ADD INDEX idx_stock (stock)"
+    );
+}
+
+$activeIndexResult = mysqli_query(
+    $connection,
+    "SHOW INDEX FROM $tableposts WHERE Key_name = 'idx_active'"
+);
+
+if(
+    $activeIndexResult &&
+    mysqli_num_rows($activeIndexResult) == 0
+){
+    mysqli_query(
+        $connection,
+        "ALTER TABLE $tableposts ADD INDEX idx_active (active)"
+    );
 }
 
 //Creating tables - categories (legacy compatibility)

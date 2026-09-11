@@ -215,7 +215,7 @@ if(!adminIsLoggedIn()){
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <title>Admin Panel | <?php echo adminEsc($websitetitle); ?></title>
-        <link rel="stylesheet" type="text/css" href="<?php echo $baseurl; ?>admin-modern.css?v=11">
+        <link rel="stylesheet" type="text/css" href="<?php echo $baseurl; ?>admin-modern.css?v=12">
     </head>
     <body class="admin-login-page">
         <div class="admin-login-card">
@@ -259,6 +259,87 @@ if(isset($_GET["newpost"])){
 
 $adminMessage = "";
 $adminMessageType = "success";
+
+/* --------------------------------------------------------------------------
+ * Inventory
+ * One publication = one physical CD.
+ * stock = 1 -> available
+ * stock = 0 -> sold
+ * ----------------------------------------------------------------------- */
+if(
+    $_SERVER["REQUEST_METHOD"] === "POST" &&
+    isset($_POST["inventory_action"]) &&
+    isset($_POST["product_id"])
+){
+    $productId = (int)$_POST["product_id"];
+    $inventoryAction = trim(
+        (string)$_POST["inventory_action"]
+    );
+
+    if($productId <= 0){
+        header(
+            "Location: " .
+            $baseurl .
+            "admin.php?inventory_status=invalid"
+        );
+        exit;
+    }
+
+    if($inventoryAction === "mark_sold"){
+        $inventorySql =
+            "UPDATE $tableposts " .
+            "SET stock = 0, " .
+            "sold_at = COALESCE(sold_at, NOW()) " .
+            "WHERE id = $productId";
+
+        $inventoryStatus = mysqli_query(
+            $connection,
+            $inventorySql
+        )
+            ? "sold"
+            : "error";
+    }else if($inventoryAction === "restore"){
+        $inventorySql =
+            "UPDATE $tableposts " .
+            "SET stock = 1, sold_at = NULL " .
+            "WHERE id = $productId";
+
+        $inventoryStatus = mysqli_query(
+            $connection,
+            $inventorySql
+        )
+            ? "restored"
+            : "error";
+    }else{
+        $inventoryStatus = "invalid";
+    }
+
+    header(
+        "Location: " .
+        $baseurl .
+        "admin.php?inventory_status=" .
+        urlencode($inventoryStatus)
+    );
+    exit;
+}
+
+if(isset($_GET["inventory_status"])){
+    $inventoryStatus = trim(
+        (string)$_GET["inventory_status"]
+    );
+
+    if($inventoryStatus === "sold"){
+        $adminMessage =
+            "CD marcado como vendido. Ya no aparece en la tienda.";
+    }else if($inventoryStatus === "restored"){
+        $adminMessage =
+            "CD restaurado como disponible.";
+    }else if($inventoryStatus === "error"){
+        $adminMessage =
+            "No se pudo actualizar la disponibilidad del CD.";
+        $adminMessageType = "error";
+    }
+}
 
 /* --------------------------------------------------------------------------
  * Home - delete CD
@@ -615,7 +696,7 @@ if(isset($_GET["editpost"])){
 
     <link rel="shortcut icon" href="<?php echo adminEsc($baseurl); ?>favicon.ico">
     <link rel="stylesheet" type="text/css" href="<?php echo adminEsc($baseurl); ?>assets/css/font-awesome.css">
-    <link rel="stylesheet" type="text/css" href="<?php echo adminEsc($baseurl); ?>admin-modern.css?v=11">
+    <link rel="stylesheet" type="text/css" href="<?php echo adminEsc($baseurl); ?>admin-modern.css?v=12">
 
     <script src="<?php echo adminEsc($baseurl); ?>jquery.min.js"></script>
     <script src="<?php echo adminEsc($baseurl); ?>jquery.form.js"></script>
@@ -1266,6 +1347,29 @@ if(isset($_GET["editpost"])){
 
                     <div class="admin-artist-anchor"></div>
 
+                    <label>Disponibilidad *</label>
+                    <select name="editstock" required>
+                        <option
+                            value="1"
+                            <?php echo (int)($editRow["stock"] ?? 1) === 1 ? "selected" : ""; ?>
+                        >
+                            Disponible
+                        </option>
+                        <option
+                            value="0"
+                            <?php echo (int)($editRow["stock"] ?? 1) === 0 ? "selected" : ""; ?>
+                        >
+                            Vendido
+                        </option>
+                    </select>
+
+                    <div
+                        class="admin-muted"
+                        style="margin-top:-7px;margin-bottom:14px;"
+                    >
+                        Al marcarlo como vendido dejará de mostrarse inmediatamente en el frontend.
+                    </div>
+
                     <label>Content</label>
                     <textarea
                         class="js-richtext"
@@ -1317,7 +1421,7 @@ if(isset($_GET["editpost"])){
                 <div>
                     <h1>Inicio</h1>
                     <div class="admin-muted">
-                        Gestiona visualmente los CDs publicados en la tienda.
+                        Gestiona visualmente los CDs disponibles y el histórico de vendidos.
                     </div>
                 </div>
 
@@ -1343,31 +1447,30 @@ if(isset($_GET["editpost"])){
             );
 
             $postsList = [];
+            $availablePosts = [];
+            $soldPosts = [];
 
             if($postsResult){
                 while($post = mysqli_fetch_assoc($postsResult)){
                     $postsList[] = $post;
+
+                    if((int)($post["stock"] ?? 1) === 0){
+                        $soldPosts[] = $post;
+                    }else{
+                        $availablePosts[] = $post;
+                    }
                 }
             }
 
             $totalCdCount = count($postsList);
-            $availableCdCount = 0;
-            $soldCdCount = 0;
-
-            foreach($postsList as $post){
-                $isAvailable =
-                    !array_key_exists("stock", $post) ||
-                    (int)$post["stock"] === 1;
-
-                if($isAvailable){
-                    $availableCdCount++;
-                }else{
-                    $soldCdCount++;
-                }
-            }
+            $availableCdCount = count($availablePosts);
+            $soldCdCount = count($soldPosts);
             ?>
 
-            <section class="admin-home-summary" aria-label="Resumen del catálogo">
+            <section
+                class="admin-home-summary"
+                aria-label="Resumen del catálogo"
+            >
                 <div class="admin-home-summary__item">
                     <span>Total</span>
                     <strong><?php echo $totalCdCount; ?></strong>
@@ -1389,7 +1492,10 @@ if(isset($_GET["editpost"])){
                     class="admin-home-search"
                     for="adminCdSearch"
                 >
-                    <i class="fa fa-search" aria-hidden="true"></i>
+                    <i
+                        class="fa fa-search"
+                        aria-hidden="true"
+                    ></i>
 
                     <input
                         id="adminCdSearch"
@@ -1412,154 +1518,82 @@ if(isset($_GET["editpost"])){
                     No hay CDs publicados todavía.
                 </div>
             <?php }else{ ?>
-                <div
-                    class="admin-cd-grid"
-                    id="adminCdGrid"
+
+                <section
+                    class="admin-inventory-section"
+                    data-admin-cd-section
                 >
-                    <?php foreach($postsList as $post){ ?>
-                        <?php
-                        $artistName = trim(
-                            (string)($post["artist_name"] ?? "")
-                        );
+                    <div class="admin-inventory-section__heading">
+                        <div>
+                            <span class="admin-inventory-section__index">
+                                01
+                            </span>
+                            <h2>Disponibles</h2>
+                        </div>
 
-                        if(
-                            $artistName === "" &&
-                            isset($post["artist"])
-                        ){
-                            $artistName = trim(
-                                (string)$post["artist"]
-                            );
-                        }
+                        <span class="admin-inventory-section__count">
+                            <?php echo $availableCdCount; ?> CDs
+                        </span>
+                    </div>
 
-                        $albumName = adminProductAlbumName(
-                            $post,
-                            $artistName
-                        );
+                    <?php if($availableCdCount === 0){ ?>
+                        <div class="admin-empty">
+                            No hay CDs disponibles.
+                        </div>
+                    <?php }else{ ?>
+                        <div class="admin-cd-grid">
+                            <?php foreach($availablePosts as $post){ ?>
+                                <?php
+                                $artistName = trim(
+                                    (string)($post["artist_name"] ?? "")
+                                );
 
-                        $title = trim(
-                            (string)($post["title"] ?? "")
-                        );
+                                if(
+                                    $artistName === "" &&
+                                    isset($post["artist"])
+                                ){
+                                    $artistName = trim(
+                                        (string)$post["artist"]
+                                    );
+                                }
 
-                        $imageUrl = adminProductImageUrl(
-                            $post["picture"] ?? "",
-                            $baseurl
-                        );
+                                $albumName = adminProductAlbumName(
+                                    $post,
+                                    $artistName
+                                );
 
-                        $price = isset($post["normalprice"])
-                            ? (float)$post["normalprice"]
-                            : 0;
+                                $title = trim(
+                                    (string)($post["title"] ?? "")
+                                );
 
-                        $isAvailable =
-                            !array_key_exists("stock", $post) ||
-                            (int)$post["stock"] === 1;
+                                $imageUrl = adminProductImageUrl(
+                                    $post["picture"] ?? "",
+                                    $baseurl
+                                );
 
-                        $isActive =
-                            !array_key_exists("active", $post) ||
-                            (int)$post["active"] === 1;
+                                $price = (float)(
+                                    $post["normalprice"] ?? 0
+                                );
 
-                        if(!$isActive){
-                            $statusText = "Oculto";
-                            $statusClass = "is-hidden-status";
-                        }else if(!$isAvailable){
-                            $statusText = "Vendido";
-                            $statusClass = "is-sold";
-                        }else{
-                            $statusText = "Disponible";
-                            $statusClass = "is-available";
-                        }
+                                $isActive =
+                                    (int)($post["active"] ?? 1) === 1;
 
-                        $searchText = trim(
-                            $artistName .
-                            " " .
-                            $albumName .
-                            " " .
-                            $title
-                        );
-                        ?>
+                                $searchText = trim(
+                                    $artistName .
+                                    " " .
+                                    $albumName .
+                                    " " .
+                                    $title
+                                );
+                                ?>
 
-                        <article
-                            class="admin-cd-card"
-                            data-admin-cd-card
-                            data-search="<?php echo adminEsc($searchText); ?>"
-                        >
-                            <a
-                                class="admin-cd-card__image-wrap"
-                                href="<?php echo adminEsc(
-                                    $baseurl .
-                                    "?post=" .
-                                    urlencode(
-                                        (string)$post["postid"]
-                                    )
-                                ); ?>"
-                                target="_blank"
-                                rel="noopener"
-                                title="Ver CD en la tienda"
-                            >
-                                <img
-                                    class="admin-cd-card__image"
-                                    src="<?php echo adminEsc($imageUrl); ?>"
-                                    alt="<?php echo adminEsc($title); ?>"
-                                    loading="lazy"
+                                <article
+                                    class="admin-cd-card"
+                                    data-admin-cd-card
+                                    data-search="<?php echo adminEsc($searchText); ?>"
                                 >
-
-                                <span
-                                    class="admin-cd-card__status <?php echo adminEsc($statusClass); ?>"
-                                >
-                                    <?php echo adminEsc($statusText); ?>
-                                </span>
-                            </a>
-
-                            <div class="admin-cd-card__body">
-                                <div class="admin-cd-card__artist">
-                                    <?php echo adminEsc(
-                                        $artistName !== ""
-                                            ? $artistName
-                                            : "Sin artista"
-                                    ); ?>
-                                </div>
-
-                                <h2 class="admin-cd-card__title">
-                                    <?php echo adminEsc(
-                                        $albumName !== ""
-                                            ? $albumName
-                                            : $title
-                                    ); ?>
-                                </h2>
-
-                                <div class="admin-cd-card__meta">
-                                    <span>
-                                        <?php echo adminEsc(
-                                            adminFormatDate(
-                                                $post["time"] ?? ""
-                                            )
-                                        ); ?>
-                                    </span>
-
-                                    <strong>
-                                        $<?php echo number_format(
-                                            $price,
-                                            2,
-                                            ".",
-                                            ""
-                                        ); ?>
-                                    </strong>
-                                </div>
-
-                                <div class="admin-cd-card__actions">
                                     <a
-                                        class="admin-cd-card__button admin-cd-card__button--primary"
-                                        href="<?php echo adminEsc(
-                                            $baseurl .
-                                            "admin.php?editpost=" .
-                                            (int)$post["id"]
-                                        ); ?>"
-                                    >
-                                        <i class="fa fa-edit"></i>
-                                        Editar
-                                    </a>
-
-                                    <a
-                                        class="admin-cd-card__button"
+                                        class="admin-cd-card__image-wrap"
                                         href="<?php echo adminEsc(
                                             $baseurl .
                                             "?post=" .
@@ -1569,28 +1603,305 @@ if(isset($_GET["editpost"])){
                                         ); ?>"
                                         target="_blank"
                                         rel="noopener"
+                                        title="Ver CD en la tienda"
                                     >
-                                        <i class="fa fa-external-link"></i>
-                                        Ver
-                                    </a>
-                                </div>
+                                        <img
+                                            class="admin-cd-card__image"
+                                            src="<?php echo adminEsc($imageUrl); ?>"
+                                            alt="<?php echo adminEsc($title); ?>"
+                                            loading="lazy"
+                                        >
 
-                                <a
-                                    class="admin-cd-card__delete"
-                                    href="<?php echo adminEsc(
-                                        $baseurl .
-                                        "admin.php?deletepost=" .
-                                        (int)$post["id"]
-                                    ); ?>"
-                                    onclick="return confirm('¿Eliminar este CD? Esta acción no se puede deshacer.');"
-                                >
-                                    <i class="fa fa-trash"></i>
-                                    Eliminar CD
-                                </a>
-                            </div>
-                        </article>
+                                        <span
+                                            class="admin-cd-card__status <?php echo $isActive ? "is-available" : "is-hidden-status"; ?>"
+                                        >
+                                            <?php echo $isActive ? "Disponible" : "Oculto"; ?>
+                                        </span>
+                                    </a>
+
+                                    <div class="admin-cd-card__body">
+                                        <div class="admin-cd-card__artist">
+                                            <?php echo adminEsc(
+                                                $artistName !== ""
+                                                    ? $artistName
+                                                    : "Sin artista"
+                                            ); ?>
+                                        </div>
+
+                                        <h2 class="admin-cd-card__title">
+                                            <?php echo adminEsc(
+                                                $albumName !== ""
+                                                    ? $albumName
+                                                    : $title
+                                            ); ?>
+                                        </h2>
+
+                                        <div class="admin-cd-card__meta">
+                                            <span>
+                                                <?php echo adminEsc(
+                                                    adminFormatDate(
+                                                        $post["time"] ?? ""
+                                                    )
+                                                ); ?>
+                                            </span>
+
+                                            <strong>
+                                                $<?php echo number_format(
+                                                    $price,
+                                                    2,
+                                                    ".",
+                                                    ""
+                                                ); ?>
+                                            </strong>
+                                        </div>
+
+                                        <div class="admin-cd-card__actions">
+                                            <a
+                                                class="admin-cd-card__button admin-cd-card__button--primary"
+                                                href="<?php echo adminEsc(
+                                                    $baseurl .
+                                                    "admin.php?editpost=" .
+                                                    (int)$post["id"]
+                                                ); ?>"
+                                            >
+                                                <i class="fa fa-edit"></i>
+                                                Editar
+                                            </a>
+
+                                            <a
+                                                class="admin-cd-card__button"
+                                                href="<?php echo adminEsc(
+                                                    $baseurl .
+                                                    "?post=" .
+                                                    urlencode(
+                                                        (string)$post["postid"]
+                                                    )
+                                                ); ?>"
+                                                target="_blank"
+                                                rel="noopener"
+                                            >
+                                                <i class="fa fa-external-link"></i>
+                                                Ver
+                                            </a>
+                                        </div>
+
+                                        <form
+                                            method="post"
+                                            class="admin-cd-card__inventory-form"
+                                            onsubmit="return confirm('¿Marcar este CD como vendido? Dejará de aparecer en la tienda.');"
+                                        >
+                                            <input
+                                                type="hidden"
+                                                name="product_id"
+                                                value="<?php echo (int)$post["id"]; ?>"
+                                            >
+
+                                            <button
+                                                type="submit"
+                                                name="inventory_action"
+                                                value="mark_sold"
+                                                class="admin-cd-card__inventory-button"
+                                            >
+                                                <i class="fa fa-check"></i>
+                                                Marcar como vendido
+                                            </button>
+                                        </form>
+
+                                        <a
+                                            class="admin-cd-card__delete"
+                                            href="<?php echo adminEsc(
+                                                $baseurl .
+                                                "admin.php?deletepost=" .
+                                                (int)$post["id"]
+                                            ); ?>"
+                                            onclick="return confirm('¿Eliminar este CD? Esta acción sí borra el registro permanentemente.');"
+                                        >
+                                            <i class="fa fa-trash"></i>
+                                            Eliminar CD
+                                        </a>
+                                    </div>
+                                </article>
+                            <?php } ?>
+                        </div>
                     <?php } ?>
-                </div>
+                </section>
+
+                <?php if($soldCdCount > 0){ ?>
+                    <section
+                        class="admin-inventory-section admin-inventory-section--sold"
+                        data-admin-cd-section
+                    >
+                        <div class="admin-inventory-section__heading">
+                            <div>
+                                <span class="admin-inventory-section__index">
+                                    02
+                                </span>
+                                <h2>Vendidos</h2>
+                            </div>
+
+                            <span class="admin-inventory-section__count">
+                                <?php echo $soldCdCount; ?> CDs
+                            </span>
+                        </div>
+
+                        <p class="admin-inventory-section__description">
+                            Se conservan como histórico dentro del administrador,
+                            pero ya no aparecen en la tienda pública.
+                        </p>
+
+                        <div class="admin-cd-grid">
+                            <?php foreach($soldPosts as $post){ ?>
+                                <?php
+                                $artistName = trim(
+                                    (string)($post["artist_name"] ?? "")
+                                );
+
+                                if(
+                                    $artistName === "" &&
+                                    isset($post["artist"])
+                                ){
+                                    $artistName = trim(
+                                        (string)$post["artist"]
+                                    );
+                                }
+
+                                $albumName = adminProductAlbumName(
+                                    $post,
+                                    $artistName
+                                );
+
+                                $title = trim(
+                                    (string)($post["title"] ?? "")
+                                );
+
+                                $imageUrl = adminProductImageUrl(
+                                    $post["picture"] ?? "",
+                                    $baseurl
+                                );
+
+                                $price = (float)(
+                                    $post["normalprice"] ?? 0
+                                );
+
+                                $searchText = trim(
+                                    $artistName .
+                                    " " .
+                                    $albumName .
+                                    " " .
+                                    $title
+                                );
+
+                                $soldDate = adminFormatDate(
+                                    $post["sold_at"] ?? ""
+                                );
+                                ?>
+
+                                <article
+                                    class="admin-cd-card admin-cd-card--sold"
+                                    data-admin-cd-card
+                                    data-search="<?php echo adminEsc($searchText); ?>"
+                                >
+                                    <div class="admin-cd-card__image-wrap">
+                                        <img
+                                            class="admin-cd-card__image"
+                                            src="<?php echo adminEsc($imageUrl); ?>"
+                                            alt="<?php echo adminEsc($title); ?>"
+                                            loading="lazy"
+                                        >
+
+                                        <span class="admin-cd-card__status is-sold">
+                                            Vendido
+                                        </span>
+                                    </div>
+
+                                    <div class="admin-cd-card__body">
+                                        <div class="admin-cd-card__artist">
+                                            <?php echo adminEsc(
+                                                $artistName !== ""
+                                                    ? $artistName
+                                                    : "Sin artista"
+                                            ); ?>
+                                        </div>
+
+                                        <h2 class="admin-cd-card__title">
+                                            <?php echo adminEsc(
+                                                $albumName !== ""
+                                                    ? $albumName
+                                                    : $title
+                                            ); ?>
+                                        </h2>
+
+                                        <div class="admin-cd-card__meta">
+                                            <span>
+                                                <?php echo $soldDate !== ""
+                                                    ? "Vendido " . adminEsc($soldDate)
+                                                    : "Vendido"; ?>
+                                            </span>
+
+                                            <strong>
+                                                $<?php echo number_format(
+                                                    $price,
+                                                    2,
+                                                    ".",
+                                                    ""
+                                                ); ?>
+                                            </strong>
+                                        </div>
+
+                                        <div class="admin-cd-card__actions admin-cd-card__actions--single">
+                                            <a
+                                                class="admin-cd-card__button admin-cd-card__button--primary"
+                                                href="<?php echo adminEsc(
+                                                    $baseurl .
+                                                    "admin.php?editpost=" .
+                                                    (int)$post["id"]
+                                                ); ?>"
+                                            >
+                                                <i class="fa fa-edit"></i>
+                                                Editar
+                                            </a>
+                                        </div>
+
+                                        <form
+                                            method="post"
+                                            class="admin-cd-card__inventory-form"
+                                            onsubmit="return confirm('¿Restaurar este CD como disponible? Volverá a aparecer en la tienda.');"
+                                        >
+                                            <input
+                                                type="hidden"
+                                                name="product_id"
+                                                value="<?php echo (int)$post["id"]; ?>"
+                                            >
+
+                                            <button
+                                                type="submit"
+                                                name="inventory_action"
+                                                value="restore"
+                                                class="admin-cd-card__inventory-button admin-cd-card__inventory-button--restore"
+                                            >
+                                                <i class="fa fa-undo"></i>
+                                                Restaurar como disponible
+                                            </button>
+                                        </form>
+
+                                        <a
+                                            class="admin-cd-card__delete"
+                                            href="<?php echo adminEsc(
+                                                $baseurl .
+                                                "admin.php?deletepost=" .
+                                                (int)$post["id"]
+                                            ); ?>"
+                                            onclick="return confirm('¿Eliminar definitivamente este CD vendido?');"
+                                        >
+                                            <i class="fa fa-trash"></i>
+                                            Eliminar CD
+                                        </a>
+                                    </div>
+                                </article>
+                            <?php } ?>
+                        </div>
+                    </section>
+                <?php } ?>
 
                 <div
                     class="admin-home-no-results"
@@ -1627,6 +1938,7 @@ if(isset($_GET["editpost"])){
         var $cards = $("[data-admin-cd-card]");
         var $count = $("#adminCdVisibleCount");
         var $noResults = $("#adminCdNoResults");
+        var $sections = $("[data-admin-cd-section]");
 
         if($search.length === 0 || $cards.length === 0){
             return;
@@ -1679,6 +1991,19 @@ if(isset($_GET["editpost"])){
                 }
             });
 
+            $sections.each(function(){
+                var $section = $(this);
+
+                var sectionHasVisibleCards =
+                    $section
+                        .find("[data-admin-cd-card]:visible")
+                        .length > 0;
+
+                $section.toggle(
+                    sectionHasVisibleCards
+                );
+            });
+
             $count.text(visible);
 
             if($noResults.length > 0){
@@ -1695,6 +2020,7 @@ if(isset($_GET["editpost"])){
         );
 
         filterAdminCds();
+    });
     });
 </script>
 </body>

@@ -1,6 +1,25 @@
 <?php
-$host = "localhost";
-$tableprefix = "cds_"; //You can change this table prefix, don't use white spaces, use underscores instead for example this_is_my_table_prefix_
-$databasename = "tienda_cds_reggaeton";
-$dbuser = "root";
-$dbpassword = "";
+
+$envFile = __DIR__ . "/env.php";
+
+if (!file_exists($envFile)) {
+    die("Configuration file env.php was not found.");
+}
+
+require_once $envFile;
+
+$requiredVariables = [
+    "host",
+    "tableprefix",
+    "databasename",
+    "dbuser",
+    "dbpassword",
+    "adminUsername",
+    "adminPassword"
+];
+
+foreach ($requiredVariables as $variable) {
+    if (!isset($$variable)) {
+        die("Missing configuration variable: " . $variable);
+    }
+}

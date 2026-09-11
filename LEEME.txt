@@ -1,19 +1,27 @@
-CORRECCIÓN CHECKOUT → WHATSAPP
+BUSCADOR Y ORDENAMIENTO - TIENDA CDS REGGAETON
 
-Reemplazar:
-- ordernotes.php
+Revisado contra develop.
 
-Diagnóstico:
-- Si visitas ordernotes.php directamente, es una petición GET.
-  Antes respondía "Método no permitido". Eso no era una prueba válida del checkout.
-- La pantalla checkout sí hace POST JSON correctamente porque la cotización funciona.
-- El error al comprar ocurre en la rama checkout, cuya diferencia principal es registrar Orders.
-- Ahora registrar Orders está completamente aislado: aunque MySQL falle al guardar ese log,
-  el servidor sigue devolviendo el enlace válido de WhatsApp.
-- Abrir ordernotes.php directamente ahora devuelve:
-  {"ok":true,"message":"Endpoint de pedidos activo."}
+REEMPLAZAR COMPLETOS:
+- index.php
+- store.js
+
+FUNCIONES:
+- Buscar por artista.
+- Buscar por nombre del CD / álbum.
+- Búsqueda por varias palabras.
+- Búsqueda sin depender de tildes: "hector" encuentra "Héctor".
+- Filtros de artistas siguen combinándose con el buscador.
+- Más recientes: ID más alto primero.
+- Artista A-Z: artista y después álbum.
+- Año: más nuevo a más antiguo.
+- Precio: menor a mayor.
+- Precio: mayor a menor.
+- Actualiza el contador de productos visibles.
+- Muestra "Sin resultados" cuando corresponde.
+- Limpiar filtros vuelve al estado inicial.
+
+index.php ahora carga store.js?v=3 para romper la caché del navegador.
 
 Después de copiar:
-1. Ctrl+F5 en checkout.php
-2. Selecciona Quito o Fuera de Quito
-3. Pulsa COMPRAR POR WHATSAPP
+Ctrl + F5 en http://localhost/TiendaCDsReggaeton/

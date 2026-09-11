@@ -1,6 +1,13 @@
+# Local environment
 env.php
 
+# OS files
 .DS_Store
 Thumbs.db
 
+# Logs
 *.log
+
+# Product images uploaded from the admin panel
+# These are runtime/user-generated files and must not be versioned.
+/pictures/

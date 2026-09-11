@@ -118,7 +118,7 @@ foreach ($products as $product) {
             );
         ?>;
     </script>
-    <script defer src="<?php echo e($storeBaseUrl); ?>store.js?v=2"></script>
+    <script defer src="<?php echo e($storeBaseUrl); ?>store.js?v=3"></script>
 </head>
 <body>
     <div class="promo-strip">
@@ -245,13 +245,23 @@ foreach ($products as $product) {
                                 $year = (string)($product['release_year'] ?? '');
                                 $stock = (int)($product['stock'] ?? 0);
                                 $price = (float)($product['normalprice'] ?? 0);
-                                $searchText = storeLower(trim($artist . ' ' . $album . ' ' . $year));
+                                $searchText = storeLower(
+                                    trim(
+                                        $artist . ' ' .
+                                        $album . ' ' .
+                                        $title . ' ' .
+                                        $year
+                                    )
+                                );
                             ?>
 
                             <article
                                 class="product-card"
                                 data-product-id="<?php echo (int)$product['id']; ?>"
+                                data-newest="<?php echo (int)$product['id']; ?>"
                                 data-artist="<?php echo e(storeLower($artist)); ?>"
+                                data-album="<?php echo e(storeLower($album)); ?>"
+                                data-title="<?php echo e(storeLower($title)); ?>"
                                 data-search="<?php echo e($searchText); ?>"
                                 data-year="<?php echo e($year); ?>"
                                 data-price="<?php echo e((string)$price); ?>"

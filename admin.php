@@ -361,7 +361,54 @@ if(isset($_GET["settings"])){
         $cfg->about = (string)($_POST["about"] ?? "");
         $cfg->language = trim((string)($_POST["language"] ?? "en"));
         $cfg->thumbnailmode = (int)($_POST["thumbnailmode"] ?? 0);
-        $cfg->adminwhatsapp = trim((string)($_POST["adminwhatsapp"] ?? ""));
+
+        $salesWhatsappInput = preg_replace(
+            "/\D+/",
+            "",
+            (string)($_POST["saleswhatsapp"] ?? "")
+        );
+
+        if(substr($salesWhatsappInput, 0, 2) === "00"){
+            $salesWhatsappInput = substr($salesWhatsappInput, 2);
+        }
+
+        if(strlen($salesWhatsappInput) < 8){
+            $adminMessage = "El WhatsApp de ventas no es válido.";
+            $adminMessageType = "error";
+        }else{
+            $cfg->saleswhatsapp = $salesWhatsappInput;
+            // Mantener compatibilidad con la configuración antigua.
+            $cfg->adminwhatsapp = $salesWhatsappInput;
+        }
+
+        $quitoShippingInput = str_replace(
+            ",",
+            ".",
+            trim((string)($_POST["servientregaquito"] ?? "2.60"))
+        );
+
+        $outsideQuitoShippingInput = str_replace(
+            ",",
+            ".",
+            trim((string)($_POST["servientregaoutsidequito"] ?? "5.90"))
+        );
+
+        $quitoShipping = is_numeric($quitoShippingInput)
+            ? (float)$quitoShippingInput
+            : -1;
+
+        $outsideQuitoShipping = is_numeric($outsideQuitoShippingInput)
+            ? (float)$outsideQuitoShippingInput
+            : -1;
+
+        if($quitoShipping < 0 || $outsideQuitoShipping < 0){
+            $adminMessage = "Los valores de Servientrega deben ser números mayores o iguales a 0.";
+            $adminMessageType = "error";
+        }else{
+            $cfg->servientregaquito = round($quitoShipping, 2);
+            $cfg->servientregaoutsidequito = round($outsideQuitoShipping, 2);
+        }
+
         $cfg->currencysymbol = trim((string)($_POST["currencysymbol"] ?? "$"));
         $cfg->baseurl = trim((string)($_POST["baseurl"] ?? $baseurl));
         $cfg->enablerecentpostsliders = (int)($_POST["enablerecentpostsliders"] ?? 0);
@@ -428,6 +475,10 @@ if(isset($_GET["settings"])){
 
         $websitetitle = $cfg->websitetitle;
         $baseurl = $cfg->baseurl;
+        $saleswhatsapp = $cfg->saleswhatsapp ?? "593959696235";
+        $adminwhatsapp = $saleswhatsapp;
+        $servientregaquito = (float)($cfg->servientregaquito ?? 2.60);
+        $servientregaoutsidequito = (float)($cfg->servientregaoutsidequito ?? 5.90);
     }
 }
 
@@ -785,15 +836,6 @@ if(isset($_GET["editpost"])){
                             >
                         </div>
 
-                        <div>
-                            <label>WhatsApp</label>
-                            <input
-                                type="text"
-                                name="adminwhatsapp"
-                                value="<?php echo adminEsc($cfg->adminwhatsapp ?? ""); ?>"
-                            >
-                        </div>
-
                         <div class="full">
                             <label>About</label>
                             <textarea
@@ -880,6 +922,54 @@ if(isset($_GET["editpost"])){
                                 type="text"
                                 name="baseurl"
                                 value="<?php echo adminEsc($cfg->baseurl ?? $baseurl); ?>"
+                            >
+                        </div>
+                    </div>
+                </section>
+
+                <section class="admin-form-card">
+                    <h2>Compra y envío</h2>
+                    <p class="admin-muted">
+                        Estos valores se usan en la página de checkout y en el pedido final enviado por WhatsApp.
+                    </p>
+
+                    <div class="admin-form-grid">
+                        <div class="full">
+                            <label>WhatsApp de ventas *</label>
+                            <input
+                                type="text"
+                                name="saleswhatsapp"
+                                inputmode="tel"
+                                placeholder="593959696235"
+                                value="<?php echo adminEsc($cfg->saleswhatsapp ?? "593959696235"); ?>"
+                                required
+                            >
+                            <div class="admin-muted" style="margin-top:-7px;margin-bottom:14px;">
+                                Usa código de país. Ejemplo Ecuador: 593959696235.
+                            </div>
+                        </div>
+
+                        <div>
+                            <label>Servientrega · Quito (USD) *</label>
+                            <input
+                                type="number"
+                                name="servientregaquito"
+                                min="0"
+                                step="0.01"
+                                value="<?php echo adminEsc(number_format((float)($cfg->servientregaquito ?? 2.60), 2, ".", "")); ?>"
+                                required
+                            >
+                        </div>
+
+                        <div>
+                            <label>Servientrega · Fuera de Quito (USD) *</label>
+                            <input
+                                type="number"
+                                name="servientregaoutsidequito"
+                                min="0"
+                                step="0.01"
+                                value="<?php echo adminEsc(number_format((float)($cfg->servientregaoutsidequito ?? 5.90), 2, ".", "")); ?>"
+                                required
                             >
                         </div>
                     </div>

@@ -399,7 +399,7 @@
         queryAll(".checkout-note")
             .forEach(function (note) {
                 note.textContent =
-                    "Al comprar se abrirá WhatsApp para coordinar el pago y el envío.";
+                    "En el siguiente paso seleccionarás el envío por Servientrega.";
             });
 
         queryAll(".js-open-cart")
@@ -457,7 +457,7 @@
         if (checkoutButton) {
             checkoutButton.addEventListener(
                 "click",
-                checkoutToWhatsApp
+                goToCheckout
             );
         }
 
@@ -671,7 +671,7 @@
             );
         }
 
-        async function checkoutToWhatsApp() {
+        function goToCheckout() {
             if (cart.length === 0) {
                 showToast(
                     "Tu carrito está vacío."
@@ -679,214 +679,20 @@
                 return;
             }
 
-            if (!checkoutButton) {
-                return;
-            }
-
-            setCheckoutBusy(true);
-
-            try {
-                var result =
-                    await createServerCheckout();
-
-                if (
-                    result &&
-                    result.ok === true &&
-                    result.whatsapp_url
-                ) {
-                    window.location.href =
-                        result.whatsapp_url;
-
-                    return;
-                }
-
-                throw {
-                    handled: true,
-                    message:
-                        result &&
-                        result.message
-                            ? result.message
-                            : "No se pudo finalizar la compra."
-                };
-            } catch (error) {
-                if (
-                    error &&
-                    error.handled
-                ) {
-                    showToast(
-                        error.message ||
-                        "No se pudo finalizar la compra."
-                    );
-
-                    setCheckoutBusy(false);
-                    return;
-                }
-
-                var fallbackUrl =
-                    buildClientWhatsAppUrl();
-
-                if (fallbackUrl !== "") {
-                    window.location.href =
-                        fallbackUrl;
-
-                    return;
-                }
-
-                showToast(
-                    "No se pudo abrir WhatsApp. Revisa el número configurado."
-                );
-
-                setCheckoutBusy(false);
-            }
-        }
-
-        async function createServerCheckout() {
-            var endpoint =
-                String(
-                    config.orderEndpoint || ""
-                ).trim();
-
-            if (endpoint === "") {
-                throw new Error(
-                    "Order endpoint missing."
-                );
-            }
-
-            var response =
-                await fetch(
-                    endpoint,
-                    {
-                        method: "POST",
-                        headers: {
-                            "Content-Type":
-                                "application/json",
-                            "Accept":
-                                "application/json"
-                        },
-                        credentials:
-                            "same-origin",
-                        body: JSON.stringify({
-                            action: "checkout",
-                            items: cart.map(
-                                function (item) {
-                                    return {
-                                        id: item.id,
-                                        postid:
-                                            item.postid
-                                    };
-                                }
-                            )
-                        })
-                    }
-                );
-
-            var text =
-                await response.text();
-
-            var data = {};
-
-            try {
-                data = text
-                    ? JSON.parse(text)
-                    : {};
-            } catch (error) {
-                data = {};
-            }
-
-            if (!response.ok) {
-                if (
-                    response.status >= 400 &&
-                    response.status < 500
-                ) {
-                    throw {
-                        handled: true,
-                        message:
-                            data.message ||
-                            "Uno o más CDs ya no están disponibles."
-                    };
-                }
-
-                throw new Error(
-                    data.message ||
-                    "Checkout request failed."
-                );
-            }
-
-            return data;
-        }
-
-        function setCheckoutBusy(isBusy) {
-            if (!checkoutButton) {
-                return;
-            }
-
-            checkoutButton.disabled =
-                isBusy;
-
-            checkoutButton.textContent =
-                isBusy
-                    ? "ABRIENDO WHATSAPP..."
-                    : "COMPRAR";
-        }
-
-        function buildClientWhatsAppUrl() {
-            var whatsapp =
-                sanitizeWhatsapp(
-                    config.whatsapp
-                );
-
-            if (whatsapp === "") {
-                return "";
-            }
-
-            var lines = [
-                "Hola, quiero comprar estos CDs:",
-                ""
-            ];
-
-            cart.forEach(
-                function (item, index) {
-                    lines.push(
-                        (
-                            index + 1
-                        ) +
-                        ". " +
-                        item.title +
-                        " — " +
-                        money(item.price)
-                    );
-                }
+            var baseUrl = String(
+                config.baseUrl || "./"
             );
 
-            lines.push("");
-            lines.push(
-                "Total: " +
-                money(cartTotal())
-            );
+            if (
+                baseUrl.charAt(
+                    baseUrl.length - 1
+                ) !== "/"
+            ) {
+                baseUrl += "/";
+            }
 
-            lines.push(
-                "Cantidad: " +
-                cart.length +
-                (
-                    cart.length === 1
-                        ? " CD"
-                        : " CDs"
-                )
-            );
-
-            lines.push("");
-            lines.push(
-                "Quiero coordinar el pago y el envío por WhatsApp."
-            );
-
-            return (
-                "https://wa.me/" +
-                whatsapp +
-                "?text=" +
-                encodeURIComponent(
-                    lines.join("\n")
-                )
-            );
+            window.location.href =
+                baseUrl + "checkout.php";
         }
 
         function cartTotal() {
@@ -908,21 +714,6 @@
                         String(cart.length);
                 });
         }
-    }
-
-    function sanitizeWhatsapp(value) {
-        var number =
-            String(value || "")
-                .replace(/\D/g, "");
-
-        if (
-            number.indexOf("00") === 0
-        ) {
-            number =
-                number.substring(2);
-        }
-
-        return number;
     }
 
     function showToast(message) {

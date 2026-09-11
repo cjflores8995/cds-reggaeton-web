@@ -1,0 +1,41 @@
+TIENDA CDS REGGAETON - CHECKOUT + SERVIENTREGA + WHATSAPP
+
+Revisado contra la rama develop del repositorio.
+
+ARCHIVOS A REEMPLAZAR:
+- config.php
+- admin.php
+- store.js
+- ordernotes.php
+
+ARCHIVOS NUEVOS:
+- checkout.php
+- checkout.js
+- checkout.css
+
+FLUJO:
+1. Usuario agrega CDs al carrito.
+2. En el carrito pulsa COMPRAR.
+3. Se abre checkout.php.
+4. El servidor vuelve a validar productos, stock y precios.
+5. Usuario selecciona:
+   - Servientrega · Quito
+   - Servientrega · Fuera de Quito (resto del Ecuador)
+6. Se calcula subtotal + envío.
+7. COMPRAR POR WHATSAPP vuelve a validar todo en PHP.
+8. Se registra el pedido en Orders.
+9. Se abre WhatsApp con el detalle completo.
+
+VALORES INICIALES:
+- WhatsApp ventas: 593959696235
+- Servientrega Quito: $2.60
+- Servientrega fuera de Quito: $5.90
+
+CONFIGURACIÓN:
+admin.php?settings -> sección "Compra y envío"
+
+IMPORTANTE:
+- Los precios y el total final no se confían al navegador.
+- ordernotes.php recalcula todo desde la base de datos y configuración.
+- No se borra el carrito al abrir WhatsApp, por si el cliente vuelve a la tienda.
+- Después de copiar los archivos, usar Ctrl + F5.

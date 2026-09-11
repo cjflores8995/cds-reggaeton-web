@@ -1,3 +1,19 @@
+(function(){
+    if(!/\/admin\.php$/i.test(window.location.pathname)){
+        return;
+    }
+
+    if(document.getElementById("admin-modern-theme")){
+        return;
+    }
+
+    var link = document.createElement("link");
+    link.id = "admin-modern-theme";
+    link.rel = "stylesheet";
+    link.href = "admin-modern.css?v=5";
+    document.head.appendChild(link);
+})();
+
 function tSep(x){
     return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
 }
@@ -37,7 +53,7 @@ function tSep(x){
         var link = document.createElement("link");
         link.id = "admin-modern-theme";
         link.rel = "stylesheet";
-        link.href = "admin-modern.css?v=3";
+        link.href = "admin-modern.css?v=5";
         document.head.appendChild(link);
     }
 
@@ -173,7 +189,7 @@ function tSep(x){
         }
 
         var $wrapper = $("<div class='admin-injected-artist-field'></div>");
-        var $label = $("<label><i class='fa fa-microphone'></i> Artista</label>");
+        var $label = $("<label><i class='fa fa-microphone'></i> Artista <span class='required-mark'>*</span></label>");
         var $select = $(
             "<select name='artistid' required></select>"
         );
@@ -182,6 +198,8 @@ function tSep(x){
             $("<option></option>")
                 .attr("value", "")
                 .text("Selecciona un artista")
+                .prop("disabled", true)
+                .prop("selected", selectedArtistId <= 0)
         );
 
         artists.forEach(function(artist){
@@ -216,6 +234,53 @@ function tSep(x){
         $wrapper.append($help);
 
         $wrapper.insertBefore($categorySelect.prev("label"));
+
+        if(artists.length === 0){
+            $select.prop("disabled", true);
+            $help.html(
+                "Debes crear al menos un artista antes de guardar un CD. " +
+                "<a class='textlink' href='artists.php'>Crear artista</a>."
+            );
+        }
+
+        installArtistValidation($form);
+    }
+
+    function installArtistValidation($form){
+        if($form.data("artist-required-validation")){
+            return;
+        }
+
+        $form.data("artist-required-validation", true);
+
+        var formElement = $form.get(0);
+        if(!formElement){
+            return;
+        }
+
+        formElement.addEventListener(
+            "submit",
+            function(event){
+                var $artistSelect = $form.find("select[name='artistid']").first();
+                var artistId = parseInt($artistSelect.val() || "0", 10);
+
+                if($artistSelect.length === 0 || artistId <= 0){
+                    event.preventDefault();
+                    event.stopImmediatePropagation();
+
+                    alert("El artista es obligatorio. Selecciona un artista antes de guardar el CD.");
+
+                    if($artistSelect.length > 0){
+                        $artistSelect.focus();
+                    }
+
+                    return false;
+                }
+
+                return true;
+            },
+            true
+        );
     }
 
     function initializeImageManager($form, slots){

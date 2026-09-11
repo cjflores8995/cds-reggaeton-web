@@ -153,6 +153,22 @@ if(mysqli_num_rows($result) == 0){
     }
 }
 
+/*
+ * Admin palette.
+ * The public storefront keeps the configured store colors.
+ * Only the administration area is forced to the neutral Vinyl Records
+ * inspired palette so an old/cached stylesheet can never bring the
+ * orange theme back into admin.php.
+ */
+$currentScript = isset($_SERVER["PHP_SELF"])
+    ? basename($_SERVER["PHP_SELF"])
+    : "";
+
+if($currentScript === "admin.php" || $currentScript === "artists.php"){
+    $maincolor = "#111111";
+    $secondcolor = "#f2f2f2";
+}
+
 //Creating pictures folder
 if(!file_exists("pictures")){
     mkdir("pictures");

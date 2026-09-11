@@ -54,7 +54,7 @@ if(
     }
 
     if($artistid <= 0){
-        echo "<div class='alert'>Selecciona un artista válido antes de actualizar el CD.</div>";
+        echo "<div class='alert'>El artista es obligatorio. Selecciona un artista válido antes de actualizar el CD.</div>";
         exit;
     }
 

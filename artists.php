@@ -165,7 +165,7 @@ if(isset($logo) && $logo !== ""){
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Artistas | <?php echo htmlspecialchars($websitetitle) ?></title>
     <link rel="stylesheet" type="text/css" href="<?php echo $baseurl ?>assets/css/font-awesome.css">
-    <link rel="stylesheet" type="text/css" href="admin-modern.css?v=3">
+    <link rel="stylesheet" type="text/css" href="admin-modern.css?v=5">
 </head>
 <body>
 <div class="admin-page-shell">

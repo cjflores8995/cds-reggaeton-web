@@ -59,7 +59,7 @@ if(isset($_POST["newposttitle"])){
     }
 
     if($artistid <= 0){
-        echo "<div class='alert'>Selecciona un artista válido antes de guardar el CD.</div>";
+        echo "<div class='alert'>El artista es obligatorio. Selecciona un artista válido antes de guardar el CD.</div>";
         echo "<script>$(\"#upploadprogresstitle\").hide()</script>";
         exit;
     }

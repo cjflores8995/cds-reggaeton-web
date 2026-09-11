@@ -65,6 +65,59 @@ function adminFormatDate($value){
         : date("d-m-Y", $timestamp);
 }
 
+function adminProductImageUrl($picture, $baseurl){
+    $picture = trim(
+        str_replace(
+            "\\",
+            "/",
+            (string)$picture
+        )
+    );
+
+    if($picture === ""){
+        return $baseurl . "images/defaultimg.jpg";
+    }
+
+    if(strpos($picture, "pictures/") === 0){
+        return $baseurl . ltrim($picture, "/");
+    }
+
+    return $baseurl . "pictures/" . ltrim($picture, "/");
+}
+
+function adminProductAlbumName($post, $artistName){
+    $album = trim(
+        (string)($post["album"] ?? "")
+    );
+
+    if($album !== ""){
+        return $album;
+    }
+
+    $title = trim(
+        (string)($post["title"] ?? "")
+    );
+
+    $artistName = trim(
+        (string)$artistName
+    );
+
+    if($artistName !== ""){
+        $prefix = $artistName . " - ";
+
+        if(stripos($title, $prefix) === 0){
+            return trim(
+                substr(
+                    $title,
+                    strlen($prefix)
+                )
+            );
+        }
+    }
+
+    return $title;
+}
+
 function adminSafePicturePath($fileName){
     $fileName = basename((string)$fileName);
 
@@ -162,7 +215,7 @@ if(!adminIsLoggedIn()){
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <title>Admin Panel | <?php echo adminEsc($websitetitle); ?></title>
-        <link rel="stylesheet" type="text/css" href="<?php echo $baseurl; ?>admin-modern.css?v=10">
+        <link rel="stylesheet" type="text/css" href="<?php echo $baseurl; ?>admin-modern.css?v=11">
     </head>
     <body class="admin-login-page">
         <div class="admin-login-card">
@@ -562,7 +615,7 @@ if(isset($_GET["editpost"])){
 
     <link rel="shortcut icon" href="<?php echo adminEsc($baseurl); ?>favicon.ico">
     <link rel="stylesheet" type="text/css" href="<?php echo adminEsc($baseurl); ?>assets/css/font-awesome.css">
-    <link rel="stylesheet" type="text/css" href="<?php echo adminEsc($baseurl); ?>admin-modern.css?v=10">
+    <link rel="stylesheet" type="text/css" href="<?php echo adminEsc($baseurl); ?>admin-modern.css?v=11">
 
     <script src="<?php echo adminEsc($baseurl); ?>jquery.min.js"></script>
     <script src="<?php echo adminEsc($baseurl); ?>jquery.form.js"></script>
@@ -1260,11 +1313,11 @@ if(isset($_GET["editpost"])){
             </section>
 
         <?php }else{ ?>
-            <div class="admin-toolbar">
+            <div class="admin-toolbar admin-home-toolbar">
                 <div>
-                    <h1>Home</h1>
+                    <h1>Inicio</h1>
                     <div class="admin-muted">
-                        CDs publicados en la tienda.
+                        Gestiona visualmente los CDs publicados en la tienda.
                     </div>
                 </div>
 
@@ -1284,66 +1337,271 @@ if(isset($_GET["editpost"])){
                 "LEFT JOIN $tableartists a ON a.id = p.artistid " .
                 "ORDER BY p.id DESC";
 
-            $posts = mysqli_query($connection, $postsSql);
+            $postsResult = mysqli_query(
+                $connection,
+                $postsSql
+            );
+
+            $postsList = [];
+
+            if($postsResult){
+                while($post = mysqli_fetch_assoc($postsResult)){
+                    $postsList[] = $post;
+                }
+            }
+
+            $totalCdCount = count($postsList);
+            $availableCdCount = 0;
+            $soldCdCount = 0;
+
+            foreach($postsList as $post){
+                $isAvailable =
+                    !array_key_exists("stock", $post) ||
+                    (int)$post["stock"] === 1;
+
+                if($isAvailable){
+                    $availableCdCount++;
+                }else{
+                    $soldCdCount++;
+                }
+            }
             ?>
 
-            <?php if(!$posts || mysqli_num_rows($posts) === 0){ ?>
+            <section class="admin-home-summary" aria-label="Resumen del catálogo">
+                <div class="admin-home-summary__item">
+                    <span>Total</span>
+                    <strong><?php echo $totalCdCount; ?></strong>
+                </div>
+
+                <div class="admin-home-summary__item">
+                    <span>Disponibles</span>
+                    <strong><?php echo $availableCdCount; ?></strong>
+                </div>
+
+                <div class="admin-home-summary__item">
+                    <span>Vendidos</span>
+                    <strong><?php echo $soldCdCount; ?></strong>
+                </div>
+            </section>
+
+            <section class="admin-home-tools">
+                <label
+                    class="admin-home-search"
+                    for="adminCdSearch"
+                >
+                    <i class="fa fa-search" aria-hidden="true"></i>
+
+                    <input
+                        id="adminCdSearch"
+                        type="search"
+                        placeholder="Buscar por CD o artista"
+                        autocomplete="off"
+                    >
+                </label>
+
+                <div class="admin-home-visible-count">
+                    <strong id="adminCdVisibleCount">
+                        <?php echo $totalCdCount; ?>
+                    </strong>
+                    <span>CDs</span>
+                </div>
+            </section>
+
+            <?php if($totalCdCount === 0){ ?>
                 <div class="admin-empty">
                     No hay CDs publicados todavía.
                 </div>
             <?php }else{ ?>
-                <div class="admin-table-wrap">
-                    <table>
-                        <thead>
-                        <tr>
-                            <th style="width:120px;">Fecha</th>
-                            <th>Título</th>
-                            <th style="width:190px;">Artista</th>
-                            <th style="width:90px;">Edit</th>
-                            <th style="width:90px;">Delete</th>
-                        </tr>
-                        </thead>
-                        <tbody>
-                        <?php while($post = mysqli_fetch_assoc($posts)){ ?>
-                            <tr>
-                                <td><?php echo adminEsc(adminFormatDate($post["time"])); ?></td>
-                                <td>
+                <div
+                    class="admin-cd-grid"
+                    id="adminCdGrid"
+                >
+                    <?php foreach($postsList as $post){ ?>
+                        <?php
+                        $artistName = trim(
+                            (string)($post["artist_name"] ?? "")
+                        );
+
+                        if(
+                            $artistName === "" &&
+                            isset($post["artist"])
+                        ){
+                            $artistName = trim(
+                                (string)$post["artist"]
+                            );
+                        }
+
+                        $albumName = adminProductAlbumName(
+                            $post,
+                            $artistName
+                        );
+
+                        $title = trim(
+                            (string)($post["title"] ?? "")
+                        );
+
+                        $imageUrl = adminProductImageUrl(
+                            $post["picture"] ?? "",
+                            $baseurl
+                        );
+
+                        $price = isset($post["normalprice"])
+                            ? (float)$post["normalprice"]
+                            : 0;
+
+                        $isAvailable =
+                            !array_key_exists("stock", $post) ||
+                            (int)$post["stock"] === 1;
+
+                        $isActive =
+                            !array_key_exists("active", $post) ||
+                            (int)$post["active"] === 1;
+
+                        if(!$isActive){
+                            $statusText = "Oculto";
+                            $statusClass = "is-hidden-status";
+                        }else if(!$isAvailable){
+                            $statusText = "Vendido";
+                            $statusClass = "is-sold";
+                        }else{
+                            $statusText = "Disponible";
+                            $statusClass = "is-available";
+                        }
+
+                        $searchText = trim(
+                            $artistName .
+                            " " .
+                            $albumName .
+                            " " .
+                            $title
+                        );
+                        ?>
+
+                        <article
+                            class="admin-cd-card"
+                            data-admin-cd-card
+                            data-search="<?php echo adminEsc($searchText); ?>"
+                        >
+                            <a
+                                class="admin-cd-card__image-wrap"
+                                href="<?php echo adminEsc(
+                                    $baseurl .
+                                    "?post=" .
+                                    urlencode(
+                                        (string)$post["postid"]
+                                    )
+                                ); ?>"
+                                target="_blank"
+                                rel="noopener"
+                                title="Ver CD en la tienda"
+                            >
+                                <img
+                                    class="admin-cd-card__image"
+                                    src="<?php echo adminEsc($imageUrl); ?>"
+                                    alt="<?php echo adminEsc($title); ?>"
+                                    loading="lazy"
+                                >
+
+                                <span
+                                    class="admin-cd-card__status <?php echo adminEsc($statusClass); ?>"
+                                >
+                                    <?php echo adminEsc($statusText); ?>
+                                </span>
+                            </a>
+
+                            <div class="admin-cd-card__body">
+                                <div class="admin-cd-card__artist">
+                                    <?php echo adminEsc(
+                                        $artistName !== ""
+                                            ? $artistName
+                                            : "Sin artista"
+                                    ); ?>
+                                </div>
+
+                                <h2 class="admin-cd-card__title">
+                                    <?php echo adminEsc(
+                                        $albumName !== ""
+                                            ? $albumName
+                                            : $title
+                                    ); ?>
+                                </h2>
+
+                                <div class="admin-cd-card__meta">
+                                    <span>
+                                        <?php echo adminEsc(
+                                            adminFormatDate(
+                                                $post["time"] ?? ""
+                                            )
+                                        ); ?>
+                                    </span>
+
+                                    <strong>
+                                        $<?php echo number_format(
+                                            $price,
+                                            2,
+                                            ".",
+                                            ""
+                                        ); ?>
+                                    </strong>
+                                </div>
+
+                                <div class="admin-cd-card__actions">
                                     <a
-                                        href="<?php echo adminEsc($baseurl . "?post=" . urlencode($post["postid"])); ?>"
-                                        target="_blank"
-                                    >
-                                        <i class="fa fa-external-link"></i>
-                                        <?php echo adminEsc($post["title"]); ?>
-                                    </a>
-                                </td>
-                                <td>
-                                    <?php echo adminEsc($post["artist_name"] ?? ""); ?>
-                                </td>
-                                <td>
-                                    <a
-                                        href="<?php echo adminEsc($baseurl . "admin.php?editpost=" . (int)$post["id"]); ?>"
-                                    >
-                                        <i class="fa fa-edit"></i>
-                                        Edit
-                                    </a>
-                                </td>
-                                <td>
-                                    <a
+                                        class="admin-cd-card__button admin-cd-card__button--primary"
                                         href="<?php echo adminEsc(
                                             $baseurl .
-                                            "admin.php?deletepost=" .
+                                            "admin.php?editpost=" .
                                             (int)$post["id"]
                                         ); ?>"
-                                        onclick="return confirm('¿Eliminar este CD?');"
                                     >
-                                        <i class="fa fa-trash"></i>
-                                        Delete
+                                        <i class="fa fa-edit"></i>
+                                        Editar
                                     </a>
-                                </td>
-                            </tr>
-                        <?php } ?>
-                        </tbody>
-                    </table>
+
+                                    <a
+                                        class="admin-cd-card__button"
+                                        href="<?php echo adminEsc(
+                                            $baseurl .
+                                            "?post=" .
+                                            urlencode(
+                                                (string)$post["postid"]
+                                            )
+                                        ); ?>"
+                                        target="_blank"
+                                        rel="noopener"
+                                    >
+                                        <i class="fa fa-external-link"></i>
+                                        Ver
+                                    </a>
+                                </div>
+
+                                <a
+                                    class="admin-cd-card__delete"
+                                    href="<?php echo adminEsc(
+                                        $baseurl .
+                                        "admin.php?deletepost=" .
+                                        (int)$post["id"]
+                                    ); ?>"
+                                    onclick="return confirm('¿Eliminar este CD? Esta acción no se puede deshacer.');"
+                                >
+                                    <i class="fa fa-trash"></i>
+                                    Eliminar CD
+                                </a>
+                            </div>
+                        </article>
+                    <?php } ?>
+                </div>
+
+                <div
+                    class="admin-home-no-results"
+                    id="adminCdNoResults"
+                    hidden
+                >
+                    <i class="fa fa-search"></i>
+                    <strong>No encontramos CDs.</strong>
+                    <span>
+                        Prueba con otro nombre de CD o artista.
+                    </span>
                 </div>
             <?php } ?>
         <?php } ?>
@@ -1362,6 +1620,81 @@ if(isset($_GET["editpost"])){
                 $("#product-update-status").html(xhr.responseText);
             }
         });
+    });
+
+    $(function(){
+        var $search = $("#adminCdSearch");
+        var $cards = $("[data-admin-cd-card]");
+        var $count = $("#adminCdVisibleCount");
+        var $noResults = $("#adminCdNoResults");
+
+        if($search.length === 0 || $cards.length === 0){
+            return;
+        }
+
+        function normalizeAdminSearch(value){
+            var text = String(value || "")
+                .trim()
+                .toLocaleLowerCase("es");
+
+            if(typeof text.normalize === "function"){
+                text = text
+                    .normalize("NFD")
+                    .replace(/[\u0300-\u036f]/g, "");
+            }
+
+            return text;
+        }
+
+        function filterAdminCds(){
+            var query = normalizeAdminSearch(
+                $search.val()
+            );
+
+            var terms = query === ""
+                ? []
+                : query
+                    .split(/\s+/)
+                    .filter(Boolean);
+
+            var visible = 0;
+
+            $cards.each(function(){
+                var $card = $(this);
+
+                var searchText = normalizeAdminSearch(
+                    $card.attr("data-search")
+                );
+
+                var matches = terms.every(
+                    function(term){
+                        return searchText.indexOf(term) !== -1;
+                    }
+                );
+
+                $card.toggle(matches);
+
+                if(matches){
+                    visible++;
+                }
+            });
+
+            $count.text(visible);
+
+            if($noResults.length > 0){
+                $noResults.prop(
+                    "hidden",
+                    visible !== 0
+                );
+            }
+        }
+
+        $search.on(
+            "input search",
+            filterAdminCds
+        );
+
+        filterAdminCds();
     });
 </script>
 </body>

@@ -670,3 +670,348 @@ tr:hover td{
         flex-direction:column;
     }
 }
+
+
+/* =========================================================
+   INICIO / GESTIÓN VISUAL DE CDs
+   ========================================================= */
+
+.admin-home-toolbar{
+    margin-bottom:18px;
+}
+
+.admin-home-summary{
+    display:grid;
+    grid-template-columns:repeat(3,minmax(0,160px));
+    width:max-content;
+    max-width:100%;
+    margin:0 0 18px;
+    border-top:1px solid var(--admin-line);
+    border-left:1px solid var(--admin-line);
+}
+
+.admin-home-summary__item{
+    min-width:140px;
+    padding:13px 16px;
+    border-right:1px solid var(--admin-line);
+    border-bottom:1px solid var(--admin-line);
+    background:#ffffff;
+}
+
+.admin-home-summary__item span{
+    display:block;
+    margin-bottom:4px;
+    color:var(--admin-muted);
+    font-size:9px;
+    font-weight:700;
+    letter-spacing:.08em;
+    text-transform:uppercase;
+}
+
+.admin-home-summary__item strong{
+    display:block;
+    font-size:22px;
+    line-height:1;
+    letter-spacing:-.03em;
+}
+
+.admin-home-tools{
+    display:grid;
+    grid-template-columns:minmax(0,1fr) auto;
+    align-items:stretch;
+    margin:0 0 18px;
+    border:1px solid var(--admin-line);
+    background:#ffffff;
+}
+
+.admin-home-search{
+    min-width:0;
+    min-height:48px;
+    display:flex;
+    align-items:center;
+    gap:11px;
+    margin:0;
+    padding:0 15px;
+    border:0;
+    border-right:1px solid var(--admin-line);
+    text-transform:none;
+    letter-spacing:0;
+}
+
+.admin-home-search i{
+    flex:none;
+    color:#777777;
+    font-size:13px;
+}
+
+.admin-home-search input{
+    min-width:0;
+    height:46px;
+    margin:0;
+    padding:0;
+    border:0;
+    outline:0;
+    background:transparent;
+    font-size:13px;
+}
+
+.admin-home-search input:focus{
+    border:0;
+}
+
+.admin-home-visible-count{
+    min-width:92px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap:5px;
+    padding:0 16px;
+    white-space:nowrap;
+    font-size:10px;
+    font-weight:700;
+    letter-spacing:.06em;
+    text-transform:uppercase;
+}
+
+.admin-home-visible-count strong{
+    font-size:14px;
+}
+
+.admin-cd-grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fill,minmax(220px,1fr));
+    border-top:1px solid var(--admin-line);
+    border-left:1px solid var(--admin-line);
+}
+
+.admin-cd-card{
+    min-width:0;
+    overflow:hidden;
+    border-right:1px solid var(--admin-line);
+    border-bottom:1px solid var(--admin-line);
+    background:#ffffff;
+}
+
+.admin-cd-card__image-wrap{
+    position:relative;
+    display:block;
+    aspect-ratio:1/1;
+    overflow:hidden;
+    background:#f6f6f6;
+    border-bottom:1px solid var(--admin-line);
+}
+
+.admin-cd-card__image{
+    display:block;
+    width:100%;
+    height:100%;
+    object-fit:cover;
+    transition:transform .18s ease;
+}
+
+.admin-cd-card:hover .admin-cd-card__image{
+    transform:scale(1.015);
+}
+
+.admin-cd-card__status{
+    position:absolute;
+    top:10px;
+    left:10px;
+    padding:6px 8px;
+    border:1px solid #111111;
+    background:#ffffff;
+    color:#111111;
+    font-size:8px;
+    font-weight:800;
+    letter-spacing:.08em;
+    text-transform:uppercase;
+}
+
+.admin-cd-card__status.is-available{
+    background:#111111;
+    color:#ffffff;
+}
+
+.admin-cd-card__status.is-sold,
+.admin-cd-card__status.is-hidden-status{
+    background:#ffffff;
+    color:#111111;
+}
+
+.admin-cd-card__body{
+    min-height:205px;
+    display:flex;
+    flex-direction:column;
+    padding:16px;
+}
+
+.admin-cd-card__artist{
+    margin:0 0 6px;
+    overflow:hidden;
+    color:var(--admin-muted);
+    font-size:9px;
+    font-weight:700;
+    letter-spacing:.08em;
+    text-overflow:ellipsis;
+    text-transform:uppercase;
+    white-space:nowrap;
+}
+
+.admin-cd-card__title{
+    display:-webkit-box;
+    min-height:39px;
+    margin:0 0 12px;
+    overflow:hidden;
+    -webkit-box-orient:vertical;
+    -webkit-line-clamp:2;
+    font-size:16px;
+    font-weight:700;
+    line-height:1.2;
+}
+
+.admin-cd-card__meta{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:12px;
+    margin-bottom:16px;
+    color:var(--admin-muted);
+    font-size:10px;
+}
+
+.admin-cd-card__meta strong{
+    color:#111111;
+    font-size:15px;
+}
+
+.admin-cd-card__actions{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:7px;
+    margin-top:auto;
+}
+
+.admin-cd-card__button{
+    min-height:36px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap:6px;
+    padding:8px 10px;
+    border:1px solid var(--admin-line-dark);
+    background:#ffffff;
+    color:#111111;
+    font-size:9px;
+    font-weight:800;
+    letter-spacing:.06em;
+    text-decoration:none;
+    text-transform:uppercase;
+}
+
+.admin-cd-card__button:hover{
+    border-color:#111111;
+}
+
+.admin-cd-card__button--primary{
+    border-color:#111111;
+    background:#111111;
+    color:#ffffff;
+}
+
+.admin-cd-card__button--primary:hover{
+    background:#ffffff;
+    color:#111111;
+}
+
+.admin-cd-card__delete{
+    display:inline-flex;
+    align-items:center;
+    align-self:flex-start;
+    gap:6px;
+    margin-top:12px;
+    color:#666666;
+    font-size:9px;
+    font-weight:700;
+    letter-spacing:.05em;
+    text-decoration:none;
+    text-transform:uppercase;
+}
+
+.admin-cd-card__delete:hover{
+    color:#111111;
+    text-decoration:underline;
+    text-underline-offset:3px;
+}
+
+.admin-home-no-results{
+    margin-top:18px;
+    padding:40px 20px;
+    border:1px solid var(--admin-line);
+    text-align:center;
+}
+
+.admin-home-no-results i{
+    display:block;
+    margin-bottom:12px;
+    color:#777777;
+    font-size:20px;
+}
+
+.admin-home-no-results strong,
+.admin-home-no-results span{
+    display:block;
+}
+
+.admin-home-no-results strong{
+    margin-bottom:5px;
+    font-size:14px;
+}
+
+.admin-home-no-results span{
+    color:var(--admin-muted);
+    font-size:11px;
+}
+
+@media(max-width:900px){
+    .admin-cd-grid{
+        grid-template-columns:repeat(auto-fill,minmax(190px,1fr));
+    }
+}
+
+@media(max-width:700px){
+    .admin-home-summary{
+        width:100%;
+        grid-template-columns:repeat(3,1fr);
+    }
+
+    .admin-home-summary__item{
+        min-width:0;
+    }
+
+    .admin-home-tools{
+        grid-template-columns:1fr;
+    }
+
+    .admin-home-search{
+        border-right:0;
+        border-bottom:1px solid var(--admin-line);
+    }
+
+    .admin-home-visible-count{
+        min-height:42px;
+    }
+
+    .admin-cd-grid{
+        grid-template-columns:repeat(2,minmax(0,1fr));
+    }
+}
+
+@media(max-width:440px){
+    .admin-home-summary{
+        grid-template-columns:1fr;
+    }
+
+    .admin-cd-grid{
+        grid-template-columns:1fr;
+    }
+}

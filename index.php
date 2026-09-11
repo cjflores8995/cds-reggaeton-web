@@ -104,6 +104,7 @@ foreach ($products as $product) {
 
     <link rel="stylesheet" href="<?php echo e($storeBaseUrl); ?>store.css?v=2">
     <link rel="stylesheet" href="<?php echo e($storeBaseUrl); ?>store-footer.css?v=1">
+    <link rel="stylesheet" href="<?php echo e($storeBaseUrl); ?>catalog-toolbar.css?v=1">
 
     <script>
         window.StoreConfig = <?php

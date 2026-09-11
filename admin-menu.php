@@ -73,7 +73,7 @@ function adminMenuClass($section, $current){
             <?php echo adminMenuClass("home", $adminActiveSection); ?>
         >
             <i class="fa fa-home"></i>
-            <span>Home</span>
+            <span>Inicio</span>
         </a>
 
         <a

@@ -1,27 +1,30 @@
-BUSCADOR Y ORDENAMIENTO - TIENDA CDS REGGAETON
+ADMIN - INICIO VISUAL Y BUSCADOR
 
-Revisado contra develop.
+Revisado contra la rama develop antes de generar estos archivos.
 
 REEMPLAZAR COMPLETOS:
-- index.php
-- store.js
+- admin.php
+- admin-menu.php
+- admin-modern.css
 
-FUNCIONES:
-- Buscar por artista.
-- Buscar por nombre del CD / álbum.
-- Búsqueda por varias palabras.
-- Búsqueda sin depender de tildes: "hector" encuentra "Héctor".
-- Filtros de artistas siguen combinándose con el buscador.
-- Más recientes: ID más alto primero.
-- Artista A-Z: artista y después álbum.
-- Año: más nuevo a más antiguo.
-- Precio: menor a mayor.
-- Precio: mayor a menor.
-- Actualiza el contador de productos visibles.
-- Muestra "Sin resultados" cuando corresponde.
-- Limpiar filtros vuelve al estado inicial.
-
-index.php ahora carga store.js?v=3 para romper la caché del navegador.
+CAMBIOS:
+1. "Home" cambia a "Inicio" en el menú lateral.
+2. "Home" cambia a "Inicio" como título de la pantalla.
+3. La tabla antigua se reemplaza por tarjetas visuales de administración.
+4. Cada tarjeta muestra:
+   - portada del CD;
+   - artista;
+   - nombre del CD / álbum;
+   - fecha;
+   - precio;
+   - estado: Disponible / Vendido / Oculto;
+   - Editar;
+   - Ver en tienda;
+   - Eliminar CD.
+5. Buscador en tiempo real por nombre del CD, álbum o artista.
+6. La búsqueda ignora mayúsculas, minúsculas y tildes.
+7. Resumen superior: Total / Disponibles / Vendidos.
+8. No se modifica GitHub automáticamente.
 
 Después de copiar:
-Ctrl + F5 en http://localhost/TiendaCDsReggaeton/
+- Ctrl + F5 en http://localhost/TiendaCDsReggaeton/admin.php

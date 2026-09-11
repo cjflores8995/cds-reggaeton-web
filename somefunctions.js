@@ -1,19 +1,3 @@
-(function(){
-    if(!/\/admin\.php$/i.test(window.location.pathname)){
-        return;
-    }
-
-    if(document.getElementById("admin-modern-theme")){
-        return;
-    }
-
-    var link = document.createElement("link");
-    link.id = "admin-modern-theme";
-    link.rel = "stylesheet";
-    link.href = "admin-modern.css?v=5";
-    document.head.appendChild(link);
-})();
-
 function tSep(x){
     return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
 }
@@ -31,13 +15,16 @@ function tSep(x){
         5: "Portada interior"
     };
 
+    if(isAdminPage()){
+        loadAdminTheme();
+    }
+
     $(function(){
         if(!isAdminPage()){
             return;
         }
 
-        loadAdminTheme();
-        injectArtistsMenuItem();
+        replaceLegacyAdminSidebar();
         initializeProductForms();
     });
 
@@ -53,30 +40,77 @@ function tSep(x){
         var link = document.createElement("link");
         link.id = "admin-modern-theme";
         link.rel = "stylesheet";
-        link.href = "admin-modern.css?v=5";
+        link.href = "admin-modern.css?v=4";
         document.head.appendChild(link);
     }
 
-    function injectArtistsMenuItem(){
-        if($(".admin-menu-artists").length > 0){
+    function replaceLegacyAdminSidebar(){
+        var $sidebar = $(".adminmenubar").first();
+
+        if($sidebar.length === 0){
             return;
         }
 
-        var $categoriesLink = $(".adminmenubar a[href*='?categories']").first();
+        var currentLogo = $sidebar.find("img").first().attr("src") || "images/logo.png";
+        var logoHomeHref = $sidebar.find("a").first().attr("href") || "";
+        var baseHref = logoHomeHref;
 
-        if($categoriesLink.length === 0){
-            return;
+        if(baseHref === ""){
+            baseHref = window.location.pathname.replace(/admin\.php$/i, "");
         }
 
-        var $artistsLink = $(
-            "<a class='admin-menu-artists' href='artists.php'>" +
-                "<div class='adminleftbaritem'>" +
-                    "<i class='fa fa-microphone' style='width:30px;'></i> Artistas" +
-                "</div>" +
-            "</a>"
-        );
+        if(baseHref.slice(-1) !== "/"){
+            baseHref += "/";
+        }
 
-        $artistsLink.insertBefore($categoriesLink);
+        var search = window.location.search || "";
+        var activeKey = "home";
+
+        if(search.indexOf("newpost") !== -1){
+            activeKey = "newpost";
+        }else if(search.indexOf("pictures") !== -1){
+            activeKey = "pictures";
+        }else if(search.indexOf("categories") !== -1){
+            activeKey = "categories";
+        }else if(search.indexOf("orders") !== -1){
+            activeKey = "orders";
+        }else if(search.indexOf("settings") !== -1){
+            activeKey = "settings";
+        }else if(search.indexOf("editpost") !== -1){
+            activeKey = "home";
+        }
+
+        function navItem(key, href, icon, text){
+            var activeClass = activeKey === key ? " active" : "";
+
+            return (
+                "<a class='" + activeClass.trim() + "' href='" + href + "'>" +
+                    "<i class='fa " + icon + "'></i> " + text +
+                "</a>"
+            );
+        }
+
+        var html = "";
+
+        html += "<div class='admin-page-logo'>";
+        html += "<a href='" + baseHref + "admin.php'>";
+        html += "<img src='" + currentLogo + "' alt='Logo'>";
+        html += "</a>";
+        html += "</div>";
+
+        html += "<nav class='admin-page-nav'>";
+        html += navItem("home", baseHref + "admin.php", "fa-home", "Home");
+        html += navItem("newpost", baseHref + "admin.php?newpost", "fa-plus", "Agregar CD");
+        html += "<a class='admin-menu-artists' href='" + baseHref + "artists.php'><i class='fa fa-microphone'></i> Artistas</a>";
+        html += navItem("pictures", baseHref + "admin.php?pictures", "fa-image", "Pictures");
+        html += navItem("categories", baseHref + "admin.php?categories", "fa-tag", "Categories");
+        html += navItem("orders", baseHref + "admin.php?orders", "fa-file-text", "Orders");
+        html += navItem("settings", baseHref + "admin.php?settings", "fa-cogs", "Settings");
+        html += "<a href='" + baseHref + "admin.php?logout'><i class='fa fa-sign-out'></i> Logout</a>";
+        html += "</nav>";
+
+        $sidebar.html(html);
+        $sidebar.addClass("admin-sidebar-unified");
     }
 
     function initializeProductForms(){
@@ -189,7 +223,7 @@ function tSep(x){
         }
 
         var $wrapper = $("<div class='admin-injected-artist-field'></div>");
-        var $label = $("<label><i class='fa fa-microphone'></i> Artista <span class='required-mark'>*</span></label>");
+        var $label = $("<label><i class='fa fa-microphone'></i> Artista</label>");
         var $select = $(
             "<select name='artistid' required></select>"
         );
@@ -198,8 +232,6 @@ function tSep(x){
             $("<option></option>")
                 .attr("value", "")
                 .text("Selecciona un artista")
-                .prop("disabled", true)
-                .prop("selected", selectedArtistId <= 0)
         );
 
         artists.forEach(function(artist){
@@ -234,53 +266,6 @@ function tSep(x){
         $wrapper.append($help);
 
         $wrapper.insertBefore($categorySelect.prev("label"));
-
-        if(artists.length === 0){
-            $select.prop("disabled", true);
-            $help.html(
-                "Debes crear al menos un artista antes de guardar un CD. " +
-                "<a class='textlink' href='artists.php'>Crear artista</a>."
-            );
-        }
-
-        installArtistValidation($form);
-    }
-
-    function installArtistValidation($form){
-        if($form.data("artist-required-validation")){
-            return;
-        }
-
-        $form.data("artist-required-validation", true);
-
-        var formElement = $form.get(0);
-        if(!formElement){
-            return;
-        }
-
-        formElement.addEventListener(
-            "submit",
-            function(event){
-                var $artistSelect = $form.find("select[name='artistid']").first();
-                var artistId = parseInt($artistSelect.val() || "0", 10);
-
-                if($artistSelect.length === 0 || artistId <= 0){
-                    event.preventDefault();
-                    event.stopImmediatePropagation();
-
-                    alert("El artista es obligatorio. Selecciona un artista antes de guardar el CD.");
-
-                    if($artistSelect.length > 0){
-                        $artistSelect.focus();
-                    }
-
-                    return false;
-                }
-
-                return true;
-            },
-            true
-        );
     }
 
     function initializeImageManager($form, slots){

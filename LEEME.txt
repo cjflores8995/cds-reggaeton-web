@@ -1,25 +1,8 @@
-TIENDA CDS REGGAETON - AJUSTE VISUAL GLOBAL + ARTISTA OBLIGATORIO
-
 REEMPLAZAR:
-- config.php
-- postupload.php
-- postupdate.php
 - somefunctions.js
 - admin-modern.css
-- artists.php
 
-MANTENER DEL PAQUETE ANTERIOR:
-- productimages.php
-- productdata.php
-- artistshelper.php
+Después hacer Ctrl+F5 en admin.php.
 
-CAMBIOS:
-1. admin.php usa una paleta blanca/negra/gris incluso si el CSS moderno tarda en cargar.
-2. admin-modern.css se aplica a Home, Agregar CD, Pictures, Categories, Orders y Settings.
-3. artists.php usa exactamente la misma base visual y se elimina el margen/marco blanco exterior.
-4. Artista es obligatorio al crear y editar un CD, tanto en navegador como en PHP.
-5. El menú Artistas se inyecta también en admin.php.
-6. No se modifica el frontend público de la tienda.
-
-IMPORTANTE:
-Después de copiar los archivos haz Ctrl+F5 en admin.php para descartar caché de somefunctions.js y CSS.
+No modificar admin.php ni artists.php para este ajuste.
+El menú antiguo de admin.php se sustituye al cargar por la misma estructura visual usada en artists.php.

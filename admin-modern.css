@@ -2,40 +2,28 @@
     --admin-bg:#ffffff;
     --admin-text:#111111;
     --admin-muted:#6f6f6f;
-    --admin-line:#e6e6e6;
+    --admin-line:#e5e5e5;
     --admin-line-dark:#cfcfcf;
-    --admin-soft:#f6f6f6;
-    --admin-soft-hover:#fafafa;
+    --admin-soft:#f7f7f7;
     --admin-black:#111111;
 }
 
-*,*::before,*::after{
-    box-sizing:border-box;
-}
-
 html,body{
-    width:100%;
-    min-height:100%;
-    margin:0 !important;
-    padding:0 !important;
-    background:#ffffff !important;
-    background-image:none !important;
+    background:var(--admin-bg) !important;
     color:var(--admin-text) !important;
     font-family:Arial, Helvetica, sans-serif !important;
 }
 
 body{
-    overflow-x:hidden;
+    background-image:none !important;
 }
 
-/* ADMIN.PHP - GLOBAL SHELL */
 .adminmenubar{
     width:220px !important;
     min-width:220px !important;
     background:#111111 !important;
     color:#ffffff !important;
-    border:0 !important;
-    border-right:1px solid #222222 !important;
+    border-right:1px solid #111111 !important;
 }
 
 .adminmenubar .stickythingy{
@@ -43,21 +31,15 @@ body{
 }
 
 .adminmenubar .stickythingy > div:first-child{
-    padding:28px 42px !important;
-    border-bottom:1px solid #292929 !important;
+    padding:30px 42px !important;
+    border-bottom:1px solid #2a2a2a !important;
 }
 
 .adminleftbaritem{
     padding:14px 18px !important;
-    border:0 !important;
-    border-bottom:1px solid #292929 !important;
-    background:#111111 !important;
-    color:#ffffff !important;
-    font-family:Arial, Helvetica, sans-serif !important;
+    border-bottom:1px solid #2a2a2a !important;
     font-size:13px !important;
-    font-weight:400 !important;
-    letter-spacing:0 !important;
-    cursor:pointer;
+    letter-spacing:.02em;
     transition:background .15s ease,color .15s ease !important;
 }
 
@@ -70,118 +52,85 @@ body{
     color:inherit !important;
 }
 
-body > div[style*="display: table"]{
-    width:100% !important;
-    min-height:100vh !important;
-    background:#ffffff !important;
-}
-
 body > div[style*="display: table"] > div > div[style*="display: table-cell"]{
-    padding:36px 42px !important;
-    border:0 !important;
     border-left:1px solid var(--admin-line) !important;
+    padding:36px 42px !important;
     background:#ffffff !important;
-    vertical-align:top !important;
-}
-
-/* TYPOGRAPHY */
-h1,h2,h3,h4,h5,p,label,input,select,textarea,button,table{
-    font-family:Arial, Helvetica, sans-serif !important;
 }
 
 h1,h2,h3,h4,h5{
+    font-family:Arial, Helvetica, sans-serif !important;
     color:#111111 !important;
     font-weight:600 !important;
-    letter-spacing:-.02em !important;
+    letter-spacing:-.02em;
 }
 
 h1{
-    margin:0 0 24px 0 !important;
     font-size:28px !important;
-}
-
-h2{
-    font-size:17px !important;
-}
-
-p{
-    color:#333333;
+    margin-bottom:26px !important;
 }
 
 label{
-    display:block !important;
-    margin:20px 0 8px 0 !important;
-    padding:0 !important;
+    margin-top:20px !important;
+    margin-bottom:8px !important;
     color:#222222 !important;
-    font-size:11px !important;
+    font-size:12px !important;
     font-weight:700 !important;
     text-transform:uppercase;
     letter-spacing:.06em;
 }
 
-.required-mark{
-    color:#111111;
-    font-weight:800;
-}
-
-/* FORM CONTROLS */
-input,select,textarea{
+input,
+select,
+textarea{
     width:100% !important;
+    box-sizing:border-box !important;
     margin:0 0 16px 0 !important;
-    padding:11px 12px !important;
+    padding:12px 13px !important;
     border:1px solid var(--admin-line-dark) !important;
     border-radius:0 !important;
     outline:none !important;
     background:#ffffff !important;
     color:#111111 !important;
+    font-family:Arial, Helvetica, sans-serif !important;
     font-size:13px !important;
     box-shadow:none !important;
 }
 
-input:focus,select:focus,textarea:focus{
+input:focus,
+select:focus,
+textarea:focus{
     border-color:#111111 !important;
-    outline:none !important;
-}
-
-select{
-    min-height:40px;
-}
-
-input[type="checkbox"],input[type="radio"]{
-    width:auto !important;
 }
 
 input[type="file"]{
-    padding:9px !important;
+    padding:10px !important;
     border:1px solid var(--admin-line-dark) !important;
     background:#fafafa !important;
 }
 
-.fileinput{
-    border:1px solid var(--admin-line-dark) !important;
-}
-
-/* BUTTONS */
-.submitbutton,.buybutton,.admin-modern-button{
+.submitbutton,
+.buybutton,
+.admin-modern-button{
     display:inline-flex !important;
     align-items:center;
     justify-content:center;
     gap:7px;
     width:auto !important;
-    min-height:36px;
+    min-height:38px;
+    box-sizing:border-box;
+    padding:10px 16px !important;
     margin:0 8px 8px 0 !important;
-    padding:9px 14px !important;
     border:1px solid #111111 !important;
     border-radius:0 !important;
     background:#111111 !important;
     color:#ffffff !important;
-    font-size:11px !important;
+    font-size:12px !important;
     font-weight:700 !important;
     line-height:1 !important;
+    cursor:pointer !important;
     text-transform:uppercase;
     letter-spacing:.04em;
-    cursor:pointer !important;
-    box-shadow:none !important;
 }
 
 .submitbutton{
@@ -189,7 +138,9 @@ input[type="file"]{
     margin-top:24px !important;
 }
 
-.submitbutton:hover,.buybutton:hover,.admin-modern-button:hover{
+.submitbutton:hover,
+.buybutton:hover,
+.admin-modern-button:hover{
     background:#ffffff !important;
     color:#111111 !important;
 }
@@ -210,34 +161,53 @@ input[type="file"]{
     border-color:#111111 !important;
 }
 
-button:disabled,.admin-modern-button:disabled{
-    opacity:.4 !important;
-    cursor:not-allowed !important;
-}
-
-/* MESSAGES / SMALL COMPONENTS */
 .alert{
-    margin:0 0 18px 0 !important;
-    padding:12px 14px !important;
     border:1px solid #111111 !important;
     border-radius:0 !important;
     background:#ffffff !important;
     color:#111111 !important;
-    font-size:12px !important;
+    padding:12px 14px !important;
+    font-size:13px !important;
     font-weight:600 !important;
 }
 
 .categoryblock{
-    margin:4px !important;
-    padding:8px 10px !important;
     border:1px solid var(--admin-line-dark) !important;
     border-radius:0 !important;
     background:#ffffff !important;
     color:#111111 !important;
+    padding:8px 10px !important;
 }
 
 .categoryblock:hover{
     border-color:#111111 !important;
+}
+
+table{
+    width:100%;
+    border-collapse:collapse !important;
+    background:#ffffff !important;
+}
+
+table,th,td{
+    border:1px solid var(--admin-line) !important;
+}
+
+th{
+    background:#f6f6f6 !important;
+    color:#111111 !important;
+    font-size:11px !important;
+    text-transform:uppercase;
+    letter-spacing:.05em;
+}
+
+th,td{
+    padding:12px 13px !important;
+}
+
+tr:hover{
+    background:#fafafa !important;
+    color:#111111 !important;
 }
 
 .textlink{
@@ -249,53 +219,14 @@ button:disabled,.admin-modern-button:disabled{
     text-decoration:none !important;
 }
 
-/* TABLES - SAME VISUAL LANGUAGE AS ARTISTS */
-table{
-    width:100% !important;
-    border-collapse:collapse !important;
-    border:0 !important;
-    background:#ffffff !important;
-}
-
-table,th,td{
-    border-color:var(--admin-line) !important;
-}
-
-th{
-    padding:11px 12px !important;
-    border:1px solid var(--admin-line) !important;
-    background:#f5f5f5 !important;
-    color:#111111 !important;
-    font-size:10px !important;
-    font-weight:700 !important;
-    text-align:center !important;
-    text-transform:uppercase;
-    letter-spacing:.05em;
-}
-
-td{
-    padding:12px !important;
-    border:1px solid var(--admin-line) !important;
-    background:#ffffff !important;
-    color:#111111 !important;
-    font-size:12px !important;
-}
-
-tr:hover td{
-    background:#fafafa !important;
-    color:#111111 !important;
-}
-
-/* TINYMCE */
 .tox-tinymce{
     border:1px solid var(--admin-line-dark) !important;
     border-radius:0 !important;
 }
 
-/* PRODUCT IMAGE MANAGER */
 .product-image-manager{
     margin:26px 0 18px 0;
-    padding:20px;
+    padding:22px;
     border:1px solid var(--admin-line);
     background:#ffffff;
 }
@@ -305,8 +236,8 @@ tr:hover td{
     align-items:flex-end;
     justify-content:space-between;
     gap:20px;
-    padding-bottom:14px;
-    margin-bottom:4px;
+    padding-bottom:16px;
+    margin-bottom:6px;
     border-bottom:1px solid var(--admin-line);
 }
 
@@ -357,7 +288,8 @@ tr:hover td{
     display:block;
 }
 
-.product-image-row select,.product-image-row input{
+.product-image-row select,
+.product-image-row input{
     margin:0 !important;
 }
 
@@ -383,36 +315,26 @@ tr:hover td{
     margin:18px 0;
     padding:12px 14px;
     border:1px solid #111111;
-    background:#ffffff;
-    font-size:12px;
+    background:#fff;
+    font-size:13px;
 }
 
-/* ARTISTS PAGE - SAME GLOBAL ADMIN SHELL, NO OUTER WHITE FRAME */
 .admin-page-shell{
-    width:100%;
     min-height:100vh;
-    margin:0 !important;
-    padding:0 !important;
     display:grid;
     grid-template-columns:220px minmax(0,1fr);
-    background:#ffffff;
-    border:0 !important;
-    outline:0 !important;
-    box-shadow:none !important;
+    background:#fff;
 }
 
 .admin-page-sidebar{
     min-height:100vh;
-    margin:0;
-    padding:0;
-    background:#111111;
-    color:#ffffff;
-    border:0;
+    background:#111;
+    color:#fff;
 }
 
 .admin-page-logo{
-    padding:28px 42px;
-    border-bottom:1px solid #292929;
+    padding:30px 42px;
+    border-bottom:1px solid #2a2a2a;
 }
 
 .admin-page-logo img{
@@ -423,27 +345,20 @@ tr:hover td{
 .admin-page-nav a{
     display:block;
     padding:14px 18px;
-    border-bottom:1px solid #292929;
-    background:#111111;
-    color:#ffffff;
+    border-bottom:1px solid #2a2a2a;
+    color:#fff;
     font-size:13px;
     text-decoration:none;
 }
 
-.admin-page-nav a:hover,.admin-page-nav a.active{
-    background:#ffffff;
-    color:#111111;
+.admin-page-nav a:hover,
+.admin-page-nav a.active{
+    background:#fff;
+    color:#111;
 }
 
 .admin-page-content{
-    width:100%;
-    min-width:0;
-    margin:0 !important;
     padding:36px 42px;
-    background:#ffffff;
-    border:0 !important;
-    outline:0 !important;
-    box-shadow:none !important;
 }
 
 .admin-toolbar{
@@ -456,16 +371,15 @@ tr:hover td{
 }
 
 .admin-form-card{
-    margin:0 0 22px 0;
     padding:20px;
     border:1px solid var(--admin-line);
-    background:#ffffff;
-    box-shadow:none;
+    background:#fff;
+    margin-bottom:22px;
 }
 
 .admin-form-card h2{
-    margin:0 0 16px 0 !important;
     font-size:17px !important;
+    margin-bottom:16px !important;
 }
 
 .admin-muted{
@@ -478,13 +392,10 @@ tr:hover td{
     min-width:24px;
     padding:4px 7px;
     border:1px solid var(--admin-line-dark);
-    background:#ffffff;
-    color:#111111;
     font-size:11px;
     text-align:center;
 }
 
-/* MOBILE */
 @media(max-width:900px){
     .product-image-row{
         grid-template-columns:90px 1fr;
@@ -497,7 +408,7 @@ tr:hover td{
     }
 
     .admin-page-shell{
-        display:block;
+        grid-template-columns:1fr;
     }
 
     .admin-page-sidebar{
@@ -507,9 +418,108 @@ tr:hover td{
     .admin-page-content{
         padding:22px;
     }
+}
 
-    .adminmenubar{
+/* =========================================================
+   SIDEBAR UNIFICADO
+   admin.php usa exactamente el mismo lenguaje visual que
+   artists.php. El DOM antiguo se sustituye desde
+   somefunctions.js por admin-page-logo + admin-page-nav.
+   ========================================================= */
+.adminmenubar.admin-sidebar-unified{
+    width:220px !important;
+    min-width:220px !important;
+    padding:0 !important;
+    vertical-align:top !important;
+    background:#111111 !important;
+    color:#ffffff !important;
+    border:0 !important;
+    border-right:1px solid #2a2a2a !important;
+}
+
+.adminmenubar.admin-sidebar-unified .admin-page-logo{
+    box-sizing:border-box !important;
+    padding:30px 42px !important;
+    margin:0 !important;
+    border:0 !important;
+    border-bottom:1px solid #2a2a2a !important;
+    background:#111111 !important;
+}
+
+.adminmenubar.admin-sidebar-unified .admin-page-logo a{
+    display:block !important;
+    padding:0 !important;
+    margin:0 !important;
+    border:0 !important;
+    background:transparent !important;
+}
+
+.adminmenubar.admin-sidebar-unified .admin-page-logo img{
+    display:block !important;
+    width:100% !important;
+    height:auto !important;
+    margin:0 !important;
+}
+
+.adminmenubar.admin-sidebar-unified .admin-page-nav{
+    display:block !important;
+    padding:0 !important;
+    margin:0 !important;
+    background:#111111 !important;
+}
+
+.adminmenubar.admin-sidebar-unified .admin-page-nav a{
+    display:flex !important;
+    align-items:center !important;
+    gap:8px !important;
+    box-sizing:border-box !important;
+    width:100% !important;
+    min-height:42px !important;
+    padding:13px 14px !important;
+    margin:0 !important;
+    border:0 !important;
+    border-bottom:1px solid #2a2a2a !important;
+    background:#111111 !important;
+    color:#ffffff !important;
+    font-family:Arial, Helvetica, sans-serif !important;
+    font-size:12px !important;
+    line-height:1.2 !important;
+    text-decoration:none !important;
+    transition:background .15s ease,color .15s ease !important;
+}
+
+.adminmenubar.admin-sidebar-unified .admin-page-nav a i{
+    display:inline-flex !important;
+    align-items:center !important;
+    justify-content:center !important;
+    width:14px !important;
+    min-width:14px !important;
+    margin:0 !important;
+    color:inherit !important;
+}
+
+.adminmenubar.admin-sidebar-unified .admin-page-nav a:hover,
+.adminmenubar.admin-sidebar-unified .admin-page-nav a.active{
+    background:#ffffff !important;
+    color:#111111 !important;
+}
+
+/* elimina por completo el aspecto heredado del menú viejo */
+.adminmenubar.admin-sidebar-unified .stickythingy,
+.adminmenubar.admin-sidebar-unified .adminleftbaritem{
+    display:none !important;
+}
+
+@media(max-width:800px){
+    .adminmenubar.admin-sidebar-unified{
+        position:fixed !important;
+        top:0 !important;
+        bottom:0 !important;
+        left:0 !important;
         width:260px !important;
         min-width:260px !important;
+        height:100vh !important;
+        overflow-y:auto !important;
+        z-index:99 !important;
     }
 }

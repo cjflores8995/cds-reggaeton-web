@@ -85,8 +85,7 @@ include("uilang.php");
 									<a target="_blank" href="<?php echo $baseurl ?>"><img src="<?php echo $currentlogo ?>" style="display: border-box; width: 100%;"></a>
 								</div>
 								<a href="<?php echo $baseurl ?>admin.php"><div class="adminleftbaritem"><i class="fa fa-home" style="width: 30px;"></i> <?php echo uilang("Home") ?></div></a>
-								<a href="<?php echo $baseurl ?>admin.php?newpost"><div class="adminleftbaritem"><i class="fa fa-plus" style="width: 30px;"></i> <?php echo uilang("Add Product") ?></div></a>
-								<a href="<?php echo $baseurl ?>admin.php?pictures"><div class="adminleftbaritem"><i class="fa fa-image" style="width: 30px;"></i> <?php echo uilang("Pictures") ?></div></a>
+								<a href="<?php echo $baseurl ?>admin-product-new.php"><div class="adminleftbaritem"><i class="fa fa-plus" style="width: 30px;"></i> Agregar CD</div></a><a href="<?php echo $baseurl ?>admin.php?pictures"><div class="adminleftbaritem"><i class="fa fa-image" style="width: 30px;"></i> <?php echo uilang("Pictures") ?></div></a>
 								<a href="<?php echo $baseurl ?>admin.php?categories"><div class="adminleftbaritem"><i class="fa fa-tag" style="width: 30px;"></i> <?php echo uilang("Categories") ?></div></a>
 								<a href="<?php echo $baseurl ?>admin.php?orders"><div class="adminleftbaritem"><i class="fa fa-file-text" style="width: 30px;"></i> <?php echo uilang("Orders") ?></div></a>
 								<a href="<?php echo $baseurl ?>admin.php?settings"><div class="adminleftbaritem"><i class="fa fa-cogs" style="width: 30px;"></i> <?php echo uilang("Settings") ?></div></a>
@@ -842,20 +841,34 @@ include("uilang.php");
 											<tr>
 												<th style="width: 100px;"><?php echo uilang("Date") ?></th>
 												<th><?php echo uilang("Title") ?></th>
-												<th style="width: 100px;"><?php echo uilang("Category") ?></th>
+												<th style="width: 150px;">Artista</th>
 												<th style="width: 50px;"><?php echo uilang("Edit") ?></th>
 												<th style="width: 50px;"><?php echo uilang("Delete") ?></th>
 											</tr>
 											<?php
 											while($row = mysqli_fetch_assoc($result)){
-												$mil = $row["time"];
-												$seconds = $mil / 1000;
-												$postdate = date("d-m-Y", $seconds);
+												$postdate = "";
+
+												if (!empty($row["time"])) {
+													$timestamp = strtotime($row["time"]);
+
+													if ($timestamp !== false) {
+														$postdate = date("d-m-Y", $timestamp);
+													}
+												}
 												?>
 												<tr>
 													<td><?php echo $postdate ?></td>
 													<td><a target="_blank" href="<?php echo $baseurl . "?post=" . $row["postid"] ?>"><i class="fa fa-external-link"></i> <?php echo $row["title"] ?></a></td>
-													<td><?php echo showCatName($row["catid"]) ?></td>
+													<td>
+													<?php
+													echo htmlspecialchars(
+														$row["artist"] ?? "",
+														ENT_QUOTES,
+														"UTF-8"
+													);
+													?>
+												</td>
 													<td><a href="<?php echo $baseurl ?>admin.php?editpost=<?php echo $row["id"] ?>"><i class="fa fa-edit"></i> <?php echo uilang("Edit") ?></a></td>
 													<td><a href="<?php echo $baseurl ?>admin.php?deletepost=<?php echo $row["id"] ?>&title=<?php echo $row["title"] ?>"><i class="fa fa-trash"></i> <?php echo uilang("Delete") ?></a></td>
 												</tr>

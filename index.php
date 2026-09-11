@@ -1,843 +1,405 @@
 <?php
+require_once __DIR__ . '/config.php';
 
-/*
-Developed by Habibie
-Email: habibieamrullah@gmail.com 
-WhatsApp: 6287880334339
-WebSite: https://webappdev.my.id
-Donate: https://www.paypal.com/paypalme/habibieamrullah
-*/
+function e($value): string
+{
+    return htmlspecialchars((string)$value, ENT_QUOTES, 'UTF-8');
+}
 
-include("config.php");
-include("functions.php");
-include("uilang.php");
+function buildStoreBaseUrl(): string
+{
+    $isHttps = !empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off';
+    $scheme = $isHttps ? 'https' : 'http';
+    $host = $_SERVER['HTTP_HOST'] ?? 'localhost';
+    $directory = str_replace('\\', '/', dirname($_SERVER['SCRIPT_NAME'] ?? '/'));
+    $directory = rtrim($directory, '/');
 
-$deccount = 2;
-if($cfg->disabledecimals == 1)
-    $deccount = 0;
+    return $scheme . '://' . $host . ($directory !== '' ? $directory : '') . '/';
+}
 
+function productImageUrl(array $product, string $storeBaseUrl): string
+{
+    $picture = trim((string)($product['picture'] ?? ''));
 
-if($websitetitle == ""){
-	?>
-	Welcome! Open this page once again. If you still see this message, it means you did not set up the configuration correctly in config.php file.
-	<?php
-}else{
-	
-	?>
-	
-	<!DOCTYPE html>
-	<html>
-		<head>
-			
-			<?php
-			
-			if(isset($_GET["post"])){
-				$postid = mysqli_real_escape_string($connection, $_GET["post"]);
-				$sql = "SELECT * FROM $tableposts WHERE postid = '$postid'";
-				$result = mysqli_query($connection, $sql);
-				if($result){
-					$title = shorten_text(mysqli_fetch_assoc($result)["title"], 40, ' ...', false) . " - " . $websitetitle;
-				}
-				?>
-				
-				<?php
-			}else if(isset($_GET["category"])){
-				$title = urldecode($_GET["category"]) . " - " . $websitetitle;
-			}else if(isset($_GET["search"])){
-				$title = urldecode($_GET["search"]) . " - " . $websitetitle;
-			}else{
-				$title = $websitetitle;
-			}
-			
-			?>
-			
-			<title><?php echo $title ?></title>
-			
-			<meta charset="utf-8">
-			<meta http-equiv="Pragma" content="no-cache" />
-			<meta http-equiv="Expires" content="0" />
-			<meta http-equiv="x-ua-compatible" content="ie=edge">
-			<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-			<link rel="shortcut icon" href="<?php echo $baseurl ?>favicon.ico" type="image/x-icon">
-			<link rel="icon" href="<?php echo $baseurl ?>favicon.ico" type="image/x-icon">
-			
-			<script src="jquery.min.js"></script>
-			<link href="https://fonts.googleapis.com/css2?family=Dosis:wght@300&display=swap" rel="stylesheet">
-			<link rel="stylesheet" type="text/css" href="<?php echo $baseurl ?>assets/css/font-awesome.css">
-			<link rel="stylesheet" type="text/css" href="<?php echo $baseurl ?>slick/slick.css"/>
-			<link rel="stylesheet" type="text/css" href="<?php echo $baseurl ?>slick/slick-theme.css"/>
-			<script type="text/javascript" src="<?php echo $baseurl ?>slick/slick.min.js"></script>
-			<link rel="stylesheet" type="text/css" href="<?php echo $baseurl ?>sharingbuttons.css"/>
-			<?php include("style.php"); ?>
-			<script src="<?php echo $baseurl ?>somefunctions.js"></script>
-		</head>
-		<body>
-			<div id="header">
-				<div>
-					<div class="inlinecenterblock">
-						<div>
-							<?php
-							$currentlogo = "images/logo.png";
-							if($logo != "")
-								$currentlogo = "pictures/" . $logo;
-							?>
-							<a href="<?php echo $baseurl ?>"><img src="<?php echo $baseurl . $currentlogo ?>" style="height: 64px;"></a>
-						</div>
-						
-					</div>
-					
-					<div class="inlinecenterblock">
-						<h1 style="margin: 0px; font-size: 30px; color: <?php echo $maincolor ?>; font-weight: bold;"><a href="<?php echo $baseurl ?>"><?php echo $websitetitle ?></a></h1>
-						<div style="font-size: 13px;"><?php echo $about ?></div>
-					</div>
-					
-					<div class="inlinecenterblock floatright">
-						<div style="border-radius: 50px; display: table; box-sizing: border-box; width: 100%; border: 2px solid <?php echo $maincolor ?>;">
-							<div style="display: table-cell; width: 50px; text-align: center;">
-								<i class="fa fa-search"></i>
-							</div>
-							<div style="display: table-cell">
-								<input <?php if(isset($_GET["post"])){ ?> onkeyup="searchonhomepage()" <?php } else { ?> onkeyup="quicksearch()" <?php } ?> id="quicksearch" placeholder="<?php echo uilang("Search") ?>..." style="border: none; background-color: inherit; outline: none; margin: 0px; padding: 10px;">
-							</div>
-							<div style="display: table-cell; width: 50px; text-align: center; cursor: pointer;" onclick="clearSearchInput()">
-								<i class="fa fa-times-circle"></i>
-							</div>
-						</div>
-					</div>
-				</div>
-			</div>
-			
-			<?php
-			
-			//Post (single page)
-			
-			if(isset($_GET["post"])){
-				?>
-				<div class="section" id="categoriesbar">
-					<div style="text-align: center; overflow: auto; white-space: nowrap;">
-						<?php
-						$sql = "SELECT * FROM $tablecategories ORDER BY category ASC";
-						$result = mysqli_query($connection, $sql);
-						if($result){
-							?>
-							<a href="<?php echo $baseurl ?>#filtercat=all"><div onclick="filtercategory('')" class="categoryblock" style="border: 1px solid <?php echo $maincolor ?>;padding: 10px; cursor: pointer;"><i class="fa fa-tag"></i> <?php echo uilang("All") ?></div></a>
-							<?php
-							while($row = mysqli_fetch_assoc($result)){
-								?>
-								<a href="<?php echo $baseurl ?>#filtercat=<?php echo $row["category"] ?>"><div onclick="filtercategory('<?php echo $row["category"] ?>')" class="categoryblock" style="border: 1px solid <?php echo $maincolor ?>;padding: 10px; cursor: pointer;"><i class="fa fa-tag"></i> <?php echo $row["category"] ?></div></a>
-								<?php
-							}
-						}
-						?>
-					</div>
-				</div>
+    if ($picture !== '') {
+        return $storeBaseUrl . 'pictures/' . ltrim($picture, '/');
+    }
 
-				<div class="section">
-					
-										
-					<div class="posttableblock">
-						<div class="postcontent">
-						
-							<?php
-							$postid = mysqli_real_escape_string($connection, $_GET["post"]);
-							if($postid != ""){
-								$sql = "SELECT * FROM  $tableposts WHERE postid = '$postid'";
-								$result = mysqli_query($connection, $sql);
-								if(mysqli_num_rows($result) == 0){
-									echo "<p>" .uilang("Nothing found"). "</p>";
-								}else{
-									$row = mysqli_fetch_assoc($result);
-									
-									$picture = $row["picture"];
-									$picturefile = $row["picture"];
-									
-									if($picture != ""){
-										$picturefile = "pictures/" . $picture;
-										$picture = $baseurl . "pictures/" . $picture;
-									}else{
-										$picturefile = "images/defaultimg.jpg";
-										$picture = $baseurl . "images/defaultimg.jpg";
-									}
-									
-									$mil = $row["time"];
-									$seconds = $mil / 1000;
-									$postdate = date("d-m-Y", $seconds);
-									?>
-									
-									<div style="display: table; width: 100%;">
-										<div class="producthalfbox leftphb">
-											<!--
-											<div id="productpic" style="background-image: url(<?php echo $picture ?>); background-attachment: fill; background-position: center; background-repeat: no-repeat; background-size: auto 100%;"></div>
-											-->
-											<div>
-												<img src="<?php echo $picture ?>" style="cursor: pointer; width: 100%; border-radius: 5px;" <?php if($row["picture"] != "") { ?>onclick="showimage('pictures/<?php echo $row["picture"] ?>')"<?php } ?>>
-											</div>
-											<div id="moreimages">
-												<?php
-												if($row["moreimages"] != ""){
-													$mimgs = explode(",", $row["moreimages"]);
-													for($i = 0; $i < count($mimgs); $i++){
-														if($mimgs[$i] != ""){
-															?>
-															<img src="<?php echo $baseurl . $mimgs[$i] ?>" style="height: 64px; border-radius: 5px; cursor: pointer;" onclick="showimage('<?php echo $mimgs[$i] ?>')">
-															<?php
-														}
-													}
-												}
-												?>
-											</div>
-										</div>
-										<div class="producthalfbox">
-											
-											<?php
-											$saleprice = $row["normalprice"];
-											$oldprice = "";
-											if($row["discountprice"] != 0){
-												$saleprice = $row["discountprice"];
-												$oldprice = "<span style='margin: 0px; margin-top: 20px; text-decoration: line-through; font-size: 20px; margin-right: 10px; color: gray;'>" . $currencysymbol . number_format($row["normalprice"], $deccount) . "</span>";
-											}
-											?>
-											
-											<h1><?php echo $row["title"] ?> <i class="fa fa-angle-double-right"></i> <?php echo $oldprice . $currencysymbol . number_format($saleprice, $deccount) ?></h1>
-											
-											<div>
-												<?php echo $row["content"] ?>
-											</div>
-											
-											<!-- Social Share Buttons-->
-											<div style="font-size: 12px;">
-												<?php
-												if(isset($sharebuttonsoption))
-													showSharer($baseurl . "?post/" . $row["postid"], $websitetitle, $sharebuttonsoption);
-												?>
-											</div>
-											<br><br>
-											
-											<!-- Facebook Comments Plugin -->
-											<?php 
-											if($enablefacebookcomment){
-												?>
-												<div style="width: 100%; box-sizing: border-box; background-color: white; border-radius: 10px; padding: 14px;">
-													<div id="fb-root"></div>
-													<script async defer crossorigin="anonymous" src="https://connect.facebook.net/en_US/sdk.js#xfbml=1&amp;version=v5.0&amp;appId=569420283509636&amp;autoLogAppEvents=1"></script>
-													 
-													<div class="fb-comments" data-href="<?php echo $baseurl ?>?post/<?php echo $row["postid"] ?>" data-width="100%"  data-numposts="14"></div>
-													
-												</div>
-												<?php
-											}
-											?>
-											
-										</div>
-									</div>								
-									
-									<script>
-										function viewedThis(postid){
-											$.post("<?php echo $baseurl ?>viewcounter.php", {
-												postid : postid
-											}, function(data){
-												console.log(data)
-											})
-										}
-										//viewedThis("<?php echo $postid ?>")
-									</script>
-									<?php
-								}
-							}
-							?>
-							
-						</div>
-						<div class="randomvids">
-							<div class="randomvidblock orderblock">
-								<h2><?php echo uilang("Order") ?></h2>
-								<label><i class="fa fa-plus"></i> <?php echo uilang("Quantity") ?></label>
-								<input id="currentQ" type="number" value=1 onchange="updateCurrentTotal()" min=1 step=1 style="border-radius: 0px;" onkeyup="onlyNumbers(this)">
-								
-								<?php
-								if($row["options"] != ""){
-									?>
-									<div id="productoptions" style="display: none"><?php echo $row["options"] ?></div>
-									<script>
-										var moptions = JSON.parse($("#productoptions").html())
-										var productoptions = "<label>" + moptions[0].title + "</label>" 
-										productoptions += "<select id='productoptionsselect' onchange='overridethisprice()'>"
-										for(var i = 0; i < moptions[0].options.length; i++){
-											productoptions += "<option value=" +moptions[0].options[i].price+ ">" + moptions[0].options[i].title + "</option>"
-										}
-										productoptions += "</select>"
-										$("#productoptions").html(productoptions).show()
-										setTimeout(function(){
-											overridethisprice()
-										}, 1000)
-									</script>
-									<?php
-								}
-								?>
-								
-								<!--
-								<label><i class="fa fa-file-text-o"></i> <?php echo uilang("Notes") ?></label>
-								<textarea id="ordernotes" placeholder="<?php echo uilang("Write some notes...") ?>" style="border-radius: 0px;"></textarea>
-								-->
-								<p id="currenttotal" style="font-size: 30px;">Rp. 12345</p>
-								<div class="buybutton" onclick="addthisonetocart()"><i class="fa fa-shopping-cart"></i> <?php echo uilang("Add to Cart") ?></div>
-								
-								<script>
-									var currentprice = <?php echo $saleprice ?>;
-									var currentTotal = 0
-									var currentitem = {
-										id : 0,
-										title : "<?php echo $row["title"] ?>",
-										price : currentprice,
-										quantity : 0,
-										image : "<?php echo $picturefile ?>",
-										notes : "",
-									}
-									
-									function overridethisprice(){
-										currentprice = parseFloat($("#productoptionsselect").val())
-										currentitem.price = parseFloat($("#productoptionsselect").val())
-										currentitem.title = "<?php echo $row["title"] ?> - " + $("#productoptionsselect option:selected").text()
-										updateCurrentTotal()
-									}
-									
-									function updateCurrentTotal(){
-										
-										var currentQ = $("#currentQ").val()
-										if(currentQ > 0){
-											currentTotal = currentQ * currentprice
-										}else{
-											$("#currentQ").val("1")
-											currentQ = 1
-											currentTotal = currentQ * currentprice
-										}
-										
-										currentitem.quantity = parseFloat(currentQ)
-										$("#currenttotal").html("<?php echo $currencysymbol ?> " + tSep(currentTotal.toFixed(<?php echo $deccount ?>)))
-									}
-									updateCurrentTotal()
-									
-									function addthisonetocart(){
-										currentitem.notes = $("#ordernotes").val()
-										
-										if(cartobject.length == 0){
-											console.log("Added first product")
-											cartobject.push(currentitem)
-											updatecartcount()
-											savedata()
-											location.reload()
-											return
-										}else{
-											for(var i = 0; i < cartobject.length; i++){
-												if(cartobject[i].title == currentitem.title && cartobject[i].price == currentitem.price){
-													console.log("Added quantity only")
-													cartobject[i].quantity += currentitem.quantity
-													updatecartcount()
-													savedata()
-													location.reload()
-													return
-												}
-											}
-											console.log("Pushing new product to cartobject")
-											cartobject.push(currentitem)
-											updatecartcount()
-											savedata()
-											location.reload()
-											return
-										}	
+    return $storeBaseUrl . 'images/defaultimg.jpg';
+}
 
-									}
-									
-								</script>
-								
-							</div>
-							
-							<div class="randomvidblock"><?php echo uilang("You may like:") ?></div>
-							<?php
-							$sql = "SELECT * FROM $tableposts ORDER BY RAND() LIMIT 5";
-							$result = mysqli_query($connection, $sql);
-							if(mysqli_num_rows($result) > 0){
-								while($row = mysqli_fetch_assoc($result)){
-									?>
-									<a href="<?php echo $baseurl ?>?post=<?php echo $row["postid"] ?>">
-										<div class="randomvidblock">
-											<?php
-											$imagefile = $row["picture"];
-											if($imagefile == ""){
-												$imagefile = "images/defaultimg.jpg";
-											}else{
-												$imagefile = "pictures/" . $imagefile;
-											}										
+function money($value): string
+{
+    return number_format((float)$value, 2, '.', ',');
+}
 
-											$saleprice = number_format($row["normalprice"], $deccount);
-											$oldprice = "";
-											if($row["discountprice"] != 0){
-												$saleprice = number_format($row["discountprice"], $deccount);
-												$oldprice = "<span style='margin: 0px; margin-top: 20px; text-decoration: line-through; font-size: 12px; margin-right: 10px; color: gray;'>" . $currencysymbol . number_format($row["normalprice"], $deccount) . "</span>";
-											}
-											
-											?>
-											<div class="lilimage" style="background: url(<?php echo $baseurl . $imagefile ?>) no-repeat center center; background-size: cover; -webkit-background-size: cover; -moz-background-size: cover; -o-background-size: cover;"></div>
-											<div class="lildescr">
-												<div class="shorttext" style="font-size: 18px; font-weight: bold;">
-													<?php echo $row["title"] ?><br><i class="fa fa-angle-double-right"></i> <?php echo $oldprice. $currencysymbol . number_format($saleprice, $deccount) ?>
-												</div>
-												<div style="padding-left: 14px;">
-													<p><?php echo shorten_text(strip_tags($row["content"]), 75, ' ...', false) ?></p>
-												</div>
-												<div style="padding-left: 14px;">
-													<p style="color: <?php echo $maincolor ?>; font-weight: bold; font-size: 12px;"><?php if($enablepublishdate){ ?><i class="fa fa-calendar" style="width: 10px;"></i> <?php echo $postdate ?> <?php } ?><i class="fa fa-tag" style="margin-left: 5px; width: 10px;"></i> <?php echo showCatName($row["catid"]) ?></p>
-												</div>
-												
-											</div>
-										</div>
-									</a>
-									<?php
-								}
-							}
-							?>
-						</div>
-					</div>
-				</div>
-				<?php
-			}
-			
-			//Home
-			
-			else{
-				?>
-				<div class="section" id="categoriesbar">
-					<div style="text-align: center; overflow: auto; white-space: nowrap;">
-						<?php
-						$sql = "SELECT * FROM $tablecategories ORDER BY category ASC";
-						$result = mysqli_query($connection, $sql);
-						if($result){
-							?>
-							<div onclick="filtercategory('')" class="categoryblock" style="border: 1px solid <?php echo $maincolor ?>;padding: 10px; cursor: pointer;"><i class="fa fa-tag"></i> <?php echo uilang("All") ?></div>
-							<?php
-							while($row = mysqli_fetch_assoc($result)){
-								?>
-								<div onclick="filtercategory('<?php echo $row["category"] ?>')" class="categoryblock" style="border: 1px solid <?php echo $maincolor ?>;padding: 10px; cursor: pointer;"><i class="fa fa-tag"></i> <?php echo $row["category"] ?></div>
-								<?php
-							}
-						}
-						?>
-					</div>
-				</div>
-				
-				<?php
-				if($enablerecentpostsliders){
-					?>
-					
-					<div class="section firstthreecontainer">
-						<div id="firstthree">
-							<?php
-							$sql = "SELECT * FROM $tableposts ORDER BY id DESC LIMIT 3";
-							$result = mysqli_query($connection, $sql);
-							if($result){
-								if(mysqli_num_rows($result) == 0){
-									echo "<p>" .uilang("There is no post published"). ".</p>";
-								}else{
-									while($row = mysqli_fetch_assoc($result)){
-										$imagefile = $row["picture"];
-										if($imagefile == ""){
-											$imagefile = "images/filmbg.jpg";
-										}else{
-											$imagefile = "pictures/" . $imagefile;
-										}
-										?>
-										
-										<div class="firstthreeblock" style="background: url(<?php echo $baseurl . $imagefile ?>) no-repeat center center; background-size: cover; -webkit-background-size: cover; -moz-background-size: cover; -o-background-size: cover;">
-											<a href="?post=<?php echo $row["postid"] ?>">
-												<div style="display: table; width: 100%; height: 100%; background-color: rgba(0,0,0,.5); padding: 40px; box-sizing: border-box; border-radius: 5px;">
-													<div class="smallinmobile w75">
-														<h2><?php echo shorten_text($row["title"], 40, ' ...', true) ?></h2>
-														<p><?php echo shorten_text(strip_tags($row["content"]), 256, ' ...', false) ?></p>
-													</div>
-													<div class="smallinmobile w25" style="vertical-align: middle; text-align: center;">
-														<div class="morebutton"><?php echo uilang("MORE") ?> <i class="fa fa-chevron-right" style="width: 30px;"></i></div>
-													</div>
-												</div>
-											</a>
-										</div>
-										<?php
-									}
-								}
-							}
-							
-							?>
-						</div>
-					</div>
-					<?php
-				}
-				?>
-				
-				<div class="section gridcontainerunscrollable">
-					<?php
-					$sql = "SELECT * FROM $tableposts ORDER BY id DESC";
-					$result = mysqli_query($connection, $sql);
-					if($result){
-						if(mysqli_num_rows($result) > 0){
-							$productindex = 0;
-							while($row = mysqli_fetch_assoc($result)){
-								
-								$imagefile = $row["picture"];
-								if($imagefile == ""){
-									$imagefile = "images/defaultimg.jpg";
-								}else{
-									$imagefile = "pictures/" . $imagefile;
-								}
-								$currentcategory = showCatName($row["catid"]);
-								?>
-								
-								<!-- Thumbnail -->
-								<div class="filmblock">
-									<div class="categoryname" style="display: none;"><?php echo $currentcategory ?></div>
-									<a href="<?php echo $baseurl ?>?post=<?php echo $row["postid"] ?>">
-										<?php
-										if($thumbnailmode == "0"){
-											?>
-												<div class="productthumbnail" style="cursor: pointer; background-image: url(<?php echo $baseurl . $imagefile ?>); background-attachment: fill; background-position: center; background-repeat: no-repeat; background-size: auto 100%;">
-											</div>
-											<?php
-										}else if($thumbnailmode == "1"){
-											?>
-												<div class="productthumbnail" style="cursor: pointer; background-image: url(<?php echo $baseurl . $imagefile ?>); background-attachment: fill; background-position: center; background-repeat: no-repeat; background-size: 100% 100%;">
-											</div>
-											<?php
-										}
-										?>
-									</a>
-									<div class="prodimage" style="display: none;"><?php echo $imagefile ?></div>
-									<div>
-										
-										<?php
-										$saleprice = $row["normalprice"];
-										$oldprice = "";
-										if($row["discountprice"] != 0){
-											$saleprice = $row["discountprice"];
-											$oldprice = "<span style='margin: 0px; margin-top: 20px; text-decoration: line-through; font-size: 12px; margin-right: 10px; color: gray;'>" . $currencysymbol . number_format($row["normalprice"], $deccount) . "</span>";
-										}
-										?>
-										
-										<h2 style="margin-top: 20px;" class="producttitle"><?php echo shorten_text($row["title"], 25, ' ...', false) ?></h2><div class="realproducttitle" style="display: none"><?php echo $row["title"] ?></div><div class="productoptions" style="display: none"><?php echo $row["options"] ?></div><div style="padding-bottom: 20px; font-size: 25px; font-weight: bold; color: <?php echo $maincolor ?>"><?php echo $oldprice . $currencysymbol . "<span class='thiscurrentpricedisplay'>" . number_format($saleprice, $deccount) ?></span><span style="display: none;" class="thiscurrentprice"><?php echo $saleprice ?></span> <span style="font-size: 12px;">x</span> <input class="productquantity" type="number" value=1 min=1 style="vertical-align: middle; display: inline-block; width: 60px; font-weight: bold; padding: 10px; margin: 5px; border-radius: 0px;" onkeyup="onlyNumbers(this)"></div>
-										<div class="morebutton" onclick="addtocart(<?php echo $productindex ?>)"><i class="fa fa-shopping-cart"></i> <?php echo uilang("Add to Cart") ?></div>
-										<div style="padding: 20px;"><a onclick="showmore(<?php echo $productindex ?>)" class="textlink whatsmorebutton" style="cursor: pointer; text-decoration: none;"><i class="fa fa-chevron-down"></i> <?php echo uilang("More") ?></a><div class="whatsmorecontent" style="display: none; padding: 5px; font-size: 12px;"><?php echo shorten_text(strip_tags($row["content"]), 50, " ...") ?><br><a class="textlink" href="<?php echo $baseurl ?>?post=<?php echo $row["postid"] ?>"><?php echo uilang("Continue") ?></a></div></div>
-									</div>
-								</div>
-								<?php
-								
-								$productindex = $productindex + 1;
+if (isset($_GET['post']) && trim((string)$_GET['post']) !== '') {
+    header('Location: product.php?post=' . urlencode((string)$_GET['post']));
+    exit;
+}
 
-							}
-						}
-					}
-					
-					?>
-				</div>
-				<?php
-			}
-			
-			?>
-			
-			<div id="cartbutton" onclick="showcartui()">
-				<div class="cartbuttoncircle" style="-webkit-box-shadow: 0px 0px 15px 0px rgba(0,0,0,0.35); -moz-box-shadow: 0px 0px 15px 0px rgba(0,0,0,0.35); box-shadow: 0px 0px 15px 0px rgba(0,0,0,0.35); border-radius: 50%; background-color: white; text-align: center; display: table-cell; vertical-align: middle; border: 2px solid <?php echo $maincolor ?>; position: relative;">
-					<div style="position: absolute; top: 0; text-align: center; font-size: 20px; left: 0; right: 0; padding: 5px; font-weight: bold;" id="cartcount"></div>
-					<i class="fa fa-shopping-cart" style="cursor: pointer;"></i>
-				</div>
-			</div>
-			
-			<div id="imagedisplayer" onclick="hideimagedisplayer()"></div>
-			
-			
-			<!-- Footer -->
-			<div class="section footercopyright">
-				<span>© <?php echo date("Y"); ?> <?php echo $websitetitle; ?>. All rights reserved.</span>
-			</div>
-			
-			<div id="cartui">
-				<div style="max-width: 720px; margin: 0 auto;">
-				<h3 onclick='hidecartui()' style='color: <?php echo $maincolor ?>; cursor: pointer;'><i class='fa fa-arrow-left'></i> Back</h3>
-					<h1><i class='fa fa-shopping-cart'></i> <?php echo uilang("Shopping Cart") ?></h1>
-					<div id="cartdata"></div>
-				</div>
-			</div>
-			
-			
-			
-			<script>
-			
-				function showimage(img){
-					$("#imagedisplayer").html("<img src='<?php echo $baseurl ?>" +img+ "' style='height: 100%;'>").fadeIn()
-				}
-				
-				function hideimagedisplayer(){
-					$("#imagedisplayer").fadeOut()
-				}
-				
-				var currentcategory = ""
-				
-				function filtercategory(catname){
-					currentcategory = catname
-					if(catname == ""){
-						$(".filmblock").fadeIn()
-					}else{
-						$(".filmblock").hide()
-						for(var i = 0; i < $(".filmblock").length; i++){
-							if($(".filmblock").eq(i).find(".categoryname").html() == catname)
-								$(".filmblock").eq(i).fadeIn()
-						}
-					}
-				}
-				
-				function showproductoptions(){
-					for(var i = 0; i < $(".filmblock").length; i++){
-						var po = $(".filmblock").eq(i).find(".productoptions").html()
-						if(po != ""){
-							var poobject = JSON.parse(po)
-							var pocontents = ""
-							for(var x = 0; x < poobject[0].options.length; x++){
-								if(x == 0){
-									var selectedprice = poobject[0].options[x].price
-									$(".thiscurrentprice").eq(i).html(selectedprice)
-									selectedprice = parseFloat(selectedprice)
-									$(".thiscurrentpricedisplay").eq(i).html(tSep(selectedprice.toFixed(<?php echo $deccount ?>)))
-								}
-								pocontents += "<option value=" +poobject[0].options[x].price + ">" +poobject[0].options[x].title+ "</option>"
-							}
-							$(".filmblock").eq(i).find(".productoptions").html("<label class='poptionname'>" +poobject[0].title+ "</label><select onchange='overrideprice("+i+")' class='currentproductoption"+i+"' style='padding: 3px; width: 114px; margin: 0 auto;'>" + pocontents + "</select>").show()
-						}
-					}
-				}
-				
-				showproductoptions()
-				
-				function showmore(n){
-					$(".whatsmorecontent").eq(n).slideToggle()
-				}
-				
-				function overrideprice(n){
-					var selectedprice = $(".currentproductoption"+n+" option:selected").val()
-					$(".thiscurrentprice").eq(n).html($(".currentproductoption"+n+" option:selected").val())
-					selectedprice = parseFloat(selectedprice)
-					$(".thiscurrentpricedisplay").eq(n).html(tSep(selectedprice.toFixed(<?php echo $deccount ?>)))
-				}
-				
-				var cartobject = []
-				
-				function savedata(){
-					localStorage.setItem("<?php echo $websitetitle ?>", JSON.stringify(cartobject))
-				}
-				
-				function loaddata(){
-					cartobject = JSON.parse(localStorage.getItem("<?php echo $websitetitle ?>"))
-				}
-				
-				if(localStorage.getItem("<?php echo $websitetitle ?>") === null)
-					savedata()
-				else
-					loaddata()
-				
-				loaddata()
-				updatecartcount()
-				
-				function addtocart(n){
-					
-					var prod = $(".filmblock").eq(n)
-					var prodop = prod.find(".currentproductoption"+n+" option:selected").text()
-					if(prodop != "")
-						prodop = " - " + prodop
-					var prodtitle = prod.find(".realproducttitle").text() + prodop
-					var prodprice = parseFloat(prod.find(".thiscurrentprice").text())
-					var prodquantity = parseFloat(prod.find(".productquantity").val())
-					var prodimage = prod.find(".prodimage").eq(0).text()
-					
-					function pushit(){
-						cartobject.push({
-							id : n,
-							title : prodtitle,
-							price : prodprice,
-							quantity : prodquantity,
-							image : prodimage,
-							notes : "",
-						})
-						updatecartcount()
-						savedata()
-					}
-					
-					if(cartobject.length == 0){
-						pushit()
-					}else{
-						for(var i = 0; i < cartobject.length; i++){
-							if(cartobject[i].title == prodtitle && cartobject[i].price == prodprice){
-								cartobject[i].quantity += prodquantity
-								updatecartcount()
-								savedata()
-								return
-							}
-						}
-						pushit()
-						return
-					}				
-					
-				}
-				
-				function updatecartcount(){
-					
-					$("#cartbutton").fadeOut(100, function(){
-						$("#cartbutton").fadeIn()
-					})
-					$("#cartcount").html(cartobject.length)
-					
-				}
-				
-				function removeitem(i){
-					cartobject.splice(i, 1);
-					showcartui();
-				}
-				
-				var ordermessage = ""
-				
-				function showcartui(){
-					
-					var today = new Date()
-					var date = today.getFullYear()+'-'+(today.getMonth()+1)+'-'+today.getDate()
-					var time = today.getHours() + ":" + today.getMinutes() + ":" + today.getSeconds()
-					var dateTime = date+' '+time
-					var orderid = ( Math.floor(Math.random() * 9000) + 1000 ) + "/" + dateTime
-					
-					ordermessage = "ORDER ID: " + orderid + "\nDATE: " +today+ "\n"
-					var cartdata = ""
-					var grandtotal = 0;
-					if(cartobject.length > 0){
-						cartdata += "<div style='display: table; width: 100%;'>";
-						for(var i = 0; i < cartobject.length; i++){
-							var tmpttl = cartobject[i].price * cartobject[i].quantity
-							cartdata += "<div style='margin-bottom: 10px;'><div style='display: table-cell; vertical-align: middle;'><img src='<?php echo $baseurl ?>"+cartobject[i].image+"' style='max-width: 64px; border-radius: 5px; margin-bottom: 10px;'></div><div style='display: table-cell; vertical-align: middle; padding-left: 10px; padding-right: 10px; font-size: 14px;'>"+cartobject[i].title + " <?php echo $currencysymbol ?>" + tSep(parseFloat(cartobject[i].price).toFixed(<?php echo $deccount ?>)) + "</div><div style='display: table-cell; vertical-align: middle;'>*</div><div style='display: table-cell; vertical-align: top;'><input id='cartq"+i+"' onchange='modifycq("+i+")' class='productquantity' type='number' value=" + cartobject[i].quantity + " min=1 style='vertical-align: middle; display: inline-block; width: 60px; font-weight: bold; padding: 10px; margin: 5px; border-radius: 0px;' onkeyup='onlyNumbers(this)'></div><div style='display: table-cell; vertical-align: middle;'>=</div><div style='display: table-cell; vertical-align: middle;'><div style='padding-left: 5px; padding-right: 5px;'><?php echo $currencysymbol ?>" + tSep(tmpttl.toFixed(<?php echo $deccount ?>)) + "</div></div><div style='display: table-cell; vertical-align: middle; padding-left: 5px; padding-right: 5px;' onclick='removeitem("+i+")'><i class='fa fa-trash' style='color: red;'></i></div></div>"
-							grandtotal += tmpttl
-							
-							ordermessage += "- " + cartobject[i].title + " x " + cartobject[i].quantity + " = <?php echo $currencysymbol ?> " + tmpttl.toFixed(<?php echo $deccount ?>) + "\n"
-						}
-						cartdata += "</div>";
-					}
-					
-					ordermessage += "<?php echo uilang("Total") ?> = <?php echo $currencysymbol ?> " + grandtotal.toFixed(<?php echo $deccount ?>) + "\n"
-					
-					cartdata += "<hr style='background-color: white;'><h1><?php echo uilang("Total") ?> = <?php echo $currencysymbol ?>" + tSep(grandtotal.toFixed(<?php echo $deccount ?>)) + "</h1>"
-					cartdata += "<h3><?php echo uilang("Contact Information") ?></h3><label><?php echo uilang("Name") ?></label><input id='cdname' placeholder='<?php echo uilang("Name") ?>'>"
-					cartdata += "<label><?php echo uilang("Mobile") ?></label><input id='cdmobile' type='number' placeholder='<?php echo uilang("Mobile") ?>'>"
-					cartdata += "<label><?php echo uilang("Delivery Address") ?></label><input id='cdaddress' placeholder='<?php echo uilang("Delivery Address") ?>'>"
-					cartdata += "<label><?php echo uilang("Delivery Method") ?></label><select id='cdmethod'><?php echo uilang("Delivery Method") ?><option>Take Away</option><option>Home Delivery</option><option>Dining</option></select>"
-					cartdata += "<label><?php echo uilang("Order Notes") ?></label><textarea id='cartordernotes' placeholder='<?php echo uilang("Order Notes") ?>'></textarea>"
-					cartdata += "<div style='text-align: center;'><div class='buybutton' onclick='hidecartui()'><i class='fa fa-arrow-left'></i> <?php echo uilang("Back to Shop") ?></div><div class='buybutton' onclick='clearcart()'><i class='fa fa-times'></i> <?php echo uilang("Clear Cart") ?></div><div class='buybutton' onclick='chatnow()'><i class='fa fa-whatsapp'></i> <?php echo uilang("Order on WhatsApp") ?></div></div>"
-					$("#cartdata").html(cartdata)
-					$("#cartui").fadeIn()
-					savedata()
-					
-				}
-				
-				function hidecartui(){
-					
-					$("#cartui").fadeOut()
-					
-				}
-				
-				function clearcart(){
-					cartobject = []
-					showcartui()
-					updatecartcount()
-				}
-				
-				function modifycq(n){
-					var newvalue = parseFloat($("#cartq"+n).val())
-					cartobject[n].quantity = newvalue
-					showcartui()
-				}
-				
-				function chatnow(){
-					var cdname = $("#cdname").val()
-					var cdmobile = $("#cdmobile").val()
-					var cdaddress = $("#cdaddress").val()
-					var cdmethod = $("#cdmethod").val()
-					
-					if(cdname != "" && cdmobile != "" && cdaddress != "" && cdmethod != ""){
-					
-						ordermessage += "<?php echo uilang("Name") ?>: " + cdname + "\n<?php echo uilang("Mobile") ?>: " + cdmobile + "\n<?php echo uilang("Address") ?>: " + cdaddress + "\n<?php echo uilang("Delivery Method") ?>: " + cdmethod + "\n" + "ORDER NOTES: " + $("#cartordernotes").val()
-						$.post("<?php echo $baseurl ?>ordernotes.php", {
-							"message" : ordermessage
-						}, function(data){
-							ordermessage = ordermessage.replaceAll("&", "and");
-							var omuri = encodeURI(ordermessage);
-							console.log(ordermessage);
-							//location.href = "https://wa.me/<?php echo $adminwhatsapp ?>?text=" + omuri
-							window.open("https://wa.me/<?php echo $adminwhatsapp ?>?text=" + omuri, '_blank');
-						})
-					
-					}else{
-						alert("<?php echo uilang("Please fill all details.") ?>")
-					}
-				}
-				
-				function quicksearch(){
-					var keyword = $("#quicksearch").val();
-					keyword = keyword.toLowerCase();
-					if(keyword.length > 0){
-						for(var i = 0; i < $(".filmblock").length; i++){
-							if($(".filmblock")[i].innerHTML.toLowerCase().indexOf(keyword) > -1) $(".filmblock")[i].style.display = "inline-block";
-							else $(".filmblock")[i].style.display = "none";
-						}
-					} else $(".filmblock").css({ display : "inline-block" });
-					
-				}
-				
-				function clearSearchInput(){
-					$("#quicksearch").val("")
-					quicksearch()
-				}
-				
-				var postsearchinterval
-				function searchonhomepage(){
-					clearInterval(postsearchinterval)
-					postsearchinterval = setTimeout(function(){
-						var qstring = $("#quicksearch").val()
-						if(qstring != "")
-							location.href = "<?php echo $baseurl ?>#search=" + qstring
-					}, 2000)
-				}
-				
-				try{
-					if(location.href.split("#")[1].split("=")[0] == "search"){
-						if(location.href.split("#")[1].split("=")[1] != ""){
-							$("#quicksearch").val(location.href.split("#")[1].split("=")[1])
-							quicksearch()
-						}
-					}else if(location.href.split("#")[1].split("=")[0] == "filtercat"){
-						if(location.href.split("#")[1].split("=")[1] != ""){
-							filtercategory(location.href.split("#")[1].split("=")[1]);
-						}
-					}
-				}catch(e){
-					console.log(e)
-				}
-				
-				$(document).ready(function(){
-					$('#firstthree').slick({
-						autoplaySpeed: 3000,
-						autoplay : true,
-						infinite: true,
-					});
-				})
-				
-				function onlyNumbers(num){
-				   if ( /[^0-9]+/.test(num.value) ){
-					  num.value = num.value.replace(/[^0-9]*/g,"")
-				   }
-				}
-			</script>
-		</body>
-	</html>
-	
-	<?php
+$storeBaseUrl = buildStoreBaseUrl();
+$whatsappNumber = preg_replace('/\D+/', '', (string)$adminwhatsapp);
 
+$products = [];
+$productSql = "SELECT * FROM $tableposts WHERE active = 1 ORDER BY id DESC";
+$productResult = mysqli_query($connection, $productSql);
+
+if ($productResult) {
+    while ($row = mysqli_fetch_assoc($productResult)) {
+        $products[] = $row;
+    }
+}
+
+$artists = [];
+$artistSql = "
+    SELECT DISTINCT artist
+    FROM $tableposts
+    WHERE active = 1
+      AND artist IS NOT NULL
+      AND TRIM(artist) <> ''
+    ORDER BY artist ASC
+";
+$artistResult = mysqli_query($connection, $artistSql);
+
+if ($artistResult) {
+    while ($row = mysqli_fetch_assoc($artistResult)) {
+        $artists[] = $row['artist'];
+    }
+}
+
+$availableCount = 0;
+foreach ($products as $product) {
+    if ((int)($product['stock'] ?? 0) === 1) {
+        $availableCount++;
+    }
 }
 ?>
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="Tienda de CDs físicos de reggaetón en Ecuador.">
+    <title><?php echo e($websitetitle); ?></title>
+    <link rel="stylesheet" href="<?php echo e($storeBaseUrl); ?>store.css?v=1">
+    <script>
+        window.StoreConfig = <?php
+            echo json_encode(
+                [
+                    'baseUrl' => $storeBaseUrl,
+                    'whatsapp' => $whatsappNumber,
+                    'currency' => '$',
+                    'orderEndpoint' => $storeBaseUrl . 'ordernotes.php'
+                ],
+                JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES
+            );
+        ?>;
+    </script>
+    <script defer src="<?php echo e($storeBaseUrl); ?>store.js?v=1"></script>
+</head>
+<body>
+    <div class="promo-strip">
+        <div class="page-shell promo-strip__inner">
+            <span>ENVÍOS EN ECUADOR</span>
+            <span>•</span>
+            <span>UNA SOLA UNIDAD POR CD</span>
+            <span>•</span>
+            <span>PEDIDOS POR WHATSAPP</span>
+        </div>
+    </div>
 
+    <header class="site-header">
+        <div class="page-shell site-header__main">
+            <a class="brand" href="<?php echo e($storeBaseUrl); ?>" aria-label="Ir al inicio">
+                <span class="brand__mark">CD</span>
+                <span class="brand__text">REGGAETON LAB</span>
+            </a>
+
+            <nav class="main-nav" aria-label="Navegación principal">
+                <a href="#catalogo">TIENDA</a>
+                <a href="#artistas">ARTISTAS</a>
+                <a href="#info">INFO</a>
+            </nav>
+
+            <div class="header-actions">
+                <button class="icon-button js-focus-search" type="button" aria-label="Buscar">
+                    <svg viewBox="0 0 24 24" aria-hidden="true">
+                        <circle cx="11" cy="11" r="6.5"></circle>
+                        <path d="M16 16l5 5"></path>
+                    </svg>
+                </button>
+
+                <button class="cart-button js-open-cart" type="button" aria-label="Abrir carrito">
+                    <span>CARRITO</span>
+                    <span class="cart-count js-cart-count">0</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <main>
+        <section class="hero page-shell">
+            <div class="hero__content">
+                <p class="eyebrow">ARCHIVO FÍSICO / ECUADOR</p>
+                <h1>REGGAETON<br>EN CD.</h1>
+                <p class="hero__lead">
+                    Ediciones físicas, una sola copia por título y fotografías reales del estado del producto.
+                </p>
+                <a class="button button--dark" href="#catalogo">VER COLECCIÓN</a>
+            </div>
+
+            <div class="hero__panel" aria-hidden="true">
+                <span class="hero__number"><?php echo str_pad((string)$availableCount, 3, '0', STR_PAD_LEFT); ?></span>
+                <span class="hero__label">CDs disponibles</span>
+            </div>
+        </section>
+
+        <section class="catalog-section" id="catalogo">
+            <div class="page-shell">
+                <div class="section-heading">
+                    <div>
+                        <p class="eyebrow">CATÁLOGO</p>
+                        <h2>Todos los CDs</h2>
+                    </div>
+                    <p class="section-heading__count">
+                        <span class="js-visible-count"><?php echo count($products); ?></span> productos
+                    </p>
+                </div>
+
+                <div class="catalog-toolbar">
+                    <label class="search-box" for="catalogSearch">
+                        <svg viewBox="0 0 24 24" aria-hidden="true">
+                            <circle cx="11" cy="11" r="6.5"></circle>
+                            <path d="M16 16l5 5"></path>
+                        </svg>
+                        <input
+                            id="catalogSearch"
+                            type="search"
+                            placeholder="Buscar artista o álbum"
+                            autocomplete="off"
+                        >
+                    </label>
+
+                    <label class="sort-box" for="catalogSort">
+                        <span>ORDENAR</span>
+                        <select id="catalogSort">
+                            <option value="newest">Más recientes</option>
+                            <option value="artist">Artista A–Z</option>
+                            <option value="year_desc">Año: nuevo a antiguo</option>
+                            <option value="price_asc">Precio: menor a mayor</option>
+                            <option value="price_desc">Precio: mayor a menor</option>
+                        </select>
+                    </label>
+                </div>
+
+                <div class="artist-filter" id="artistas" aria-label="Filtrar por artista">
+                    <button class="artist-chip is-active" type="button" data-artist-filter="*">TODOS</button>
+                    <?php foreach ($artists as $artist): ?>
+                        <button
+                            class="artist-chip"
+                            type="button"
+                            data-artist-filter="<?php echo e(mb_strtolower($artist, 'UTF-8')); ?>"
+                        >
+                            <?php echo e(mb_strtoupper($artist, 'UTF-8')); ?>
+                        </button>
+                    <?php endforeach; ?>
+                </div>
+
+                <?php if (count($products) === 0): ?>
+                    <div class="empty-state">
+                        <span class="empty-state__code">00</span>
+                        <h3>No hay CDs publicados todavía.</h3>
+                    </div>
+                <?php else: ?>
+                    <div class="product-grid" id="productGrid">
+                        <?php foreach ($products as $product): ?>
+                            <?php
+                                $imageUrl = productImageUrl($product, $storeBaseUrl);
+                                $artist = trim((string)($product['artist'] ?? ''));
+                                $album = trim((string)($product['album'] ?? ''));
+                                $title = trim((string)($product['title'] ?? ($artist . ' - ' . $album)));
+                                $year = (string)($product['release_year'] ?? '');
+                                $stock = (int)($product['stock'] ?? 0);
+                                $price = (float)($product['normalprice'] ?? 0);
+                                $searchText = mb_strtolower(trim($artist . ' ' . $album . ' ' . $year), 'UTF-8');
+                            ?>
+                            <article
+                                class="product-card"
+                                data-product-id="<?php echo (int)$product['id']; ?>"
+                                data-artist="<?php echo e(mb_strtolower($artist, 'UTF-8')); ?>"
+                                data-search="<?php echo e($searchText); ?>"
+                                data-year="<?php echo e($year); ?>"
+                                data-price="<?php echo e((string)$price); ?>"
+                            >
+                                <a
+                                    class="product-card__image-wrap"
+                                    href="<?php echo e($storeBaseUrl); ?>product.php?post=<?php echo urlencode((string)$product['postid']); ?>"
+                                >
+                                    <img
+                                        class="product-card__image"
+                                        src="<?php echo e($imageUrl); ?>"
+                                        alt="<?php echo e($title); ?>"
+                                        loading="lazy"
+                                    >
+
+                                    <?php if ($stock === 1): ?>
+                                        <span class="status-badge">ÚLTIMA COPIA</span>
+                                    <?php else: ?>
+                                        <span class="status-badge status-badge--sold">VENDIDO</span>
+                                    <?php endif; ?>
+                                </a>
+
+                                <div class="product-card__body">
+                                    <p class="product-card__artist"><?php echo e($artist); ?></p>
+
+                                    <a
+                                        class="product-card__title"
+                                        href="<?php echo e($storeBaseUrl); ?>product.php?post=<?php echo urlencode((string)$product['postid']); ?>"
+                                    >
+                                        <?php echo e($album !== '' ? $album : $title); ?>
+                                    </a>
+
+                                    <div class="product-card__meta">
+                                        <span><?php echo e($year !== '' ? $year : 'Año N/D'); ?></span>
+                                        <span>CD FÍSICO</span>
+                                    </div>
+
+                                    <div class="product-card__footer">
+                                        <strong class="product-card__price">$<?php echo money($price); ?></strong>
+
+                                        <?php if ($stock === 1): ?>
+                                            <button
+                                                class="square-action js-add-product"
+                                                type="button"
+                                                aria-label="Agregar <?php echo e($title); ?> al carrito"
+                                                data-id="<?php echo (int)$product['id']; ?>"
+                                                data-postid="<?php echo e((string)$product['postid']); ?>"
+                                                data-title="<?php echo e($title); ?>"
+                                                data-price="<?php echo e((string)$price); ?>"
+                                                data-image="<?php echo e($imageUrl); ?>"
+                                            >
+                                                +
+                                            </button>
+                                        <?php else: ?>
+                                            <span class="sold-label">NO DISPONIBLE</span>
+                                        <?php endif; ?>
+                                    </div>
+                                </div>
+                            </article>
+                        <?php endforeach; ?>
+                    </div>
+
+                    <div class="no-results js-no-results" hidden>
+                        <p class="eyebrow">SIN RESULTADOS</p>
+                        <h3>No encontramos un CD con ese filtro.</h3>
+                        <button class="text-button js-clear-filters" type="button">LIMPIAR FILTROS</button>
+                    </div>
+                <?php endif; ?>
+            </div>
+        </section>
+
+        <section class="store-info" id="info">
+            <div class="page-shell store-info__grid">
+                <article class="info-card info-card--yellow">
+                    <span class="info-card__index">01</span>
+                    <h3>Una unidad.</h3>
+                    <p>Cada CD publicado corresponde a una sola pieza física disponible.</p>
+                </article>
+
+                <article class="info-card">
+                    <span class="info-card__index">02</span>
+                    <h3>Fotos reales.</h3>
+                    <p>La ficha puede incluir portada de referencia y fotografías del ejemplar real.</p>
+                </article>
+
+                <article class="info-card info-card--dark">
+                    <span class="info-card__index">03</span>
+                    <h3>Compra directa.</h3>
+                    <p>Arma tu pedido y envíalo por WhatsApp. Coordinamos entrega únicamente en Ecuador.</p>
+                </article>
+            </div>
+        </section>
+    </main>
+
+    <footer class="site-footer">
+        <div class="page-shell site-footer__grid">
+            <div>
+                <div class="footer-brand">REGGAETON LAB</div>
+                <p>CDs físicos de reggaetón · Ecuador</p>
+            </div>
+            <div>
+                <p class="footer-label">COMPRA</p>
+                <p>Una unidad por título</p>
+                <p>Pedido por WhatsApp</p>
+            </div>
+            <div>
+                <p class="footer-label">© <?php echo date('Y'); ?></p>
+                <p><?php echo e($websitetitle); ?></p>
+            </div>
+        </div>
+    </footer>
+
+    <div class="drawer-backdrop js-cart-backdrop" hidden></div>
+
+    <aside class="cart-drawer js-cart-drawer" aria-hidden="true" aria-label="Carrito">
+        <div class="cart-drawer__header">
+            <div>
+                <p class="eyebrow">TU SELECCIÓN</p>
+                <h2>Carrito</h2>
+            </div>
+            <button class="icon-button js-close-cart" type="button" aria-label="Cerrar carrito">×</button>
+        </div>
+
+        <div class="cart-drawer__items js-cart-items"></div>
+
+        <div class="cart-empty js-cart-empty">
+            <p>Tu carrito está vacío.</p>
+            <button class="text-button js-close-cart" type="button">SEGUIR COMPRANDO</button>
+        </div>
+
+        <div class="cart-drawer__checkout js-cart-checkout" hidden>
+            <div class="cart-total">
+                <span>TOTAL</span>
+                <strong class="js-cart-total">$0.00</strong>
+            </div>
+
+            <div class="checkout-form">
+                <p class="checkout-form__title">DATOS PARA EL PEDIDO</p>
+
+                <label>
+                    <span>Nombre</span>
+                    <input id="checkoutName" type="text" autocomplete="name">
+                </label>
+
+                <label>
+                    <span>Teléfono</span>
+                    <input id="checkoutPhone" type="tel" autocomplete="tel">
+                </label>
+
+                <div class="checkout-form__row">
+                    <label>
+                        <span>Provincia</span>
+                        <input id="checkoutProvince" type="text" autocomplete="address-level1">
+                    </label>
+                    <label>
+                        <span>Ciudad</span>
+                        <input id="checkoutCity" type="text" autocomplete="address-level2">
+                    </label>
+                </div>
+
+                <label>
+                    <span>Dirección</span>
+                    <input id="checkoutAddress" type="text" autocomplete="street-address">
+                </label>
+            </div>
+
+            <button class="button button--whatsapp js-checkout-whatsapp" type="button">
+                ENVIAR PEDIDO POR WHATSAPP
+            </button>
+
+            <p class="checkout-note">El valor de envío se coordina por WhatsApp y no está incluido en el total.</p>
+        </div>
+    </aside>
+</body>
+</html>

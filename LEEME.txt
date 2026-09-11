@@ -1,8 +1,19 @@
-REEMPLAZAR:
-- somefunctions.js
-- admin-modern.css
+CORRECCIÓN CHECKOUT → WHATSAPP
 
-Después hacer Ctrl+F5 en admin.php.
+Reemplazar:
+- ordernotes.php
 
-No modificar admin.php ni artists.php para este ajuste.
-El menú antiguo de admin.php se sustituye al cargar por la misma estructura visual usada en artists.php.
+Diagnóstico:
+- Si visitas ordernotes.php directamente, es una petición GET.
+  Antes respondía "Método no permitido". Eso no era una prueba válida del checkout.
+- La pantalla checkout sí hace POST JSON correctamente porque la cotización funciona.
+- El error al comprar ocurre en la rama checkout, cuya diferencia principal es registrar Orders.
+- Ahora registrar Orders está completamente aislado: aunque MySQL falle al guardar ese log,
+  el servidor sigue devolviendo el enlace válido de WhatsApp.
+- Abrir ordernotes.php directamente ahora devuelve:
+  {"ok":true,"message":"Endpoint de pedidos activo."}
+
+Después de copiar:
+1. Ctrl+F5 en checkout.php
+2. Selecciona Quito o Fuera de Quito
+3. Pulsa COMPRAR POR WHATSAPP

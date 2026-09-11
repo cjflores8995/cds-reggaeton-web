@@ -1,11 +1,18 @@
 <?php
 /*
- * Checkout / WhatsApp endpoint for Tienda CDS Reggaeton.
- * Always returns JSON for AJAX requests and does not depend on mbstring.
+ * Tienda CDS Reggaeton
+ * Endpoint para cotización, checkout y redirección a WhatsApp.
+ *
+ * Importante:
+ * - Los precios se recalculan desde la base de datos.
+ * - El costo de envío se toma de Settings.
+ * - Guardar el pedido en Orders es informativo y nunca bloquea WhatsApp.
+ * - Las respuestas AJAX siempre son JSON.
  */
 
 ini_set("display_errors", "0");
 ini_set("log_errors", "1");
+
 ob_start();
 
 require_once __DIR__ . "/config.php";
@@ -23,14 +30,14 @@ function orderJsonResponse($payload, $statusCode = 200){
     $options = JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES;
 
     if(defined("JSON_INVALID_UTF8_SUBSTITUTE")){
-        $options = $options | JSON_INVALID_UTF8_SUBSTITUTE;
+        $options |= JSON_INVALID_UTF8_SUBSTITUTE;
     }
 
     $json = json_encode($payload, $options);
 
     if($json === false){
         http_response_code(500);
-        echo '{"ok":false,"message":"No se pudo generar la respuesta del servidor."}';
+        echo '{"ok":false,"message":"No se pudo generar la respuesta JSON."}';
         exit;
     }
 
@@ -58,18 +65,34 @@ set_exception_handler(function($exception){
 });
 
 function orderColumnExists($connection, $table, $column){
-    $safeColumn = mysqli_real_escape_string($connection, $column);
+    try{
+        $safeColumn = mysqli_real_escape_string(
+            $connection,
+            $column
+        );
 
-    $result = mysqli_query(
-        $connection,
-        "SHOW COLUMNS FROM $table LIKE '$safeColumn'"
-    );
+        $result = mysqli_query(
+            $connection,
+            "SHOW COLUMNS FROM $table LIKE '$safeColumn'"
+        );
 
-    return $result && mysqli_num_rows($result) > 0;
+        return $result && mysqli_num_rows($result) > 0;
+    }catch(Throwable $exception){
+        error_log(
+            "TiendaCDsReggaeton column check error: " .
+            $exception->getMessage()
+        );
+
+        return false;
+    }
 }
 
 function orderWhatsAppNumber($value){
-    $number = preg_replace('/\D+/', '', (string)$value);
+    $number = preg_replace(
+        "/\D+/",
+        "",
+        (string)$value
+    );
 
     if(substr($number, 0, 2) === "00"){
         $number = substr($number, 2);
@@ -79,11 +102,22 @@ function orderWhatsAppNumber($value){
 }
 
 function orderMoney($value){
-    return "$" . number_format((float)$value, 2, ".", "");
+    return "$" . number_format(
+        (float)$value,
+        2,
+        ".",
+        ""
+    );
 }
 
 function orderImagePath($picture){
-    $picture = trim(str_replace('\\', '/', (string)$picture));
+    $picture = trim(
+        str_replace(
+            "\\",
+            "/",
+            (string)$picture
+        )
+    );
 
     if($picture === ""){
         return "images/defaultimg.jpg";
@@ -100,63 +134,88 @@ function orderSafeSubstring($value, $maxLength){
     $value = (string)$value;
 
     if(function_exists("mb_substr")){
-        return mb_substr($value, 0, $maxLength, "UTF-8");
+        return mb_substr(
+            $value,
+            0,
+            $maxLength,
+            "UTF-8"
+        );
     }
 
-    return substr($value, 0, $maxLength);
+    return substr(
+        $value,
+        0,
+        $maxLength
+    );
 }
 
 function orderSaveMessage($connection, $tablemessages, $message){
     /*
-     * The legacy schema uses VARCHAR(1300). Keep a safe margin and do not
-     * prevent WhatsApp checkout if the informational Orders log fails.
+     * Orders es únicamente un registro administrativo.
+     * Si falla por cualquier motivo, la venta debe continuar a WhatsApp.
      */
-    $databaseMessage = orderSafeSubstring($message, 1200);
-    $currentTime = (string)round(microtime(true) * 1000);
-
-    $sql =
-        "INSERT INTO $tablemessages (date, message) " .
-        "VALUES (?, ?)";
-
-    $statement = mysqli_prepare($connection, $sql);
-
-    if(!$statement){
-        error_log(
-            "TiendaCDsReggaeton: could not prepare order log insert: " .
-            mysqli_error($connection)
+    try{
+        $databaseMessage = orderSafeSubstring(
+            $message,
+            1200
         );
+
+        $escapedMessage = mysqli_real_escape_string(
+            $connection,
+            $databaseMessage
+        );
+
+        $currentTime = (string)round(
+            microtime(true) * 1000
+        );
+
+        $escapedTime = mysqli_real_escape_string(
+            $connection,
+            $currentTime
+        );
+
+        $saved = mysqli_query(
+            $connection,
+            "INSERT INTO $tablemessages (date, message) " .
+            "VALUES ('$escapedTime', '$escapedMessage')"
+        );
+
+        if(!$saved){
+            error_log(
+                "TiendaCDsReggaeton order log failed: " .
+                mysqli_error($connection)
+            );
+
+            return false;
+        }
+
+        return true;
+    }catch(Throwable $exception){
+        error_log(
+            "TiendaCDsReggaeton order log exception: " .
+            $exception->getMessage()
+        );
+
         return false;
     }
-
-    mysqli_stmt_bind_param(
-        $statement,
-        "ss",
-        $currentTime,
-        $databaseMessage
-    );
-
-    $saved = mysqli_stmt_execute($statement);
-
-    if(!$saved){
-        error_log(
-            "TiendaCDsReggaeton: could not save order log: " .
-            mysqli_stmt_error($statement)
-        );
-    }
-
-    mysqli_stmt_close($statement);
-
-    return $saved;
 }
 
 function orderReadPayload(){
-    $rawBody = file_get_contents("php://input");
+    $rawBody = file_get_contents(
+        "php://input"
+    );
 
-    if($rawBody === false || trim($rawBody) === ""){
+    if(
+        $rawBody === false ||
+        trim($rawBody) === ""
+    ){
         return null;
     }
 
-    $payload = json_decode($rawBody, true);
+    $payload = json_decode(
+        $rawBody,
+        true
+    );
 
     return is_array($payload)
         ? $payload
@@ -173,10 +232,13 @@ function orderExtractProductIds($rawItems){
 
     foreach($rawItems as $rawItem){
         $productId = is_array($rawItem)
-            ? (int)(isset($rawItem["id"]) ? $rawItem["id"] : 0)
+            ? (int)($rawItem["id"] ?? 0)
             : (int)$rawItem;
 
-        if($productId <= 0 || isset($seenIds[$productId])){
+        if(
+            $productId <= 0 ||
+            isset($seenIds[$productId])
+        ){
             continue;
         }
 
@@ -187,7 +249,11 @@ function orderExtractProductIds($rawItems){
     return $productIds;
 }
 
-function orderLoadProducts($connection, $tableposts, $productIds){
+function orderLoadProducts(
+    $connection,
+    $tableposts,
+    $productIds
+){
     if(count($productIds) === 0){
         return [
             "ok" => false,
@@ -206,30 +272,58 @@ function orderLoadProducts($connection, $tableposts, $productIds){
         ];
     }
 
-    $idList = implode(",", array_map("intval", $productIds));
+    $idList = implode(
+        ",",
+        array_map(
+            "intval",
+            $productIds
+        )
+    );
+
     $where = "id IN ($idList)";
 
-    if(orderColumnExists($connection, $tableposts, "active")){
+    if(
+        orderColumnExists(
+            $connection,
+            $tableposts,
+            "active"
+        )
+    ){
         $where .= " AND active = 1";
     }
 
-    if(orderColumnExists($connection, $tableposts, "stock")){
+    if(
+        orderColumnExists(
+            $connection,
+            $tableposts,
+            "stock"
+        )
+    ){
         $where .= " AND stock = 1";
     }
 
-    $result = mysqli_query(
-        $connection,
-        "SELECT id, postid, title, normalprice, picture " .
-        "FROM $tableposts " .
-        "WHERE $where"
-    );
-
-    if(!$result){
+    try{
+        $result = mysqli_query(
+            $connection,
+            "SELECT id, postid, title, normalprice, picture " .
+            "FROM $tableposts " .
+            "WHERE $where"
+        );
+    }catch(Throwable $exception){
         error_log(
-            "TiendaCDsReggaeton: product validation query failed: " .
-            mysqli_error($connection)
+            "TiendaCDsReggaeton product query exception: " .
+            $exception->getMessage()
         );
 
+        return [
+            "ok" => false,
+            "status" => 500,
+            "message" => "No se pudo validar el carrito.",
+            "products" => []
+        ];
+    }
+
+    if(!$result){
         return [
             "ok" => false,
             "status" => 500,
@@ -241,14 +335,21 @@ function orderLoadProducts($connection, $tableposts, $productIds){
     $productsById = [];
 
     while($row = mysqli_fetch_assoc($result)){
-        $productsById[(int)$row["id"]] = $row;
+        $productsById[
+            (int)$row["id"]
+        ] = $row;
     }
 
-    if(count($productsById) !== count($productIds)){
+    if(
+        count($productsById) !==
+        count($productIds)
+    ){
         return [
             "ok" => false,
             "status" => 409,
-            "message" => "Uno o más CDs del carrito ya no están disponibles. Regresa a la tienda y actualiza tu carrito.",
+            "message" =>
+                "Uno o más CDs del carrito ya no están disponibles. " .
+                "Regresa a la tienda y actualiza tu carrito.",
             "products" => []
         ];
     }
@@ -257,7 +358,8 @@ function orderLoadProducts($connection, $tableposts, $productIds){
 
     foreach($productIds as $productId){
         if(isset($productsById[$productId])){
-            $orderedProducts[] = $productsById[$productId];
+            $orderedProducts[] =
+                $productsById[$productId];
         }
     }
 
@@ -269,13 +371,28 @@ function orderLoadProducts($connection, $tableposts, $productIds){
     ];
 }
 
+/*
+ * Si abres ordernotes.php directamente en el navegador,
+ * mostramos un estado de salud en lugar de "Método no permitido".
+ */
+if(
+    ($_SERVER["REQUEST_METHOD"] ?? "GET") === "GET"
+){
+    orderJsonResponse([
+        "ok" => true,
+        "message" => "Endpoint de pedidos activo."
+    ]);
+}
+
 $contentType = strtolower(
-    isset($_SERVER["CONTENT_TYPE"])
-        ? (string)$_SERVER["CONTENT_TYPE"]
-        : ""
+    (string)($_SERVER["CONTENT_TYPE"] ?? "")
 );
 
-$isJsonRequest = strpos($contentType, "application/json") !== false;
+$isJsonRequest =
+    strpos(
+        $contentType,
+        "application/json"
+    ) !== false;
 
 if($isJsonRequest){
     $payload = orderReadPayload();
@@ -284,7 +401,8 @@ if($isJsonRequest){
         orderJsonResponse(
             [
                 "ok" => false,
-                "message" => "La solicitud no es válida."
+                "message" =>
+                    "La solicitud no es válida."
             ],
             400
         );
@@ -295,9 +413,7 @@ if($isJsonRequest){
         : "";
 
     $productIds = orderExtractProductIds(
-        isset($payload["items"])
-            ? $payload["items"]
-            : []
+        $payload["items"] ?? []
     );
 
     $loaded = orderLoadProducts(
@@ -310,54 +426,104 @@ if($isJsonRequest){
         orderJsonResponse(
             [
                 "ok" => false,
-                "message" => $loaded["message"]
+                "message" =>
+                    $loaded["message"]
             ],
             $loaded["status"]
         );
     }
 
-    $products = $loaded["products"];
+    $products =
+        $loaded["products"];
+
     $subtotal = 0.0;
     $responseItems = [];
 
     foreach($products as $product){
-        $price = (float)$product["normalprice"];
+        $price =
+            (float)$product["normalprice"];
+
         $subtotal += $price;
 
         $responseItems[] = [
-            "id" => (int)$product["id"],
-            "postid" => (string)$product["postid"],
-            "title" => trim((string)$product["title"]),
-            "price" => number_format($price, 2, ".", ""),
-            "image" => orderImagePath($product["picture"])
+            "id" =>
+                (int)$product["id"],
+            "postid" =>
+                (string)$product["postid"],
+            "title" =>
+                trim((string)$product["title"]),
+            "price" =>
+                number_format(
+                    $price,
+                    2,
+                    ".",
+                    ""
+                ),
+            "image" =>
+                orderImagePath(
+                    $product["picture"]
+                )
         ];
     }
 
-    $quitoPrice = isset($servientregaquito)
-        ? round((float)$servientregaquito, 2)
-        : 2.60;
+    $quitoPrice =
+        isset($servientregaquito)
+            ? round(
+                (float)$servientregaquito,
+                2
+            )
+            : 2.60;
 
-    $outsideQuitoPrice = isset($servientregaoutsidequito)
-        ? round((float)$servientregaoutsidequito, 2)
-        : 5.90;
+    $outsideQuitoPrice =
+        isset($servientregaoutsidequito)
+            ? round(
+                (float)$servientregaoutsidequito,
+                2
+            )
+            : 5.90;
 
     if($action === "quote"){
         orderJsonResponse([
             "ok" => true,
-            "items" => $responseItems,
-            "subtotal" => number_format($subtotal, 2, ".", ""),
+            "items" =>
+                $responseItems,
+            "subtotal" =>
+                number_format(
+                    $subtotal,
+                    2,
+                    ".",
+                    ""
+                ),
             "shipping" => [
                 "quito" => [
-                    "code" => "quito",
-                    "carrier" => "Servientrega",
-                    "label" => "Quito",
-                    "price" => number_format($quitoPrice, 2, ".", "")
+                    "code" =>
+                        "quito",
+                    "carrier" =>
+                        "Servientrega",
+                    "label" =>
+                        "Quito",
+                    "price" =>
+                        number_format(
+                            $quitoPrice,
+                            2,
+                            ".",
+                            ""
+                        )
                 ],
                 "outside_quito" => [
-                    "code" => "outside_quito",
-                    "carrier" => "Servientrega",
-                    "label" => "Fuera de Quito (Ecuador)",
-                    "price" => number_format($outsideQuitoPrice, 2, ".", "")
+                    "code" =>
+                        "outside_quito",
+                    "carrier" =>
+                        "Servientrega",
+                    "label" =>
+                        "Fuera de Quito (Ecuador)",
+                    "price" =>
+                        number_format(
+                            $outsideQuitoPrice,
+                            2,
+                            ".",
+                            ""
+                        )
                 ]
             ]
         ]);
@@ -367,111 +533,183 @@ if($isJsonRequest){
         orderJsonResponse(
             [
                 "ok" => false,
-                "message" => "Acción no válida."
+                "message" =>
+                    "Acción no válida."
             ],
             400
         );
     }
 
-    $shippingZone = isset($payload["shipping_zone"])
-        ? (string)$payload["shipping_zone"]
-        : "";
+    $shippingZone =
+        isset($payload["shipping_zone"])
+            ? (string)$payload["shipping_zone"]
+            : "";
 
     if($shippingZone === "quito"){
         $shippingLabel = "Quito";
         $shippingPrice = $quitoPrice;
-    }else if($shippingZone === "outside_quito"){
-        $shippingLabel = "Fuera de Quito (Ecuador)";
-        $shippingPrice = $outsideQuitoPrice;
+    }else if(
+        $shippingZone ===
+        "outside_quito"
+    ){
+        $shippingLabel =
+            "Fuera de Quito (Ecuador)";
+
+        $shippingPrice =
+            $outsideQuitoPrice;
     }else{
         orderJsonResponse(
             [
                 "ok" => false,
-                "message" => "Selecciona una zona de envío de Servientrega."
+                "message" =>
+                    "Selecciona una zona de envío de Servientrega."
             ],
             400
         );
     }
 
-    $configuredWhatsapp = isset($saleswhatsapp)
-        ? $saleswhatsapp
-        : (
-            isset($adminwhatsapp)
-                ? $adminwhatsapp
-                : "593959696235"
+    $configuredWhatsapp =
+        isset($saleswhatsapp)
+            ? $saleswhatsapp
+            : (
+                isset($adminwhatsapp)
+                    ? $adminwhatsapp
+                    : "593959696235"
+            );
+
+    $whatsapp =
+        orderWhatsAppNumber(
+            $configuredWhatsapp
         );
 
-    $whatsapp = orderWhatsAppNumber(
-        $configuredWhatsapp
-    );
-
-    if($whatsapp === "" || strlen($whatsapp) < 8){
+    if(
+        $whatsapp === "" ||
+        strlen($whatsapp) < 8
+    ){
         orderJsonResponse(
             [
                 "ok" => false,
-                "message" => "El WhatsApp de ventas no está configurado correctamente."
+                "message" =>
+                    "El WhatsApp de ventas no está configurado correctamente."
             ],
             500
         );
     }
 
-    $total = $subtotal + $shippingPrice;
+    $total =
+        $subtotal +
+        $shippingPrice;
 
     $lines = [
         "Hola, quiero realizar esta compra:",
         ""
     ];
 
-    foreach($products as $index => $product){
+    foreach(
+        $products
+        as $index => $product
+    ){
         $lines[] =
             ($index + 1) .
             ". " .
-            trim((string)$product["title"]) .
+            trim(
+                (string)$product["title"]
+            ) .
             " — " .
-            orderMoney($product["normalprice"]);
+            orderMoney(
+                $product["normalprice"]
+            );
     }
 
     $lines[] = "";
-    $lines[] = "Subtotal CDs: " . orderMoney($subtotal);
-    $lines[] = "Envío: Servientrega - " . $shippingLabel;
-    $lines[] = "Costo de envío: " . orderMoney($shippingPrice);
-    $lines[] = "Total: " . orderMoney($total);
+    $lines[] =
+        "Subtotal CDs: " .
+        orderMoney($subtotal);
+
+    $lines[] =
+        "Envío: Servientrega - " .
+        $shippingLabel;
+
+    $lines[] =
+        "Costo de envío: " .
+        orderMoney($shippingPrice);
+
+    $lines[] =
+        "Total: " .
+        orderMoney($total);
+
     $lines[] =
         "Cantidad: " .
         count($products) .
-        (count($products) === 1 ? " CD" : " CDs");
-    $lines[] = "";
-    $lines[] = "Quiero coordinar el pago y la entrega por WhatsApp.";
+        (
+            count($products) === 1
+                ? " CD"
+                : " CDs"
+        );
 
-    $message = implode("\n", $lines);
+    $lines[] = "";
+
+    $lines[] =
+        "Quiero coordinar el pago y la entrega por WhatsApp.";
+
+    $message =
+        implode(
+            "\n",
+            $lines
+        );
 
     /*
-     * Orders is an informational log. A database logging failure must not
-     * block the actual sales channel (WhatsApp).
+     * Construimos primero el destino de WhatsApp.
+     * Luego intentamos registrar Orders.
+     * Un fallo en Orders NO puede impedir la venta.
      */
+    $whatsappUrl =
+        "https://wa.me/" .
+        $whatsapp .
+        "?text=" .
+        rawurlencode(
+            $message
+        );
+
     orderSaveMessage(
         $connection,
         $tablemessages,
         $message
     );
 
-    $whatsappUrl =
-        "https://wa.me/" .
-        $whatsapp .
-        "?text=" .
-        rawurlencode($message);
-
     orderJsonResponse([
         "ok" => true,
-        "whatsapp_url" => $whatsappUrl,
-        "subtotal" => number_format($subtotal, 2, ".", ""),
-        "shipping" => number_format($shippingPrice, 2, ".", ""),
-        "total" => number_format($total, 2, ".", ""),
-        "count" => count($products)
+        "whatsapp_url" =>
+            $whatsappUrl,
+        "subtotal" =>
+            number_format(
+                $subtotal,
+                2,
+                ".",
+                ""
+            ),
+        "shipping" =>
+            number_format(
+                $shippingPrice,
+                2,
+                ".",
+                ""
+            ),
+        "total" =>
+            number_format(
+                $total,
+                2,
+                ".",
+                ""
+            ),
+        "count" =>
+            count($products)
     ]);
 }
 
-/* Compatibility with the original legacy form. */
+/*
+ * Compatibilidad con el POST antiguo de la plantilla.
+ */
 if(
     isset($_POST["message"]) &&
     trim((string)$_POST["message"]) !== ""
@@ -479,7 +717,9 @@ if(
     orderSaveMessage(
         $connection,
         $tablemessages,
-        trim((string)$_POST["message"])
+        trim(
+            (string)$_POST["message"]
+        )
     );
 
     orderJsonResponse([
@@ -490,8 +730,9 @@ if(
 orderJsonResponse(
     [
         "ok" => false,
-        "message" => "Método no permitido."
+        "message" =>
+            "La solicitud debe enviarse como JSON."
     ],
-    405
+    400
 );
 ?>

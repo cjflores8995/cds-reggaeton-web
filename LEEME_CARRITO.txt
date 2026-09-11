@@ -1,0 +1,38 @@
+CORRECCIÓN DEL CARRITO - TIENDA CDS REGGAETON
+
+REVISADO CONTRA LA RAMA develop.
+
+ARCHIVOS:
+1. store.js
+   NUEVO. Actualmente index.php y product.php lo referencian pero el archivo no existe en develop.
+   Esa es la causa principal de que el carrito y otras interacciones no funcionen.
+
+2. ordernotes.php
+   REEMPLAZAR COMPLETO.
+
+NO ES NECESARIO MODIFICAR index.php NI product.php.
+El nuevo store.js reutiliza el HTML que ya existe en ambas páginas.
+
+COMPORTAMIENTO:
+- Agregar un CD al carrito.
+- No permite duplicar el mismo CD.
+- Una sola unidad por publicación.
+- Carrito persistente usando localStorage.
+- Quitar productos.
+- Total automático.
+- Abre/cierra correctamente el drawer.
+- El checkout elimina visualmente los campos Nombre/Teléfono/Provincia/Ciudad/Dirección.
+- La única acción final es COMPRAR.
+- COMPRAR valida nuevamente en PHP que los CDs sigan activos/disponibles.
+- El total se recalcula en PHP usando precios de la base de datos.
+- Se registra el pedido en Orders.
+- Después redirige a WhatsApp con el pedido ya escrito.
+- Si el endpoint falla por red, el navegador intenta abrir WhatsApp usando el carrito local.
+- También recupera búsqueda, filtros, ordenamiento y galería porque todos dependían de store.js.
+
+IMPORTANTE:
+El WhatsApp de Settings debe incluir código de país.
+Ejemplo Ecuador: 593XXXXXXXXX
+
+Después de copiar:
+Ctrl + F5 en index.php y product.php.

@@ -289,7 +289,7 @@ function tSep(x){
                     "<div>" +
                         "<div class='product-image-manager__title'>Imágenes del CD</div>" +
                         "<p class='product-image-manager__subtitle'>" +
-                            "Entre 2 y 5 imágenes. Cada tipo se usa una sola vez y el orden siempre es 1 → 5." +
+                            "Entre 2 y 5 imágenes. Cada tipo se usa una sola vez. El procesamiento se controla desde Config. imágenes." +
                         "</p>" +
                     "</div>" +
                 "</div>" +
@@ -313,7 +313,7 @@ function tSep(x){
         var $preview = $("<div class='product-image-preview'></div>");
         var $select = $("<select name='product_image_roles[]' class='product-image-role'></select>");
         var $existing = $("<input type='hidden' name='product_image_existing[]'>");
-        var $file = $("<input type='file' name='product_image_files[]' accept='image/jpeg,image/png' class='product-image-file'>");
+        var $file = $("<input type='file' name='product_image_files[]' accept='image/jpeg,image/png,image/webp' class='product-image-file'>");
         var $remove = $(
             "<button type='button' class='admin-modern-button secondary product-image-row__remove'>" +
                 "Quitar" +
@@ -353,10 +353,11 @@ function tSep(x){
 
             if(
                 selectedFile.type !== "image/jpeg" &&
-                selectedFile.type !== "image/png"
+                selectedFile.type !== "image/png" &&
+                selectedFile.type !== "image/webp"
             ){
                 this.value = "";
-                alert("Solo se permiten imágenes JPG y PNG.");
+                alert("Solo se permiten imágenes JPG, PNG o WebP.");
                 renderPreview(
                     $preview,
                     $existing.val()

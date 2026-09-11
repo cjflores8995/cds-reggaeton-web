@@ -419,7 +419,10 @@ $imageRoles = [
                 <h2>Imágenes</h2>
                 <p class="admin-muted">
                     Portada web (1) es obligatoria y el CD debe tener por lo menos 2 imágenes.
-                    Las posiciones son únicas y quedan guardadas siempre en el orden 1 → 5.
+                    El procesamiento usa la
+                    <a class="textlink" href="image-settings.php">Configuración de imágenes</a>:
+                    WebP, máximo <?php echo (int)$cfg->imagemaxheight; ?> px de alto,
+                    calidad <?php echo (int)$cfg->imagewebpquality; ?>.
                 </p>
 
                 <div class="admin-image-slots">
@@ -444,7 +447,7 @@ $imageRoles = [
                                 <input
                                     type="file"
                                     name="product_image_files[]"
-                                    accept="image/jpeg,image/png"
+                                    accept="image/jpeg,image/png,image/webp"
                                     <?php echo $role === 1 ? "required" : ""; ?>
                                 >
                             </div>

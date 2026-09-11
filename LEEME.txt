@@ -1,25 +1,83 @@
-CARRUSEL MÁS LLAMATIVO
+CONFIGURACIÓN DE IMÁGENES - REGGAETON LAB
 
-REEMPLAZAR:
-- index.php
-- catalog-carousel.css
+Base:
+Archivos revisados contra la rama develop actual antes de generar este paquete.
 
-NO CAMBIA:
-- store.js
-- búsqueda
-- filtros
-- ordenamiento
-- paginación de 12 CDs
+REEMPLAZAR COMPLETOS:
+- config.php
+- admin-menu.php
+- productimages.php
+- admin-product-new.php
+- somefunctions.js
 
-CAMBIOS VISUALES:
-- Barra negra completa.
-- Flechas grandes y mucho más visibles.
-- Flecha inactiva permanece tenue para equilibrar el diseño.
-- Indicador 1–12 DE 14 más grande.
-- Página actual secundaria en gris.
-- Hover invertido blanco/negro.
-- Pequeño desplazamiento de la flecha al pasar el mouse.
-- Responsive en móvil.
+NUEVOS:
+- image-settings.php
+- image-settings.css
 
-Después de copiar:
-Ctrl + F5
+NUEVO MENÚ:
+Config. imágenes
+
+PERSISTENCIA:
+No crea una tabla nueva innecesaria.
+Usa la configuración cfg que ya existe en MySQL (tabla <prefix>config).
+Los nuevos valores quedan dentro del JSON cfg almacenado en la base de datos.
+
+VALORES POR DEFECTO:
+- Salida: WebP
+- Alto máximo: 500 px
+- Ancho máximo: 0 (automático/proporcional)
+- Calidad WebP: 80
+- Tamaño máximo de subida: 8 MB
+- Máximo de resolución: 40 MP
+- No ampliar imágenes pequeñas
+- Auto-orientación JPEG: activada
+- Watermark: activado
+- Texto: reggaeton.el.real
+- Roles con watermark: 2, 3, 4, 5
+- Portada web (1): sin watermark
+- Posición: abajo derecha
+- Tamaño GD: 5
+- Margen: 14 px
+- Padding horizontal: 8 px
+- Padding vertical: 6 px
+- Fondo: 55% opacidad
+- Texto: 95% opacidad
+
+DESDE EL ADMIN PUEDES CAMBIAR:
+- alto y ancho máximo;
+- calidad WebP;
+- límite de MB;
+- límite de megapíxeles;
+- ampliar/no ampliar fotos pequeñas;
+- auto orientación;
+- activar/desactivar watermark;
+- mensaje;
+- qué tipos de imagen llevan watermark;
+- posición;
+- tamaño;
+- margen;
+- padding;
+- opacidad del fondo;
+- opacidad del texto.
+
+IMPORTANTE:
+Los cambios aplican a imágenes NUEVAS o REEMPLAZADAS.
+No reprocesan automáticamente las imágenes existentes.
+
+AZURE:
+El hosting final seguirá siendo Azure App Service.
+Más adelante el destino de archivos pasará de /pictures a Azure Blob Storage.
+La configuración y el procesamiento creados aquí se reutilizan antes de subir el blob.
+
+PRUEBA:
+1. Reemplaza/agrega los 7 archivos.
+2. Ctrl + F5.
+3. Entra al admin.
+4. Abre "Config. imágenes".
+5. Guarda sin cambiar nada.
+6. Crea un CD de prueba con Portada web + otra imagen.
+7. Verifica:
+   - ambas terminan .webp;
+   - altura <= 500 px;
+   - portada web sin marca;
+   - otra foto con reggaeton.el.real.

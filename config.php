@@ -231,6 +231,29 @@ $cfg->sharebuttonsoption = array();
 $cfg->thumbnailmode = 0;
 $cfg->disabledecimals = 0;
 
+/*
+ * Product image processing defaults.
+ * These settings are persisted inside the existing cfg JSON row in MySQL.
+ */
+$cfg->imageoutputformat = "webp";
+$cfg->imagemaxheight = 500;
+$cfg->imagemaxwidth = 0;
+$cfg->imagewebpquality = 80;
+$cfg->imagemaxuploadmb = 8;
+$cfg->imagemaxmegapixels = 40;
+$cfg->imageupscalesmall = false;
+$cfg->imageautoorient = true;
+$cfg->imagewatermarkenabled = true;
+$cfg->imagewatermarktext = "reggaeton.el.real";
+$cfg->imagewatermarkroles = [2, 3, 4, 5];
+$cfg->imagewatermarkposition = "bottom-right";
+$cfg->imagewatermarkfontsize = 5;
+$cfg->imagewatermarkmargin = 14;
+$cfg->imagewatermarkpaddingx = 8;
+$cfg->imagewatermarkpaddingy = 6;
+$cfg->imagewatermarkbackgroundopacity = 55;
+$cfg->imagewatermarktextopacity = 95;
+
 //Base URL default
 $scheme = isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on'
     ? "https"
@@ -357,6 +380,104 @@ if(!isset($cfg->disabledecimals)){
     $cfg->disabledecimals = 0;
 }
 
+/*
+ * Backward-compatible defaults for image processing.
+ * Old databases begin using these values immediately and persist them
+ * when the Image Settings page is saved.
+ */
+if(!isset($cfg->imageoutputformat)){
+    $cfg->imageoutputformat = "webp";
+}
+
+if(!isset($cfg->imagemaxheight) || !is_numeric($cfg->imagemaxheight)){
+    $cfg->imagemaxheight = 500;
+}
+
+if(!isset($cfg->imagemaxwidth) || !is_numeric($cfg->imagemaxwidth)){
+    $cfg->imagemaxwidth = 0;
+}
+
+if(!isset($cfg->imagewebpquality) || !is_numeric($cfg->imagewebpquality)){
+    $cfg->imagewebpquality = 80;
+}
+
+if(!isset($cfg->imagemaxuploadmb) || !is_numeric($cfg->imagemaxuploadmb)){
+    $cfg->imagemaxuploadmb = 8;
+}
+
+if(!isset($cfg->imagemaxmegapixels) || !is_numeric($cfg->imagemaxmegapixels)){
+    $cfg->imagemaxmegapixels = 40;
+}
+
+if(!isset($cfg->imageupscalesmall)){
+    $cfg->imageupscalesmall = false;
+}
+
+if(!isset($cfg->imageautoorient)){
+    $cfg->imageautoorient = true;
+}
+
+if(!isset($cfg->imagewatermarkenabled)){
+    $cfg->imagewatermarkenabled = true;
+}
+
+if(!isset($cfg->imagewatermarktext)){
+    $cfg->imagewatermarktext = "reggaeton.el.real";
+}
+
+if(
+    !isset($cfg->imagewatermarkroles) ||
+    !is_array($cfg->imagewatermarkroles)
+){
+    $cfg->imagewatermarkroles = [2, 3, 4, 5];
+}
+
+if(!isset($cfg->imagewatermarkposition)){
+    $cfg->imagewatermarkposition = "bottom-right";
+}
+
+if(
+    !isset($cfg->imagewatermarkfontsize) ||
+    !is_numeric($cfg->imagewatermarkfontsize)
+){
+    $cfg->imagewatermarkfontsize = 5;
+}
+
+if(
+    !isset($cfg->imagewatermarkmargin) ||
+    !is_numeric($cfg->imagewatermarkmargin)
+){
+    $cfg->imagewatermarkmargin = 14;
+}
+
+if(
+    !isset($cfg->imagewatermarkpaddingx) ||
+    !is_numeric($cfg->imagewatermarkpaddingx)
+){
+    $cfg->imagewatermarkpaddingx = 8;
+}
+
+if(
+    !isset($cfg->imagewatermarkpaddingy) ||
+    !is_numeric($cfg->imagewatermarkpaddingy)
+){
+    $cfg->imagewatermarkpaddingy = 6;
+}
+
+if(
+    !isset($cfg->imagewatermarkbackgroundopacity) ||
+    !is_numeric($cfg->imagewatermarkbackgroundopacity)
+){
+    $cfg->imagewatermarkbackgroundopacity = 55;
+}
+
+if(
+    !isset($cfg->imagewatermarktextopacity) ||
+    !is_numeric($cfg->imagewatermarktextopacity)
+){
+    $cfg->imagewatermarktextopacity = 95;
+}
+
 //Expose config as legacy variables used by the storefront/admin.
 $websitetitle = stripslashes((string)$cfg->websitetitle);
 $maincolor = (string)$cfg->maincolor;
@@ -392,7 +513,8 @@ $currentScript = isset($_SERVER["PHP_SELF"])
 if(
     $currentScript === "admin.php" ||
     $currentScript === "artists.php" ||
-    $currentScript === "admin-product-new.php"
+    $currentScript === "admin-product-new.php" ||
+    $currentScript === "image-settings.php"
 ){
     $maincolor = "#111111";
     $secondcolor = "#f2f2f2";

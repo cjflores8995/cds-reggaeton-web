@@ -17,6 +17,10 @@ if(!function_exists("adminMenuActiveSection")){
             return "add-cd";
         }
 
+        if($script === "image-settings.php"){
+            return "image-settings";
+        }
+
         if($script === "admin.php"){
             if(isset($_GET["pictures"])){
                 return "pictures";
@@ -98,6 +102,14 @@ function adminMenuClass($section, $current){
         >
             <i class="fa fa-image"></i>
             <span>Pictures</span>
+        </a>
+
+        <a
+            href="<?php echo htmlspecialchars($baseurl . "image-settings.php", ENT_QUOTES, "UTF-8"); ?>"
+            <?php echo adminMenuClass("image-settings", $adminActiveSection); ?>
+        >
+            <i class="fa fa-sliders"></i>
+            <span>Config. imágenes</span>
         </a>
 
         <a

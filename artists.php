@@ -1,7 +1,8 @@
 <?php
 session_start();
-require_once("config.php");
-require_once("artistshelper.php");
+
+require_once __DIR__ . "/config.php";
+require_once __DIR__ . "/artistshelper.php";
 
 if(
     !isset($_SESSION["adminusername"]) ||
@@ -60,6 +61,23 @@ if(isset($_POST["update_artist"])){
             );
 
             if($updated){
+                /*
+                 * Mantiene sincronizado el texto denormalizado "artist"
+                 * si esa columna existe en instalaciones que ya usan el
+                 * frontend nuevo.
+                 */
+                $artistColumn = mysqli_query(
+                    $connection,
+                    "SHOW COLUMNS FROM $tableposts LIKE 'artist'"
+                );
+
+                if($artistColumn && mysqli_num_rows($artistColumn) > 0){
+                    mysqli_query(
+                        $connection,
+                        "UPDATE $tableposts SET artist = '$escapedName' WHERE artistid = $artistId"
+                    );
+                }
+
                 $message = "Artista actualizado correctamente.";
                 $messageType = "success";
             }else{
@@ -127,6 +145,7 @@ if(isset($_GET["edit"])){
 }
 
 $artists = [];
+
 $listResult = mysqli_query(
     $connection,
     "SELECT a.id, a.name, COUNT(p.id) AS cdcount " .
@@ -142,51 +161,33 @@ if($listResult){
     }
 }
 
+$unassignedCount = 0;
+
 $unassignedResult = mysqli_query(
     $connection,
     "SELECT COUNT(*) AS total FROM $tableposts WHERE artistid = 0"
 );
 
-$unassignedCount = 0;
 if($unassignedResult){
     $unassignedRow = mysqli_fetch_assoc($unassignedResult);
     $unassignedCount = (int)$unassignedRow["total"];
 }
-
-$currentlogo = "images/logo.png";
-if(isset($logo) && $logo !== ""){
-    $currentlogo = "pictures/" . $logo;
-}
 ?>
 <!DOCTYPE html>
-<html>
+<html lang="es">
 <head>
     <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Artistas | <?php echo htmlspecialchars($websitetitle) ?></title>
-    <link rel="stylesheet" type="text/css" href="<?php echo $baseurl ?>assets/css/font-awesome.css">
-    <link rel="stylesheet" type="text/css" href="admin-modern.css?v=5">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Artistas | <?php echo htmlspecialchars($websitetitle, ENT_QUOTES, "UTF-8"); ?></title>
+    <link rel="stylesheet" type="text/css" href="<?php echo $baseurl; ?>assets/css/font-awesome.css">
+    <link rel="stylesheet" type="text/css" href="<?php echo $baseurl; ?>admin-modern.css?v=10">
 </head>
 <body>
 <div class="admin-page-shell">
-    <aside class="admin-page-sidebar">
-        <div class="admin-page-logo">
-            <a href="<?php echo $baseurl ?>admin.php">
-                <img src="<?php echo htmlspecialchars($currentlogo) ?>" alt="Logo">
-            </a>
-        </div>
-
-        <nav class="admin-page-nav">
-            <a href="<?php echo $baseurl ?>admin.php"><i class="fa fa-home"></i> Home</a>
-            <a href="<?php echo $baseurl ?>admin.php?newpost"><i class="fa fa-plus"></i> Agregar CD</a>
-            <a href="artists.php" class="active"><i class="fa fa-microphone"></i> Artistas</a>
-            <a href="<?php echo $baseurl ?>admin.php?pictures"><i class="fa fa-image"></i> Pictures</a>
-            <a href="<?php echo $baseurl ?>admin.php?categories"><i class="fa fa-tag"></i> Categories</a>
-            <a href="<?php echo $baseurl ?>admin.php?orders"><i class="fa fa-file-text"></i> Orders</a>
-            <a href="<?php echo $baseurl ?>admin.php?settings"><i class="fa fa-cogs"></i> Settings</a>
-            <a href="<?php echo $baseurl ?>admin.php?logout"><i class="fa fa-sign-out"></i> Logout</a>
-        </nav>
-    </aside>
+    <?php
+    $adminActiveSection = "artists";
+    require __DIR__ . "/admin-menu.php";
+    ?>
 
     <main class="admin-page-content">
         <div class="admin-toolbar">
@@ -199,92 +200,159 @@ if(isset($logo) && $logo !== ""){
         </div>
 
         <?php if($message !== ""){ ?>
-            <div class="alert <?php echo $messageType === "success" ? "success" : "" ?>">
-                <?php echo htmlspecialchars($message) ?>
+            <div class="admin-alert <?php echo $messageType === "success" ? "success" : "error"; ?>">
+                <?php echo htmlspecialchars($message, ENT_QUOTES, "UTF-8"); ?>
             </div>
         <?php } ?>
 
         <?php if($unassignedCount > 0){ ?>
-            <div class="admin-form-card">
+            <section class="admin-form-card">
                 <h2>CDs existentes sin artista</h2>
                 <p class="admin-muted">
-                    Hay <?php echo $unassignedCount ?> CD(s) todavía sin asociación de artista.
-                    Puedes importarlos automáticamente si el título tiene el formato
-                    <strong>Artista - Álbum</strong>.
+                    Hay <?php echo $unassignedCount; ?> CD(s) todavía sin asociación de artista.
+                    La importación utiliza títulos con formato <strong>Artista - Álbum</strong>.
                 </p>
                 <form method="post">
-                    <button class="admin-modern-button secondary" type="submit" name="import_artists" value="1">
-                        <i class="fa fa-magic"></i> Importar artistas desde títulos
+                    <button
+                        class="admin-modern-button secondary"
+                        type="submit"
+                        name="import_artists"
+                        value="1"
+                    >
+                        <i class="fa fa-magic"></i>
+                        Importar artistas desde títulos
                     </button>
                 </form>
-            </div>
+            </section>
         <?php } ?>
 
-        <div class="admin-form-card">
+        <section class="admin-form-card">
             <?php if($editArtist !== null){ ?>
                 <h2>Editar artista</h2>
+
                 <form method="post">
-                    <input type="hidden" name="artist_id" value="<?php echo (int)$editArtist["id"] ?>">
+                    <input
+                        type="hidden"
+                        name="artist_id"
+                        value="<?php echo (int)$editArtist["id"]; ?>"
+                    >
+
                     <label>Nombre</label>
-                    <input type="text" name="artist_name" value="<?php echo htmlspecialchars($editArtist["name"]) ?>" required maxlength="150">
-                    <button class="admin-modern-button" type="submit" name="update_artist" value="1">
+                    <input
+                        type="text"
+                        name="artist_name"
+                        value="<?php echo htmlspecialchars($editArtist["name"], ENT_QUOTES, "UTF-8"); ?>"
+                        required
+                        maxlength="150"
+                    >
+
+                    <button
+                        class="admin-modern-button"
+                        type="submit"
+                        name="update_artist"
+                        value="1"
+                    >
                         Guardar cambios
                     </button>
-                    <a class="admin-modern-button secondary" href="artists.php">Cancelar</a>
+
+                    <a class="admin-modern-button secondary" href="artists.php">
+                        Cancelar
+                    </a>
                 </form>
             <?php }else{ ?>
                 <h2>Nuevo artista</h2>
+
                 <form method="post">
                     <label>Nombre</label>
-                    <input type="text" name="artist_name" placeholder="Ej. Daddy Yankee" required maxlength="150">
-                    <button class="admin-modern-button" type="submit" name="create_artist" value="1">
+                    <input
+                        type="text"
+                        name="artist_name"
+                        placeholder="Ej. Daddy Yankee"
+                        required
+                        maxlength="150"
+                    >
+
+                    <button
+                        class="admin-modern-button"
+                        type="submit"
+                        name="create_artist"
+                        value="1"
+                    >
                         Agregar artista
                     </button>
                 </form>
             <?php } ?>
-        </div>
+        </section>
 
-        <div class="admin-form-card">
+        <section class="admin-form-card">
             <h2>Listado</h2>
 
             <?php if(count($artists) === 0){ ?>
-                <p class="admin-muted">Todavía no hay artistas registrados.</p>
+                <div class="admin-empty">
+                    Todavía no hay artistas registrados.
+                </div>
             <?php }else{ ?>
-                <table>
-                    <thead>
-                    <tr>
-                        <th>Artista</th>
-                        <th style="width:110px;">CDs</th>
-                        <th style="width:220px;">Acciones</th>
-                    </tr>
-                    </thead>
-                    <tbody>
-                    <?php foreach($artists as $artist){ ?>
+                <div class="admin-table-wrap">
+                    <table>
+                        <thead>
                         <tr>
-                            <td><?php echo htmlspecialchars($artist["name"]) ?></td>
-                            <td><span class="admin-badge"><?php echo (int)$artist["cdcount"] ?></span></td>
-                            <td>
-                                <a class="admin-modern-button secondary" href="artists.php?edit=<?php echo (int)$artist["id"] ?>">
-                                    Editar
-                                </a>
-
-                                <?php if((int)$artist["cdcount"] === 0){ ?>
-                                    <form method="post" style="display:inline;" onsubmit="return confirm('¿Eliminar este artista?');">
-                                        <input type="hidden" name="artist_id" value="<?php echo (int)$artist["id"] ?>">
-                                        <button class="admin-modern-button danger" type="submit" name="delete_artist" value="1">
-                                            Eliminar
-                                        </button>
-                                    </form>
-                                <?php }else{ ?>
-                                    <span class="admin-muted">No se puede eliminar</span>
-                                <?php } ?>
-                            </td>
+                            <th>Artista</th>
+                            <th style="width:100px;">CDs</th>
+                            <th style="width:260px;">Acciones</th>
                         </tr>
-                    <?php } ?>
-                    </tbody>
-                </table>
+                        </thead>
+                        <tbody>
+                        <?php foreach($artists as $artist){ ?>
+                            <tr>
+                                <td>
+                                    <?php echo htmlspecialchars($artist["name"], ENT_QUOTES, "UTF-8"); ?>
+                                </td>
+                                <td>
+                                    <span class="admin-badge">
+                                        <?php echo (int)$artist["cdcount"]; ?>
+                                    </span>
+                                </td>
+                                <td>
+                                    <a
+                                        class="admin-modern-button secondary"
+                                        href="artists.php?edit=<?php echo (int)$artist["id"]; ?>"
+                                    >
+                                        Editar
+                                    </a>
+
+                                    <?php if((int)$artist["cdcount"] === 0){ ?>
+                                        <form
+                                            method="post"
+                                            style="display:inline;"
+                                            onsubmit="return confirm('¿Eliminar este artista?');"
+                                        >
+                                            <input
+                                                type="hidden"
+                                                name="artist_id"
+                                                value="<?php echo (int)$artist["id"]; ?>"
+                                            >
+                                            <button
+                                                class="admin-modern-button danger"
+                                                type="submit"
+                                                name="delete_artist"
+                                                value="1"
+                                            >
+                                                Eliminar
+                                            </button>
+                                        </form>
+                                    <?php }else{ ?>
+                                        <span class="admin-muted">
+                                            No se puede eliminar
+                                        </span>
+                                    <?php } ?>
+                                </td>
+                            </tr>
+                        <?php } ?>
+                        </tbody>
+                    </table>
+                </div>
             <?php } ?>
-        </div>
+        </section>
     </main>
 </div>
 </body>

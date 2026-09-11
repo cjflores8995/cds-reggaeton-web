@@ -1,6 +1,6 @@
 <?php
 if(!isset($baseurl)){
-    require_once("config.php");
+    require_once __DIR__ . "/config.php";
 }
 
 if(!function_exists("adminMenuActiveSection")){
@@ -48,90 +48,85 @@ $adminActiveSection = isset($adminActiveSection)
 $currentlogo = "images/logo.png";
 
 if(isset($logo) && trim((string)$logo) !== ""){
-    $currentlogo = "pictures/" . $logo;
+    $currentlogo = "pictures/" . basename((string)$logo);
+}
+
+function adminMenuClass($section, $current){
+    return $section === $current
+        ? ' class="active"'
+        : "";
 }
 ?>
-
-<link
-    rel="stylesheet"
-    type="text/css"
-    href="<?php echo $baseurl ?>admin-modern.css?v=20260911-10"
->
-
 <aside class="admin-page-sidebar">
-
     <div class="admin-page-logo">
-        <a href="<?php echo $baseurl ?>admin.php">
+        <a href="<?php echo htmlspecialchars($baseurl . "admin.php", ENT_QUOTES, "UTF-8"); ?>">
             <img
-                src="<?php echo htmlspecialchars($currentlogo, ENT_QUOTES, 'UTF-8') ?>"
-                alt="Logo"
+                src="<?php echo htmlspecialchars($currentlogo, ENT_QUOTES, "UTF-8"); ?>"
+                alt="Tienda CDS Reggaeton"
             >
         </a>
     </div>
 
-    <nav class="admin-page-nav">
-
+    <nav class="admin-page-nav" aria-label="Administración">
         <a
-            href="<?php echo $baseurl ?>admin.php"
-            <?php echo $adminActiveSection === "home" ? 'class="active"' : '' ?>
+            href="<?php echo htmlspecialchars($baseurl . "admin.php", ENT_QUOTES, "UTF-8"); ?>"
+            <?php echo adminMenuClass("home", $adminActiveSection); ?>
         >
             <i class="fa fa-home"></i>
             <span>Home</span>
         </a>
 
         <a
-            href="<?php echo $baseurl ?>admin-product-new.php"
-            <?php echo $adminActiveSection === "add-cd" ? 'class="active"' : '' ?>
+            href="<?php echo htmlspecialchars($baseurl . "admin-product-new.php", ENT_QUOTES, "UTF-8"); ?>"
+            <?php echo adminMenuClass("add-cd", $adminActiveSection); ?>
         >
             <i class="fa fa-plus"></i>
             <span>Agregar CD</span>
         </a>
 
         <a
-            href="<?php echo $baseurl ?>artists.php"
-            <?php echo $adminActiveSection === "artists" ? 'class="active"' : '' ?>
+            href="<?php echo htmlspecialchars($baseurl . "artists.php", ENT_QUOTES, "UTF-8"); ?>"
+            <?php echo adminMenuClass("artists", $adminActiveSection); ?>
         >
             <i class="fa fa-microphone"></i>
             <span>Artistas</span>
         </a>
 
         <a
-            href="<?php echo $baseurl ?>admin.php?pictures"
-            <?php echo $adminActiveSection === "pictures" ? 'class="active"' : '' ?>
+            href="<?php echo htmlspecialchars($baseurl . "admin.php?pictures", ENT_QUOTES, "UTF-8"); ?>"
+            <?php echo adminMenuClass("pictures", $adminActiveSection); ?>
         >
             <i class="fa fa-image"></i>
             <span>Pictures</span>
         </a>
 
         <a
-            href="<?php echo $baseurl ?>admin.php?categories"
-            <?php echo $adminActiveSection === "categories" ? 'class="active"' : '' ?>
+            href="<?php echo htmlspecialchars($baseurl . "admin.php?categories", ENT_QUOTES, "UTF-8"); ?>"
+            <?php echo adminMenuClass("categories", $adminActiveSection); ?>
         >
             <i class="fa fa-tag"></i>
             <span>Categories</span>
         </a>
 
         <a
-            href="<?php echo $baseurl ?>admin.php?orders"
-            <?php echo $adminActiveSection === "orders" ? 'class="active"' : '' ?>
+            href="<?php echo htmlspecialchars($baseurl . "admin.php?orders", ENT_QUOTES, "UTF-8"); ?>"
+            <?php echo adminMenuClass("orders", $adminActiveSection); ?>
         >
             <i class="fa fa-file-text"></i>
             <span>Orders</span>
         </a>
 
         <a
-            href="<?php echo $baseurl ?>admin.php?settings"
-            <?php echo $adminActiveSection === "settings" ? 'class="active"' : '' ?>
+            href="<?php echo htmlspecialchars($baseurl . "admin.php?settings", ENT_QUOTES, "UTF-8"); ?>"
+            <?php echo adminMenuClass("settings", $adminActiveSection); ?>
         >
             <i class="fa fa-cogs"></i>
             <span>Settings</span>
         </a>
 
-        <a href="<?php echo $baseurl ?>admin.php?logout">
+        <a href="<?php echo htmlspecialchars($baseurl . "admin.php?logout=1", ENT_QUOTES, "UTF-8"); ?>">
             <i class="fa fa-sign-out"></i>
             <span>Logout</span>
         </a>
-
     </nav>
-
 </aside>

@@ -20,7 +20,33 @@ function productImageNormalizePath($value){
     }
 
     $value = str_replace("\\", "/", $value);
-    return "pictures/" . basename($value);
+    $value = preg_replace("#/+#", "/", $value);
+    $value = ltrim($value, "/");
+
+    if(strpos($value, "pictures/") === 0){
+        $value = substr($value, strlen("pictures/"));
+    }
+
+    /*
+     * Conserva subcarpetas válidas como products/12/01.jpg.
+     * La versión anterior usaba basename() y rompía esas rutas.
+     */
+    $segments = explode("/", $value);
+    $safeSegments = [];
+
+    foreach($segments as $segment){
+        if($segment === "" || $segment === "." || $segment === ".."){
+            continue;
+        }
+
+        $safeSegments[] = basename($segment);
+    }
+
+    if(count($safeSegments) === 0){
+        return "";
+    }
+
+    return "pictures/" . implode("/", $safeSegments);
 }
 
 function productImageSlotsFromDatabase($picture, $moreimages){
@@ -64,7 +90,13 @@ function productImagePictureValue($slots){
         return "";
     }
 
-    return basename(productImageNormalizePath($slots[1]));
+    $normalized = productImageNormalizePath($slots[1]);
+
+    if(strpos($normalized, "pictures/") === 0){
+        return substr($normalized, strlen("pictures/"));
+    }
+
+    return $normalized;
 }
 
 function productImageValidateExistingPath($path){
@@ -74,24 +106,39 @@ function productImageValidateExistingPath($path){
         return "";
     }
 
-    $picturesDirectory = realpath(__DIR__ . DIRECTORY_SEPARATOR . "pictures");
-    $candidatePath = realpath(
-        __DIR__ . DIRECTORY_SEPARATOR . str_replace("/", DIRECTORY_SEPARATOR, $normalizedPath)
+    $picturesDirectory = realpath(
+        __DIR__ . DIRECTORY_SEPARATOR . "pictures"
     );
 
-    if($picturesDirectory === false || $candidatePath === false){
+    if($picturesDirectory === false){
         return "";
     }
 
-    if(strpos($candidatePath, $picturesDirectory . DIRECTORY_SEPARATOR) !== 0){
+    $relative = substr(
+        $normalizedPath,
+        strlen("pictures/")
+    );
+
+    $candidatePath = realpath(
+        $picturesDirectory .
+        DIRECTORY_SEPARATOR .
+        str_replace("/", DIRECTORY_SEPARATOR, $relative)
+    );
+
+    if($candidatePath === false || !is_file($candidatePath)){
         return "";
     }
 
-    if(!is_file($candidatePath)){
+    $picturesPrefix = rtrim(
+        $picturesDirectory,
+        DIRECTORY_SEPARATOR
+    ) . DIRECTORY_SEPARATOR;
+
+    if(strpos($candidatePath, $picturesPrefix) !== 0){
         return "";
     }
 
-    return "pictures/" . basename($candidatePath);
+    return $normalizedPath;
 }
 
 function productImageGetUploadedFileAt($files, $index){
@@ -132,6 +179,15 @@ function productImageSaveUploadedFile($file){
         ];
     }
 
+    if(isset($file["size"]) && $file["size"] > 8 * 1024 * 1024){
+        return [
+            "ok" => false,
+            "uploaded" => false,
+            "path" => "",
+            "error" => "La imagen supera el límite de 8 MB."
+        ];
+    }
+
     $imageType = @exif_imagetype($file["tmp_name"]);
 
     if($imageType === IMAGETYPE_JPEG){
@@ -147,24 +203,21 @@ function productImageSaveUploadedFile($file){
         ];
     }
 
-    $randomName = substr(
-        str_shuffle(str_repeat("0123456789abcdefghijklmnopqrstuvwxyz", 5)),
-        0,
-        16
-    );
-
+    $randomName = bin2hex(random_bytes(8));
     $fileName = $randomName . "." . $extension;
     $relativePath = "pictures/" . $fileName;
-    $destination = __DIR__ . DIRECTORY_SEPARATOR . "pictures" . DIRECTORY_SEPARATOR . $fileName;
 
-    $maxsize = 524288;
-    $saved = false;
+    $destination =
+        __DIR__ .
+        DIRECTORY_SEPARATOR .
+        "pictures" .
+        DIRECTORY_SEPARATOR .
+        $fileName;
 
-    if(isset($file["size"]) && $file["size"] >= $maxsize){
-        $saved = createThumbnail($file["tmp_name"], $destination, 512) === true;
-    }else{
-        $saved = move_uploaded_file($file["tmp_name"], $destination);
-    }
+    $saved = move_uploaded_file(
+        $file["tmp_name"],
+        $destination
+    );
 
     if(!$saved || !file_exists($destination)){
         return [
@@ -185,13 +238,23 @@ function productImageSaveUploadedFile($file){
 
 function productImageCleanupUploadedPaths($paths){
     foreach($paths as $path){
-        $normalizedPath = productImageNormalizePath($path);
+        $validated = productImageValidateExistingPath($path);
 
-        if($normalizedPath === ""){
+        if($validated === ""){
             continue;
         }
 
-        $fullPath = __DIR__ . DIRECTORY_SEPARATOR . "pictures" . DIRECTORY_SEPARATOR . basename($normalizedPath);
+        $relative = substr(
+            $validated,
+            strlen("pictures/")
+        );
+
+        $fullPath =
+            __DIR__ .
+            DIRECTORY_SEPARATOR .
+            "pictures" .
+            DIRECTORY_SEPARATOR .
+            str_replace("/", DIRECTORY_SEPARATOR, $relative);
 
         if(is_file($fullPath)){
             @unlink($fullPath);
@@ -259,7 +322,13 @@ function productImageBuildSlotsFromManagerRequest(){
         }
 
         if(isset($usedRoles[$role])){
-            $errors[] = "El tipo " . $role . " - " . productImageRoleLabels()[$role] . " está repetido.";
+            $labels = productImageRoleLabels();
+            $errors[] =
+                "El tipo " .
+                $role .
+                " - " .
+                $labels[$role] .
+                " está repetido.";
             continue;
         }
 
@@ -272,7 +341,10 @@ function productImageBuildSlotsFromManagerRequest(){
         $finalPath = $existingPath;
 
         if($files !== null){
-            $file = productImageGetUploadedFileAt($files, $index);
+            $file = productImageGetUploadedFileAt(
+                $files,
+                $index
+            );
 
             if($file["error"] !== UPLOAD_ERR_NO_FILE){
                 $savedImage = productImageSaveUploadedFile($file);

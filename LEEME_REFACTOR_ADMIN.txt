@@ -1,0 +1,29 @@
+TIENDA CDS REGGAETON - REFACTOR ADMIN BASADO EN develop
+
+Archivos a colocar en la RAÍZ del proyecto:
+- admin-menu.php              NUEVO
+- admin.php                   REEMPLAZAR
+- artists.php                 REEMPLAZAR
+- admin-product-new.php       REEMPLAZAR
+- admin-modern.css            REEMPLAZAR
+- somefunctions.js            REEMPLAZAR
+- productimages.php           REEMPLAZAR
+
+IMPORTANTE:
+1. El archivo images/admin-menu.php que quedó vacío en GitHub NO se usa.
+   Puedes eliminarlo después de validar.
+2. admin-menu.php debe estar al mismo nivel que admin.php.
+3. Haz Ctrl+F5 después de copiar los archivos.
+4. No se modifica GitHub automáticamente: valida localmente y luego súbelo tú.
+
+Qué corrige:
+- Un solo menú PHP compartido para todo el panel.
+- artists.php ya no duplica el sidebar.
+- admin.php ya no contiene adminleftbaritem ni el menú quemado.
+- admin-product-new.php usa el mismo sidebar y estilo.
+- somefunctions.js deja de reconstruir el menú con JavaScript.
+- body/html no tienen margen blanco exterior.
+- Artista sigue siendo obligatorio.
+- No se puede eliminar un artista con CDs asociados.
+- productimages.php conserva subcarpetas existentes (ej. pictures/products/12/01.jpg)
+  en lugar de destruir la ruta con basename().

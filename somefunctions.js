@@ -15,103 +15,9 @@ function tSep(x){
         5: "Portada interior"
     };
 
-    if(isAdminPage()){
-        loadAdminTheme();
-    }
-
     $(function(){
-        if(!isAdminPage()){
-            return;
-        }
-
-        replaceLegacyAdminSidebar();
         initializeProductForms();
     });
-
-    function isAdminPage(){
-        return /\/admin\.php$/i.test(window.location.pathname);
-    }
-
-    function loadAdminTheme(){
-        if(document.getElementById("admin-modern-theme")){
-            return;
-        }
-
-        var link = document.createElement("link");
-        link.id = "admin-modern-theme";
-        link.rel = "stylesheet";
-        link.href = "admin-modern.css?v=4";
-        document.head.appendChild(link);
-    }
-
-    function replaceLegacyAdminSidebar(){
-        var $sidebar = $(".adminmenubar").first();
-
-        if($sidebar.length === 0){
-            return;
-        }
-
-        var currentLogo = $sidebar.find("img").first().attr("src") || "images/logo.png";
-        var logoHomeHref = $sidebar.find("a").first().attr("href") || "";
-        var baseHref = logoHomeHref;
-
-        if(baseHref === ""){
-            baseHref = window.location.pathname.replace(/admin\.php$/i, "");
-        }
-
-        if(baseHref.slice(-1) !== "/"){
-            baseHref += "/";
-        }
-
-        var search = window.location.search || "";
-        var activeKey = "home";
-
-        if(search.indexOf("newpost") !== -1){
-            activeKey = "newpost";
-        }else if(search.indexOf("pictures") !== -1){
-            activeKey = "pictures";
-        }else if(search.indexOf("categories") !== -1){
-            activeKey = "categories";
-        }else if(search.indexOf("orders") !== -1){
-            activeKey = "orders";
-        }else if(search.indexOf("settings") !== -1){
-            activeKey = "settings";
-        }else if(search.indexOf("editpost") !== -1){
-            activeKey = "home";
-        }
-
-        function navItem(key, href, icon, text){
-            var activeClass = activeKey === key ? " active" : "";
-
-            return (
-                "<a class='" + activeClass.trim() + "' href='" + href + "'>" +
-                    "<i class='fa " + icon + "'></i> " + text +
-                "</a>"
-            );
-        }
-
-        var html = "";
-
-        html += "<div class='admin-page-logo'>";
-        html += "<a href='" + baseHref + "admin.php'>";
-        html += "<img src='" + currentLogo + "' alt='Logo'>";
-        html += "</a>";
-        html += "</div>";
-
-        html += "<nav class='admin-page-nav'>";
-        html += navItem("home", baseHref + "admin.php", "fa-home", "Home");
-        html += navItem("newpost", baseHref + "admin.php?newpost", "fa-plus", "Agregar CD");
-        html += "<a class='admin-menu-artists' href='" + baseHref + "artists.php'><i class='fa fa-microphone'></i> Artistas</a>";
-        html += navItem("pictures", baseHref + "admin.php?pictures", "fa-image", "Pictures");
-        html += navItem("categories", baseHref + "admin.php?categories", "fa-tag", "Categories");
-        html += navItem("orders", baseHref + "admin.php?orders", "fa-file-text", "Orders");
-        html += navItem("settings", baseHref + "admin.php?settings", "fa-cogs", "Settings");
-        html += "<a href='" + baseHref + "admin.php?logout'><i class='fa fa-sign-out'></i> Logout</a>";
-        html += "</nav>";
-
-        $sidebar.html(html);
-        $sidebar.addClass("admin-sidebar-unified");
-    }
 
     function initializeProductForms(){
         $("form").each(function(){
@@ -223,10 +129,8 @@ function tSep(x){
         }
 
         var $wrapper = $("<div class='admin-injected-artist-field'></div>");
-        var $label = $("<label><i class='fa fa-microphone'></i> Artista</label>");
-        var $select = $(
-            "<select name='artistid' required></select>"
-        );
+        var $label = $("<label><i class='fa fa-microphone'></i> Artista *</label>");
+        var $select = $("<select name='artistid' required></select>");
 
         $select.append(
             $("<option></option>")
@@ -256,7 +160,7 @@ function tSep(x){
         }
 
         var $help = $(
-            "<div class='admin-muted' style='margin-top:-8px;margin-bottom:14px;'>" +
+            "<div class='admin-muted' style='margin-top:-7px;margin-bottom:14px;'>" +
                 "Administra la lista desde <a class='textlink' href='artists.php'>Artistas</a>." +
             "</div>"
         );
@@ -265,7 +169,13 @@ function tSep(x){
         $wrapper.append($select);
         $wrapper.append($help);
 
-        $wrapper.insertBefore($categorySelect.prev("label"));
+        var $categoryLabel = $categorySelect.prev("label");
+
+        if($categoryLabel.length > 0){
+            $wrapper.insertBefore($categoryLabel);
+        }else{
+            $wrapper.insertBefore($categorySelect);
+        }
     }
 
     function initializeImageManager($form, slots){
@@ -283,10 +193,13 @@ function tSep(x){
 
         $legacyMainInput.prev("label").before($manager);
 
-        var $enabledInput = $(
-            "<input type='hidden' name='product_image_manager' value='1'>"
+        $form.append(
+            $("<input>", {
+                type: "hidden",
+                name: "product_image_manager",
+                value: "1"
+            })
         );
-        $form.append($enabledInput);
 
         hideLegacyImageControls(
             $legacyMainInput,
@@ -509,9 +422,23 @@ function tSep(x){
             $select.find("option").each(function(){
                 var $option = $(this);
                 var value = String($option.val());
-                var usedElsewhere = usedRoles.indexOf(value) !== -1 && value !== currentValue;
 
-                $option.prop("disabled", usedElsewhere);
+                var duplicatedSomewhereElse = false;
+
+                $manager.find(".product-image-role").each(function(){
+                    if(this === $select.get(0)){
+                        return;
+                    }
+
+                    if(String($(this).val()) === value){
+                        duplicatedSomewhereElse = true;
+                    }
+                });
+
+                $option.prop(
+                    "disabled",
+                    duplicatedSomewhereElse && value !== currentValue
+                );
             });
         });
 

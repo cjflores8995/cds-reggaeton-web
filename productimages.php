@@ -20,15 +20,6 @@ function productImageNormalizePath($value){
     }
 
     $value = str_replace("\\", "/", $value);
-
-    while(strpos($value, "//") !== false){
-        $value = str_replace("//", "/", $value);
-    }
-
-    if(strpos($value, "pictures/") === 0){
-        return "pictures/" . basename($value);
-    }
-
     return "pictures/" . basename($value);
 }
 
@@ -45,13 +36,11 @@ function productImageSlotsFromDatabase($picture, $moreimages){
         $slots[1] = productImageNormalizePath($picture);
     }
 
-    if(trim((string)$moreimages) !== ""){
-        $items = explode(",", (string)$moreimages);
+    $items = explode(",", (string)$moreimages);
 
-        for($i = 0; $i < 4; $i++){
-            if(array_key_exists($i, $items) && trim((string)$items[$i]) !== ""){
-                $slots[$i + 2] = productImageNormalizePath($items[$i]);
-            }
+    for($i = 0; $i < 4; $i++){
+        if(isset($items[$i]) && trim((string)$items[$i]) !== ""){
+            $slots[$i + 2] = productImageNormalizePath($items[$i]);
         }
     }
 
@@ -79,32 +68,30 @@ function productImagePictureValue($slots){
 }
 
 function productImageValidateExistingPath($path){
-    $path = productImageNormalizePath($path);
+    $normalizedPath = productImageNormalizePath($path);
 
-    if($path === ""){
+    if($normalizedPath === ""){
         return "";
     }
 
     $picturesDirectory = realpath(__DIR__ . DIRECTORY_SEPARATOR . "pictures");
-    $filePath = realpath(
-        __DIR__ .
-        DIRECTORY_SEPARATOR .
-        str_replace("/", DIRECTORY_SEPARATOR, $path)
+    $candidatePath = realpath(
+        __DIR__ . DIRECTORY_SEPARATOR . str_replace("/", DIRECTORY_SEPARATOR, $normalizedPath)
     );
 
-    if($picturesDirectory === false || $filePath === false){
+    if($picturesDirectory === false || $candidatePath === false){
         return "";
     }
 
-    if(strpos($filePath, $picturesDirectory . DIRECTORY_SEPARATOR) !== 0){
+    if(strpos($candidatePath, $picturesDirectory . DIRECTORY_SEPARATOR) !== 0){
         return "";
     }
 
-    if(!is_file($filePath)){
+    if(!is_file($candidatePath)){
         return "";
     }
 
-    return "pictures/" . basename($filePath);
+    return "pictures/" . basename($candidatePath);
 }
 
 function productImageGetUploadedFileAt($files, $index){
@@ -174,16 +161,9 @@ function productImageSaveUploadedFile($file){
     $saved = false;
 
     if(isset($file["size"]) && $file["size"] >= $maxsize){
-        $saved = createThumbnail(
-            $file["tmp_name"],
-            $destination,
-            512
-        ) === true;
+        $saved = createThumbnail($file["tmp_name"], $destination, 512) === true;
     }else{
-        $saved = move_uploaded_file(
-            $file["tmp_name"],
-            $destination
-        );
+        $saved = move_uploaded_file($file["tmp_name"], $destination);
     }
 
     if(!$saved || !file_exists($destination)){
@@ -205,14 +185,13 @@ function productImageSaveUploadedFile($file){
 
 function productImageCleanupUploadedPaths($paths){
     foreach($paths as $path){
-        $validatedPath = productImageNormalizePath($path);
+        $normalizedPath = productImageNormalizePath($path);
 
-        if($validatedPath === ""){
+        if($normalizedPath === ""){
             continue;
         }
 
-        $fileName = basename($validatedPath);
-        $fullPath = __DIR__ . DIRECTORY_SEPARATOR . "pictures" . DIRECTORY_SEPARATOR . $fileName;
+        $fullPath = __DIR__ . DIRECTORY_SEPARATOR . "pictures" . DIRECTORY_SEPARATOR . basename($normalizedPath);
 
         if(is_file($fullPath)){
             @unlink($fullPath);
@@ -245,24 +224,7 @@ function productImageValidateSlots($slots){
     return $errors;
 }
 
-function productImageBuildSlotsFromRequest($currentPicture = "", $currentMoreImages = ""){
-    $slots = productImageSlotsFromDatabase(
-        $currentPicture,
-        $currentMoreImages
-    );
-
-    if(
-        !isset($_POST["product_image_manager"]) ||
-        $_POST["product_image_manager"] !== "1"
-    ){
-        return [
-            "ok" => true,
-            "slots" => $slots,
-            "errors" => [],
-            "uploaded" => []
-        ];
-    }
-
+function productImageBuildSlotsFromManagerRequest(){
     $slots = [
         1 => "",
         2 => "",
@@ -274,84 +236,66 @@ function productImageBuildSlotsFromRequest($currentPicture = "", $currentMoreIma
     $errors = [];
     $uploadedPaths = [];
 
-    if(
-        isset($_POST["product_image_state"]) &&
-        trim((string)$_POST["product_image_state"]) !== ""
-    ){
-        $state = json_decode(
-            $_POST["product_image_state"],
-            true
-        );
+    $roles = isset($_POST["product_image_roles"]) && is_array($_POST["product_image_roles"])
+        ? $_POST["product_image_roles"]
+        : [];
 
-        if(is_array($state)){
-            for($role = 1; $role <= 5; $role++){
-                $key = (string)$role;
+    $existingPaths = isset($_POST["product_image_existing"]) && is_array($_POST["product_image_existing"])
+        ? $_POST["product_image_existing"]
+        : [];
 
-                if(
-                    isset($state[$key]) &&
-                    trim((string)$state[$key]) !== ""
-                ){
-                    $validatedPath = productImageValidateExistingPath(
-                        $state[$key]
-                    );
+    $files = isset($_FILES["product_image_files"])
+        ? $_FILES["product_image_files"]
+        : null;
 
-                    if($validatedPath !== ""){
-                        $slots[$role] = $validatedPath;
-                    }
+    $usedRoles = [];
+
+    foreach($roles as $index => $roleValue){
+        $role = (int)$roleValue;
+
+        if($role < 1 || $role > 5){
+            $errors[] = "Se recibió un tipo de imagen inválido.";
+            continue;
+        }
+
+        if(isset($usedRoles[$role])){
+            $errors[] = "El tipo " . $role . " - " . productImageRoleLabels()[$role] . " está repetido.";
+            continue;
+        }
+
+        $usedRoles[$role] = true;
+
+        $existingPath = isset($existingPaths[$index])
+            ? productImageValidateExistingPath($existingPaths[$index])
+            : "";
+
+        $finalPath = $existingPath;
+
+        if($files !== null){
+            $file = productImageGetUploadedFileAt($files, $index);
+
+            if($file["error"] !== UPLOAD_ERR_NO_FILE){
+                $savedImage = productImageSaveUploadedFile($file);
+
+                if(!$savedImage["ok"]){
+                    $errors[] = $savedImage["error"];
+                    continue;
+                }
+
+                if($savedImage["uploaded"]){
+                    $finalPath = $savedImage["path"];
+                    $uploadedPaths[] = $savedImage["path"];
                 }
             }
         }
-    }
 
-    if(
-        isset($_FILES["product_image_files"]) &&
-        isset($_POST["product_image_roles"]) &&
-        is_array($_POST["product_image_roles"])
-    ){
-        $usedUploadRoles = [];
-
-        foreach($_POST["product_image_roles"] as $index => $roleValue){
-            $role = (int)$roleValue;
-
-            if($role < 1 || $role > 5){
-                $errors[] = "Se recibió un tipo de imagen inválido.";
-                continue;
-            }
-
-            $file = productImageGetUploadedFileAt(
-                $_FILES["product_image_files"],
-                $index
-            );
-
-            if($file["error"] === UPLOAD_ERR_NO_FILE){
-                continue;
-            }
-
-            if(isset($usedUploadRoles[$role])){
-                $errors[] = "El tipo de imagen " . $role . " está repetido.";
-                continue;
-            }
-
-            $usedUploadRoles[$role] = true;
-
-            $savedImage = productImageSaveUploadedFile($file);
-
-            if(!$savedImage["ok"]){
-                $errors[] = $savedImage["error"];
-                continue;
-            }
-
-            if($savedImage["uploaded"]){
-                $slots[$role] = $savedImage["path"];
-                $uploadedPaths[] = $savedImage["path"];
-            }
+        if($finalPath !== ""){
+            $slots[$role] = $finalPath;
         }
     }
 
-    $slotErrors = productImageValidateSlots($slots);
-
-    foreach($slotErrors as $slotError){
-        $errors[] = $slotError;
+    foreach(productImageValidateSlots($slots) as $validationError){
+        $errors[] = $validationError;
     }
 
     return [
@@ -360,80 +304,5 @@ function productImageBuildSlotsFromRequest($currentPicture = "", $currentMoreIma
         "errors" => $errors,
         "uploaded" => $uploadedPaths
     ];
-}
-
-function productImageApiResponse($data, $statusCode = 200){
-    if(!headers_sent()){
-        http_response_code($statusCode);
-        header("Content-Type: application/json; charset=utf-8");
-        header("Cache-Control: no-store, no-cache, must-revalidate, max-age=0");
-    }
-
-    echo json_encode($data);
-    exit;
-}
-
-if(
-    isset($_GET["action"]) &&
-    $_GET["action"] === "get"
-){
-    if(session_status() === PHP_SESSION_NONE){
-        session_start();
-    }
-
-    if(
-        !isset($_SESSION["adminusername"]) ||
-        !isset($_SESSION["adminpassword"]) ||
-        $_SESSION["adminusername"] !== $username ||
-        $_SESSION["adminpassword"] !== $password
-    ){
-        productImageApiResponse(
-            [
-                "ok" => false,
-                "message" => "No autorizado."
-            ],
-            403
-        );
-    }
-
-    $id = isset($_GET["id"])
-        ? (int)$_GET["id"]
-        : 0;
-
-    if($id <= 0){
-        productImageApiResponse(
-            [
-                "ok" => false,
-                "message" => "Id de producto inválido."
-            ],
-            400
-        );
-    }
-
-    $sql = "SELECT picture, moreimages FROM $tableposts WHERE id = $id LIMIT 1";
-    $result = mysqli_query($connection, $sql);
-
-    if(!$result || mysqli_num_rows($result) === 0){
-        productImageApiResponse(
-            [
-                "ok" => false,
-                "message" => "Producto no encontrado."
-            ],
-            404
-        );
-    }
-
-    $row = mysqli_fetch_assoc($result);
-
-    productImageApiResponse(
-        [
-            "ok" => true,
-            "roles" => productImageRoleLabels(),
-            "slots" => productImageSlotsFromDatabase(
-                $row["picture"],
-                $row["moreimages"]
-            )
-        ]
-    );
 }
 ?>

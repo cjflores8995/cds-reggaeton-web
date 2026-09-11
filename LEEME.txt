@@ -1,0 +1,33 @@
+Tienda CDS Reggaeton - corrección imágenes + CRUD artistas + estilo admin
+
+Reemplazar en la raíz:
+- config.php
+- postupload.php
+- postupdate.php
+- somefunctions.js
+- productimages.php (si ya existe de la prueba anterior, reemplazarlo)
+
+Agregar en la raíz:
+- artistshelper.php
+- productdata.php
+- artists.php
+- admin-modern.css
+
+No reemplazar admin.php.
+No reemplazar index.php.
+No eliminar imagepicker.php.
+
+Después:
+1. Abrir admin.php y hacer Ctrl+F5.
+2. Entrar en Artistas desde el menú izquierdo.
+3. Si existen CDs antiguos sin artistid, usar "Importar artistas desde títulos".
+4. Editar un CD. Debe aparecer Artista y el nuevo administrador de imágenes.
+5. Validar imágenes: mínimo 2, máximo 5, rol 1 obligatorio, roles únicos.
+6. Al reemplazar una imagen NO se borra físicamente la anterior.
+
+Roles:
+1 - Portada web
+2 - Portada delantera
+3 - CD
+4 - Portada posterior
+5 - Portada interior

@@ -2,6 +2,7 @@
 require_once("config.php");
 require_once("uilang.php");
 require_once("productimages.php");
+require_once("artistshelper.php");
 
 if(
     isset($_POST["editposttitle"]) &&
@@ -16,6 +17,10 @@ if(
 
     $catid = isset($_POST["editcatid"])
         ? (int)$_POST["editcatid"]
+        : 0;
+
+    $artistid = isset($_POST["artistid"])
+        ? artistResolveSelectedId($_POST["artistid"])
         : 0;
 
     $normalprice = mysqli_real_escape_string(
@@ -43,136 +48,108 @@ if(
         exit;
     }
 
-    if($posttitle !== "" && $content !== ""){
-        $sql = "SELECT * FROM $tableposts WHERE id = $id LIMIT 1";
-        $result = mysqli_query(
-            $connection,
-            $sql
-        );
+    if($posttitle === "" || $content === ""){
+        echo "<div class='alert'>El título y el contenido son obligatorios.</div>";
+        exit;
+    }
 
-        if(!$result || mysqli_num_rows($result) === 0){
-            echo "<div class='alert'>Producto no encontrado.</div>";
+    if($artistid <= 0){
+        echo "<div class='alert'>Selecciona un artista válido antes de actualizar el CD.</div>";
+        exit;
+    }
+
+    $sql = "SELECT * FROM $tableposts WHERE id = $id LIMIT 1";
+    $result = mysqli_query($connection, $sql);
+
+    if(!$result || mysqli_num_rows($result) === 0){
+        echo "<div class='alert'>Producto no encontrado.</div>";
+        exit;
+    }
+
+    $row = mysqli_fetch_assoc($result);
+
+    $oldpicture = $row["picture"];
+    $oldmoreimages = $row["moreimages"];
+
+    $newpicture = $oldpicture;
+    $moreimages = $oldmoreimages;
+    $uploadedPaths = [];
+
+    if(
+        isset($_POST["product_image_manager"]) &&
+        $_POST["product_image_manager"] === "1"
+    ){
+        $imageResult = productImageBuildSlotsFromManagerRequest();
+
+        if(!$imageResult["ok"]){
+            productImageCleanupUploadedPaths($imageResult["uploaded"]);
+
+            foreach($imageResult["errors"] as $error){
+                echo "<div class='alert'>" . htmlspecialchars($error) . "</div>";
+            }
+
+            echo "<script>$(\"#upploadprogresstitle\").hide()</script>";
             exit;
         }
 
-        $row = mysqli_fetch_assoc($result);
-
-        $oldpicture = $row["picture"];
-        $oldmoreimages = $row["moreimages"];
-
-        $newpicture = $oldpicture;
-        $moreimages = $oldmoreimages;
-        $uploadedPaths = [];
+        $newpicture = productImagePictureValue($imageResult["slots"]);
+        $moreimages = productImageSerializeMoreImages($imageResult["slots"]);
+        $uploadedPaths = $imageResult["uploaded"];
+    }else{
+        //Legacy fallback in case JavaScript is unavailable.
+        $moreimages = isset($_POST["moreimagesinput"])
+            ? $_POST["moreimagesinput"]
+            : $oldmoreimages;
 
         if(
-            isset($_POST["product_image_manager"]) &&
-            $_POST["product_image_manager"] === "1"
+            isset($_FILES["newpicture"]) &&
+            isset($_FILES["newpicture"]["error"]) &&
+            $_FILES["newpicture"]["error"] !== UPLOAD_ERR_NO_FILE
         ){
-            $imageResult = productImageBuildSlotsFromRequest(
-                $oldpicture,
-                $oldmoreimages
-            );
+            $savedImage = productImageSaveUploadedFile($_FILES["newpicture"]);
 
-            if(!$imageResult["ok"]){
-                productImageCleanupUploadedPaths(
-                    $imageResult["uploaded"]
-                );
-
-                foreach($imageResult["errors"] as $error){
-                    echo "<div class='alert'>" . htmlspecialchars($error) . "</div>";
-                }
-
-                echo "<script>$(\"#upploadprogresstitle\").hide()</script>";
+            if(!$savedImage["ok"]){
+                echo "<div class='alert'>" . htmlspecialchars($savedImage["error"]) . "</div>";
                 exit;
             }
 
-            $newpicture = productImagePictureValue(
-                $imageResult["slots"]
-            );
-
-            $moreimages = productImageSerializeMoreImages(
-                $imageResult["slots"]
-            );
-
-            $uploadedPaths = $imageResult["uploaded"];
-        }else{
-            $moreimages = isset($_POST["moreimagesinput"])
-                ? $_POST["moreimagesinput"]
-                : $oldmoreimages;
-
-            if(
-                isset($_FILES["newpicture"]) &&
-                isset($_FILES["newpicture"]["error"]) &&
-                $_FILES["newpicture"]["error"] !== UPLOAD_ERR_NO_FILE
-            ){
-                $savedImage = productImageSaveUploadedFile(
-                    $_FILES["newpicture"]
-                );
-
-                if(!$savedImage["ok"]){
-                    echo "<div class='alert'>" . htmlspecialchars($savedImage["error"]) . "</div>";
-                    echo "<script>$(\"#upploadprogresstitle\").hide()</script>";
-                    exit;
-                }
-
-                if($savedImage["uploaded"]){
-                    $newpicture = basename(
-                        $savedImage["path"]
-                    );
-
-                    $uploadedPaths[] = $savedImage["path"];
-                }
+            if($savedImage["uploaded"]){
+                $newpicture = basename($savedImage["path"]);
+                $uploadedPaths[] = $savedImage["path"];
             }
         }
-
-        $newpicture = mysqli_real_escape_string(
-            $connection,
-            $newpicture
-        );
-
-        $moreimages = mysqli_real_escape_string(
-            $connection,
-            $moreimages
-        );
-
-        $updateSql =
-            "UPDATE $tableposts SET " .
-            "title = '$posttitle', " .
-            "catid = $catid, " .
-            "content = '$content', " .
-            "picture = '$newpicture', " .
-            "normalprice = '$normalprice', " .
-            "discountprice = '$discountprice', " .
-            "options = '$moreoptions', " .
-            "moreimages = '$moreimages' " .
-            "WHERE id = $id";
-
-        $updateResult = mysqli_query(
-            $connection,
-            $updateSql
-        );
-
-        if(!$updateResult){
-            productImageCleanupUploadedPaths(
-                $uploadedPaths
-            );
-
-            echo "<div class='alert'>No se pudo actualizar el producto.</div>";
-            exit;
-        }
-
-        /*
-         * IMPORTANTE:
-         * No eliminamos automáticamente las imágenes anteriores.
-         *
-         * Una imagen puede estar referenciada por otro producto o por
-         * una posición distinta de la galería. El borrado físico queda
-         * exclusivamente bajo el control de la sección Pictures.
-         */
-
-        echo "<div class='alert'>" .
-             uilang("Post successfully updated.") .
-             "</div>";
     }
+
+    $newpicture = mysqli_real_escape_string($connection, $newpicture);
+    $moreimages = mysqli_real_escape_string($connection, $moreimages);
+
+    $updateSql =
+        "UPDATE $tableposts SET " .
+        "title = '$posttitle', " .
+        "catid = $catid, " .
+        "artistid = $artistid, " .
+        "content = '$content', " .
+        "picture = '$newpicture', " .
+        "normalprice = '$normalprice', " .
+        "discountprice = '$discountprice', " .
+        "options = '$moreoptions', " .
+        "moreimages = '$moreimages' " .
+        "WHERE id = $id";
+
+    $updateResult = mysqli_query($connection, $updateSql);
+
+    if(!$updateResult){
+        productImageCleanupUploadedPaths($uploadedPaths);
+        echo "<div class='alert'>No se pudo actualizar el CD.</div>";
+        exit;
+    }
+
+    /*
+     * Never delete the previous image automatically here.
+     * Another CD or another gallery position could still reference it.
+     * Physical deletion stays under the Pictures administration section.
+     */
+
+    echo "<div class='alert'>" . uilang("Post successfully updated.") . "</div>";
 }
 ?>

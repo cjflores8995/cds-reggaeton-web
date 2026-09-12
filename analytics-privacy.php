@@ -58,7 +58,7 @@ if(!function_exists("analyticsPrivacySensitiveKey")){
 
 if(!function_exists("analyticsPrivacyRedactText")){
     function analyticsPrivacyRedactText($value, $maxLength){
-        $value = analyticsSafeText($value, $maxLength);
+        $value = analyticsSafeText($value, min(4000, max($maxLength, $maxLength * 2)));
 
         $value = preg_replace(
             '/[A-Z0-9._%+\-]+@[A-Z0-9.\-]+\.[A-Z]{2,}/iu',
@@ -149,6 +149,12 @@ if(!function_exists("analyticsPrivacySanitizeServerContext")){
                 $_SERVER["HTTP_REFERER"],
                 1000
             );
+        }
+
+        foreach(["utm_source", "utm_medium", "utm_campaign", "utm_content", "utm_term"] as $key){
+            if(isset($_GET[$key])){
+                $_GET[$key] = analyticsPrivacyRedactText($_GET[$key], 200);
+            }
         }
     }
 }

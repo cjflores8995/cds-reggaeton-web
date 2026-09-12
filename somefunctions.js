@@ -482,6 +482,22 @@ function tSep(x){
         return 0;
     }
 
+    function prepareImageFileInputIndexes($manager){
+        $manager.find(".product-image-file").each(function(index){
+            $(this).attr(
+                "name",
+                "product_image_files[" + index + "]"
+            );
+        });
+    }
+
+    function restoreImageFileInputNames($manager){
+        $manager.find(".product-image-file").attr(
+            "name",
+            "product_image_files[]"
+        );
+    }
+
     function installImageValidation($form, $manager){
         var formElement = $form.get(0);
 
@@ -497,6 +513,19 @@ function tSep(x){
                 var validation = validateProductForm($form, $manager);
 
                 if(validation.ok){
+                    /*
+                     * jquery.form 3.51 serializa los file inputs vacíos como
+                     * campos de texto. Sin índices explícitos PHP puede
+                     * reindexar $_POST y $_FILES por separado y asociar una
+                     * imagen nueva al rol equivocado. Indexamos solo durante
+                     * la serialización y restauramos el nombre inmediatamente.
+                     */
+                    prepareImageFileInputIndexes($manager);
+
+                    window.setTimeout(function(){
+                        restoreImageFileInputNames($manager);
+                    }, 0);
+
                     return true;
                 }
 
@@ -551,7 +580,7 @@ function tSep(x){
             usedRoles[role] = true;
 
             var existingPath = $row.find("input[name='product_image_existing[]']").val() || "";
-            var fileInput = $row.find("input[name='product_image_files[]']").get(0);
+            var fileInput = $row.find(".product-image-file").get(0);
             var hasNewFile = !!(
                 fileInput &&
                 fileInput.files &&

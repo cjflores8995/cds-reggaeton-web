@@ -2,9 +2,15 @@
 session_start();
 require_once("config.php");
 require_once("productimages.php");
+require_once("product-tiktok.php");
 
 header("Content-Type: application/json; charset=utf-8");
 header("Cache-Control: no-store, no-cache, must-revalidate, max-age=0");
+
+productTikTokEnsureColumn(
+    $connection,
+    $tableposts
+);
 
 function productDataResponse($payload, $statusCode = 200){
     http_response_code($statusCode);
@@ -122,7 +128,7 @@ $id = isset($_GET["id"])
 if($id > 0){
     $result = mysqli_query(
         $connection,
-        "SELECT id, artistid, artist, album, title, picture, moreimages FROM $tableposts WHERE id = $id LIMIT 1"
+        "SELECT id, artistid, artist, album, title, picture, moreimages, tiktok_url FROM $tableposts WHERE id = $id LIMIT 1"
     );
 
     if(!$result || mysqli_num_rows($result) === 0){
@@ -140,6 +146,7 @@ if($id > 0){
         "artist" => trim((string)($row["artist"] ?? "")),
         "album" => trim((string)($row["album"] ?? "")),
         "title" => trim((string)($row["title"] ?? "")),
+        "tiktok_url" => trim((string)($row["tiktok_url"] ?? "")),
         "slots" => productImageSlotsFromDatabase(
             $row["picture"],
             $row["moreimages"]

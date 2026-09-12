@@ -260,6 +260,28 @@ if(isset($_GET["newpost"])){
 $adminMessage = "";
 $adminMessageType = "success";
 
+if(
+    isset($_SESSION["product_update_flash"]) &&
+    is_array($_SESSION["product_update_flash"])
+){
+    $productUpdateFlash =
+        $_SESSION["product_update_flash"];
+
+    unset(
+        $_SESSION["product_update_flash"]
+    );
+
+    $adminMessage =
+        isset($productUpdateFlash["message"])
+            ? (string)$productUpdateFlash["message"]
+            : "";
+
+    $adminMessageType =
+        !empty($productUpdateFlash["ok"])
+            ? "success"
+            : "error";
+}
+
 /* --------------------------------------------------------------------------
  * Inventory
  * One publication = one physical CD.
@@ -701,7 +723,7 @@ if(isset($_GET["editpost"])){
     <script src="<?php echo adminEsc($baseurl); ?>jquery.min.js"></script>
     <script src="<?php echo adminEsc($baseurl); ?>jquery.form.js"></script>
     <script src="<?php echo adminEsc($baseurl); ?>tinymce/tinymce.min.js"></script>
-    <script src="<?php echo adminEsc($baseurl); ?>somefunctions.js?v=10"></script>
+    <script src="<?php echo adminEsc($baseurl); ?>somefunctions.js?v=11"></script>
 
     <script>
         tinymce.init({
@@ -1245,7 +1267,7 @@ if(isset($_GET["editpost"])){
                     <input
                         type="file"
                         name="newlogo"
-                        accept="image/jpeg,image/png"
+                        accept="image/jpeg,image/png,image/webp"
                     >
 
                     <label>Favicon (.ico)</label>
@@ -1370,7 +1392,7 @@ if(isset($_GET["editpost"])){
                         Al marcarlo como vendido dejará de mostrarse inmediatamente en el frontend.
                     </div>
 
-                    <label>Content</label>
+                    <label>Content (opcional)</label>
                     <textarea
                         class="js-richtext"
                         name="editpostcontent"
@@ -1921,14 +1943,251 @@ if(isset($_GET["editpost"])){
 
 <script>
     $(function(){
-        $("form[data-ajax-product='1']").ajaxForm({
-            beforeSend:function(){
+        var $form =
+            $("form[data-ajax-product='1']").first();
+
+        if($form.length === 0){
+            return;
+        }
+
+        if(
+            !$.fn ||
+            typeof $.fn.ajaxForm !== "function"
+        ){
+            $("#product-update-status").html(
+                "<div class='admin-alert error'>" +
+                "No se pudo iniciar el guardado dinámico. " +
+                "Recarga la página antes de intentar actualizar el CD." +
+                "</div>"
+            );
+            return;
+        }
+
+        var $submit =
+            $form.find("button[type='submit']").first();
+
+        var originalSubmitText =
+            $submit.text();
+
+        function setSavingState(isSaving){
+            $submit.prop(
+                "disabled",
+                isSaving
+            );
+
+            if(isSaving){
+                $submit.text(
+                    "Guardando..."
+                );
+            }else{
+                $submit.text(
+                    originalSubmitText
+                );
+            }
+        }
+
+        function showUpdateMessage(
+            message,
+            isError
+        ){
+            $("#product-update-status").html(
+                "<div class='admin-alert " +
+                (isError ? "error" : "success") +
+                "'>" +
+                $("<div>")
+                    .text(message)
+                    .html() +
+                "</div>"
+            );
+        }
+
+        function getSlot(
+            slots,
+            role
+        ){
+            if(!slots){
+                return "";
+            }
+
+            if(
+                typeof slots[role] !==
+                "undefined"
+            ){
+                return String(
+                    slots[role] || ""
+                );
+            }
+
+            if(
+                typeof slots[String(role)] !==
+                "undefined"
+            ){
+                return String(
+                    slots[String(role)] || ""
+                );
+            }
+
+            return "";
+        }
+
+        function synchronizeImageManager(slots){
+            if(!slots){
+                return;
+            }
+
+            $form
+                .find(".product-image-row")
+                .each(function(){
+                    var $row = $(this);
+
+                    var role =
+                        parseInt(
+                            $row
+                                .find(".product-image-role")
+                                .val() || "0",
+                            10
+                        );
+
+                    if(role < 1 || role > 5){
+                        return;
+                    }
+
+                    var path =
+                        getSlot(
+                            slots,
+                            role
+                        );
+
+                    var $existing =
+                        $row.find(
+                            "input[name='product_image_existing[]']"
+                        );
+
+                    var $file =
+                        $row.find(
+                            "input[name='product_image_files[]']"
+                        );
+
+                    var $preview =
+                        $row.find(
+                            ".product-image-preview"
+                        );
+
+                    $existing.val(path);
+                    $file.val("");
+
+                    $preview.empty();
+
+                    if(path === ""){
+                        $preview.text(
+                            "Sin imagen"
+                        );
+                        return;
+                    }
+
+                    var separator =
+                        path.indexOf("?") === -1
+                            ? "?"
+                            : "&";
+
+                    var $image =
+                        $("<img>")
+                            .attr(
+                                "src",
+                                path +
+                                separator +
+                                "v=" +
+                                Date.now()
+                            );
+
+                    $image.on(
+                        "error",
+                        function(){
+                            $preview.text(
+                                "Archivo no encontrado"
+                            );
+                        }
+                    );
+
+                    $preview.append(
+                        $image
+                    );
+                });
+        }
+
+        $form.ajaxForm({
+            dataType: "json",
+
+            beforeSerialize: function(){
+                /*
+                 * TinyMCE mantiene su propio estado visual.
+                 * triggerSave sincroniza el textarea antes de serializarlo.
+                 */
+                if(
+                    window.tinymce &&
+                    typeof window.tinymce.triggerSave === "function"
+                ){
+                    window.tinymce.triggerSave();
+                }
+            },
+
+            beforeSend: function(){
+                setSavingState(true);
+
                 $("#product-update-status").html(
-                    "<div class='admin-alert'>Actualizando...</div>"
+                    "<div class='admin-alert'>" +
+                    "Actualizando CD e imágenes..." +
+                    "</div>"
                 );
             },
-            complete:function(xhr){
-                $("#product-update-status").html(xhr.responseText);
+
+            success: function(response){
+                if(
+                    !response ||
+                    response.ok !== true
+                ){
+                    showUpdateMessage(
+                        response &&
+                        response.message
+                            ? response.message
+                            : "No se pudo actualizar el CD.",
+                        true
+                    );
+                    return;
+                }
+
+                synchronizeImageManager(
+                    response.slots || {}
+                );
+
+                showUpdateMessage(
+                    response.message ||
+                    "CD actualizado correctamente.",
+                    false
+                );
+            },
+
+            error: function(xhr){
+                var message =
+                    "No se pudo actualizar el CD.";
+
+                if(
+                    xhr &&
+                    xhr.responseJSON &&
+                    xhr.responseJSON.message
+                ){
+                    message =
+                        xhr.responseJSON.message;
+                }
+
+                showUpdateMessage(
+                    message,
+                    true
+                );
+            },
+
+            complete: function(){
+                setSavingState(false);
             }
         });
     });
@@ -2020,7 +2279,6 @@ if(isset($_GET["editpost"])){
         );
 
         filterAdminCds();
-    });
     });
 </script>
 </body>

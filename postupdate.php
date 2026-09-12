@@ -1,169 +1,372 @@
 <?php
+session_start();
+
 require_once("config.php");
 require_once("uilang.php");
 require_once("productimages.php");
 require_once("artistshelper.php");
 
-if(
-    isset($_POST["editposttitle"]) &&
-    isset($_POST["id"])
-){
-    $id = (int)$_POST["id"];
+function postUpdateIsAjax(){
+    return
+        isset($_SERVER["HTTP_X_REQUESTED_WITH"]) &&
+        strtolower(
+            (string)$_SERVER["HTTP_X_REQUESTED_WITH"]
+        ) === "xmlhttprequest";
+}
 
-    $posttitle = mysqli_real_escape_string(
-        $connection,
-        isset($_POST["editposttitle"]) ? $_POST["editposttitle"] : ""
+function postUpdateRespond(
+    $ok,
+    $message,
+    $id = 0,
+    $slots = []
+){
+    global $baseurl;
+
+    $payload = [
+        "ok" => (bool)$ok,
+        "message" => (string)$message,
+        "id" => (int)$id,
+        "slots" => $slots
+    ];
+
+    if(postUpdateIsAjax()){
+        http_response_code(
+            $ok ? 200 : 400
+        );
+
+        header(
+            "Content-Type: application/json; charset=UTF-8"
+        );
+
+        echo json_encode(
+            $payload,
+            JSON_UNESCAPED_UNICODE |
+            JSON_UNESCAPED_SLASHES
+        );
+
+        exit;
+    }
+
+    /*
+     * Fallback:
+     * aunque JavaScript falle, nunca dejamos al usuario atrapado
+     * dentro de postupdate.php.
+     */
+    $_SESSION["product_update_flash"] = [
+        "ok" => (bool)$ok,
+        "message" => (string)$message
+    ];
+
+    $target =
+        $baseurl .
+        "admin.php";
+
+    if((int)$id > 0){
+        $target .=
+            "?editpost=" .
+            (int)$id;
+    }
+
+    header(
+        "Location: " .
+        $target
     );
 
-    $artistid = isset($_POST["artistid"])
-        ? artistResolveSelectedId($_POST["artistid"])
+    exit;
+}
+
+if(
+    !isset($_POST["editposttitle"]) ||
+    !isset($_POST["id"])
+){
+    postUpdateRespond(
+        false,
+        "Solicitud de actualización inválida."
+    );
+}
+
+$id = (int)$_POST["id"];
+
+$postTitleRaw = trim(
+    (string)(
+        $_POST["editposttitle"] ??
+        ""
+    )
+);
+
+$artistid =
+    isset($_POST["artistid"])
+        ? artistResolveSelectedId(
+            $_POST["artistid"]
+        )
         : 0;
 
-    $normalprice = mysqli_real_escape_string(
-        $connection,
-        isset($_POST["editnormalprice"]) ? $_POST["editnormalprice"] : "0"
-    );
+$normalprice = mysqli_real_escape_string(
+    $connection,
+    isset($_POST["editnormalprice"])
+        ? $_POST["editnormalprice"]
+        : "0"
+);
 
-    $discountprice = mysqli_real_escape_string(
-        $connection,
-        isset($_POST["editdiscountprice"]) ? $_POST["editdiscountprice"] : "0"
-    );
+$discountprice = mysqli_real_escape_string(
+    $connection,
+    isset($_POST["editdiscountprice"])
+        ? $_POST["editdiscountprice"]
+        : "0"
+);
 
-    $content = mysqli_real_escape_string(
-        $connection,
-        isset($_POST["editpostcontent"]) ? $_POST["editpostcontent"] : ""
-    );
+/*
+ * Content es opcional.
+ * La columna de base de datos es NOT NULL, por lo que guardamos
+ * cadena vacía cuando el usuario no escribe una descripción.
+ */
+$contentRaw =
+    isset($_POST["editpostcontent"])
+        ? (string)$_POST["editpostcontent"]
+        : "";
 
-    $stock = isset($_POST["editstock"]) && (int)$_POST["editstock"] === 0
+$content = mysqli_real_escape_string(
+    $connection,
+    $contentRaw
+);
+
+$stock =
+    isset($_POST["editstock"]) &&
+    (int)$_POST["editstock"] === 0
         ? 0
         : 1;
 
-    $moreoptions = mysqli_real_escape_string(
-        $connection,
-        isset($_POST["moreoptions"]) ? $_POST["moreoptions"] : ""
+$moreoptions = mysqli_real_escape_string(
+    $connection,
+    isset($_POST["moreoptions"])
+        ? $_POST["moreoptions"]
+        : ""
+);
+
+if($id <= 0){
+    postUpdateRespond(
+        false,
+        "Id de producto inválido.",
+        $id
     );
+}
 
-    if($id <= 0){
-        echo "<div class='alert'>Id de producto inválido.</div>";
-        exit;
-    }
+if($postTitleRaw === ""){
+    postUpdateRespond(
+        false,
+        "El título es obligatorio.",
+        $id
+    );
+}
 
-    if($posttitle === "" || $content === ""){
-        echo "<div class='alert'>El título y el contenido son obligatorios.</div>";
-        exit;
-    }
+if($artistid <= 0){
+    postUpdateRespond(
+        false,
+        "El artista es obligatorio. Selecciona un artista válido antes de actualizar el CD.",
+        $id
+    );
+}
 
-    if($artistid <= 0){
-        echo "<div class='alert'>El artista es obligatorio. Selecciona un artista válido antes de actualizar el CD.</div>";
-        exit;
-    }
+$sql =
+    "SELECT * " .
+    "FROM $tableposts " .
+    "WHERE id = $id " .
+    "LIMIT 1";
 
-    $sql = "SELECT * FROM $tableposts WHERE id = $id LIMIT 1";
-    $result = mysqli_query($connection, $sql);
+$result = mysqli_query(
+    $connection,
+    $sql
+);
 
-    if(!$result || mysqli_num_rows($result) === 0){
-        echo "<div class='alert'>Producto no encontrado.</div>";
-        exit;
-    }
+if(
+    !$result ||
+    mysqli_num_rows($result) === 0
+){
+    postUpdateRespond(
+        false,
+        "Producto no encontrado.",
+        $id
+    );
+}
 
-    $row = mysqli_fetch_assoc($result);
+$row = mysqli_fetch_assoc(
+    $result
+);
 
-    /*
-     * Category is legacy-only in this store.
-     * All products are Reggaeton CDs, so Edit CD does not expose a category.
-     * We preserve the existing catid silently to avoid changing old data.
-     */
-    $catid = isset($row["catid"])
+/*
+ * Category is legacy-only in this store.
+ * All products are Reggaeton CDs, so Edit CD does not expose a category.
+ * We preserve the existing catid silently to avoid changing old data.
+ */
+$catid =
+    isset($row["catid"])
         ? (int)$row["catid"]
         : 0;
 
-    $oldpicture = $row["picture"];
-    $oldmoreimages = $row["moreimages"];
+$oldpicture =
+    (string)$row["picture"];
 
-    $newpicture = $oldpicture;
-    $moreimages = $oldmoreimages;
-    $uploadedPaths = [];
+$oldmoreimages =
+    (string)$row["moreimages"];
 
-    if(
-        isset($_POST["product_image_manager"]) &&
-        $_POST["product_image_manager"] === "1"
-    ){
-        $imageResult = productImageBuildSlotsFromManagerRequest();
+$newpicture =
+    $oldpicture;
 
-        if(!$imageResult["ok"]){
-            productImageCleanupUploadedPaths($imageResult["uploaded"]);
+$moreimages =
+    $oldmoreimages;
 
-            foreach($imageResult["errors"] as $error){
-                echo "<div class='alert'>" . htmlspecialchars($error) . "</div>";
-            }
+$uploadedPaths = [];
 
-            echo "<script>$(\"#upploadprogresstitle\").hide()</script>";
-            exit;
-        }
+if(
+    isset($_POST["product_image_manager"]) &&
+    $_POST["product_image_manager"] === "1"
+){
+    $imageResult =
+        productImageBuildSlotsFromManagerRequest();
 
-        $newpicture = productImagePictureValue($imageResult["slots"]);
-        $moreimages = productImageSerializeMoreImages($imageResult["slots"]);
-        $uploadedPaths = $imageResult["uploaded"];
-    }else{
-        // Legacy fallback in case JavaScript is unavailable.
-        $moreimages = isset($_POST["moreimagesinput"])
-            ? $_POST["moreimagesinput"]
+    if(!$imageResult["ok"]){
+        productImageCleanupUploadedPaths(
+            $imageResult["uploaded"]
+        );
+
+        postUpdateRespond(
+            false,
+            implode(
+                " ",
+                $imageResult["errors"]
+            ),
+            $id
+        );
+    }
+
+    $newpicture =
+        productImagePictureValue(
+            $imageResult["slots"]
+        );
+
+    $moreimages =
+        productImageSerializeMoreImages(
+            $imageResult["slots"]
+        );
+
+    $uploadedPaths =
+        $imageResult["uploaded"];
+}else{
+    /*
+     * Legacy fallback in case the image manager cannot initialize.
+     */
+    $moreimages =
+        isset($_POST["moreimagesinput"])
+            ? (string)$_POST["moreimagesinput"]
             : $oldmoreimages;
 
-        if(
-            isset($_FILES["newpicture"]) &&
-            isset($_FILES["newpicture"]["error"]) &&
-            $_FILES["newpicture"]["error"] !== UPLOAD_ERR_NO_FILE
-        ){
-            $savedImage = productImageSaveUploadedFile($_FILES["newpicture"]);
+    if(
+        isset($_FILES["newpicture"]) &&
+        isset($_FILES["newpicture"]["error"]) &&
+        $_FILES["newpicture"]["error"] !==
+            UPLOAD_ERR_NO_FILE
+    ){
+        /*
+         * newpicture representa la Portada web:
+         * rol 1 => sin watermark por defecto.
+         */
+        $savedImage =
+            productImageSaveUploadedFile(
+                $_FILES["newpicture"],
+                1
+            );
 
-            if(!$savedImage["ok"]){
-                echo "<div class='alert'>" . htmlspecialchars($savedImage["error"]) . "</div>";
-                exit;
-            }
+        if(!$savedImage["ok"]){
+            postUpdateRespond(
+                false,
+                $savedImage["error"],
+                $id
+            );
+        }
 
-            if($savedImage["uploaded"]){
-                $newpicture = basename($savedImage["path"]);
-                $uploadedPaths[] = $savedImage["path"];
-            }
+        if($savedImage["uploaded"]){
+            $newpicture =
+                substr(
+                    productImageNormalizePath(
+                        $savedImage["path"]
+                    ),
+                    strlen("pictures/")
+                );
+
+            $uploadedPaths[] =
+                $savedImage["path"];
         }
     }
-
-    $newpicture = mysqli_real_escape_string($connection, $newpicture);
-    $moreimages = mysqli_real_escape_string($connection, $moreimages);
-
-    $updateSql =
-        "UPDATE $tableposts SET " .
-        "title = '$posttitle', " .
-        "catid = $catid, " .
-        "artistid = $artistid, " .
-        "content = '$content', " .
-        "picture = '$newpicture', " .
-        "normalprice = '$normalprice', " .
-        "discountprice = '$discountprice', " .
-        "options = '$moreoptions', " .
-        "moreimages = '$moreimages', " .
-        "stock = $stock, " .
-        "sold_at = " .
-            ($stock === 0
-                ? "COALESCE(sold_at, NOW())"
-                : "NULL") . " " .
-        "WHERE id = $id";
-
-    $updateResult = mysqli_query($connection, $updateSql);
-
-    if(!$updateResult){
-        productImageCleanupUploadedPaths($uploadedPaths);
-        echo "<div class='alert'>No se pudo actualizar el CD.</div>";
-        exit;
-    }
-
-    /*
-     * Never delete the previous image automatically here.
-     * Another CD or another gallery position could still reference it.
-     * Physical deletion stays under the Pictures administration section.
-     */
-
-    echo "<div class='alert'>" . uilang("Post successfully updated.") . "</div>";
 }
+
+$posttitle = mysqli_real_escape_string(
+    $connection,
+    $postTitleRaw
+);
+
+$newpictureEscaped =
+    mysqli_real_escape_string(
+        $connection,
+        $newpicture
+    );
+
+$moreimagesEscaped =
+    mysqli_real_escape_string(
+        $connection,
+        $moreimages
+    );
+
+$updateSql =
+    "UPDATE $tableposts SET " .
+    "title = '$posttitle', " .
+    "catid = $catid, " .
+    "artistid = $artistid, " .
+    "content = '$content', " .
+    "picture = '$newpictureEscaped', " .
+    "normalprice = '$normalprice', " .
+    "discountprice = '$discountprice', " .
+    "options = '$moreoptions', " .
+    "moreimages = '$moreimagesEscaped', " .
+    "stock = $stock, " .
+    "sold_at = " .
+        (
+            $stock === 0
+                ? "COALESCE(sold_at, NOW())"
+                : "NULL"
+        ) .
+    " WHERE id = $id";
+
+$updateResult = mysqli_query(
+    $connection,
+    $updateSql
+);
+
+if(!$updateResult){
+    productImageCleanupUploadedPaths(
+        $uploadedPaths
+    );
+
+    postUpdateRespond(
+        false,
+        "No se pudo actualizar el CD.",
+        $id
+    );
+}
+
+/*
+ * Devuelve las rutas finales para sincronizar el image manager
+ * sin recargar ni navegar fuera de admin.php.
+ */
+$finalSlots =
+    productImageSlotsFromDatabase(
+        $newpicture,
+        $moreimages
+    );
+
+postUpdateRespond(
+    true,
+    "CD actualizado correctamente.",
+    $id,
+    $finalSlots
+);
 ?>

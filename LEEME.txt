@@ -1,83 +1,38 @@
-CONFIGURACIÓN DE IMÁGENES - REGGAETON LAB
+FIX EDICIÓN AJAX + CONTENT OPCIONAL
 
-Base:
-Archivos revisados contra la rama develop actual antes de generar este paquete.
+Problemas encontrados en develop:
+1. admin.php tenía un `});` extra al final del script.
+   Eso provocaba un error de sintaxis JavaScript y evitaba que ajaxForm()
+   interceptara el submit. Por eso el navegador terminaba en postupdate.php.
+
+2. postupdate.php validaba:
+      título vacío OR content vacío => error
+   pero Content no debe ser obligatorio.
 
 REEMPLAZAR COMPLETOS:
-- config.php
-- admin-menu.php
-- productimages.php
-- admin-product-new.php
-- somefunctions.js
+- admin.php
+- postupdate.php
 
-NUEVOS:
-- image-settings.php
-- image-settings.css
+QUÉ CAMBIA:
+- Guardar Editar CD vuelve a ser AJAX.
+- No navega a postupdate.php.
+- El resultado aparece en #product-update-status.
+- Content es opcional.
+- TinyMCE se sincroniza antes del submit.
+- Al cambiar imágenes, las nuevas rutas se sincronizan en el image manager
+  sin recargar la página.
+- Los file inputs se limpian después del guardado correcto para evitar
+  subir la misma imagen una segunda vez accidentalmente.
+- Si JavaScript llegara a fallar, postupdate.php redirige de regreso a
+  admin.php?editpost=ID en vez de dejar una página blanca.
+- Se acepta WebP también en el fallback legacy.
+- somefunctions.js sube a ?v=11 para romper caché.
 
-NUEVO MENÚ:
-Config. imágenes
-
-PERSISTENCIA:
-No crea una tabla nueva innecesaria.
-Usa la configuración cfg que ya existe en MySQL (tabla <prefix>config).
-Los nuevos valores quedan dentro del JSON cfg almacenado en la base de datos.
-
-VALORES POR DEFECTO:
-- Salida: WebP
-- Alto máximo: 500 px
-- Ancho máximo: 0 (automático/proporcional)
-- Calidad WebP: 80
-- Tamaño máximo de subida: 8 MB
-- Máximo de resolución: 40 MP
-- No ampliar imágenes pequeñas
-- Auto-orientación JPEG: activada
-- Watermark: activado
-- Texto: reggaeton.el.real
-- Roles con watermark: 2, 3, 4, 5
-- Portada web (1): sin watermark
-- Posición: abajo derecha
-- Tamaño GD: 5
-- Margen: 14 px
-- Padding horizontal: 8 px
-- Padding vertical: 6 px
-- Fondo: 55% opacidad
-- Texto: 95% opacidad
-
-DESDE EL ADMIN PUEDES CAMBIAR:
-- alto y ancho máximo;
-- calidad WebP;
-- límite de MB;
-- límite de megapíxeles;
-- ampliar/no ampliar fotos pequeñas;
-- auto orientación;
-- activar/desactivar watermark;
-- mensaje;
-- qué tipos de imagen llevan watermark;
-- posición;
-- tamaño;
-- margen;
-- padding;
-- opacidad del fondo;
-- opacidad del texto.
-
-IMPORTANTE:
-Los cambios aplican a imágenes NUEVAS o REEMPLAZADAS.
-No reprocesan automáticamente las imágenes existentes.
-
-AZURE:
-El hosting final seguirá siendo Azure App Service.
-Más adelante el destino de archivos pasará de /pictures a Azure Blob Storage.
-La configuración y el procesamiento creados aquí se reutilizan antes de subir el blob.
-
-PRUEBA:
-1. Reemplaza/agrega los 7 archivos.
-2. Ctrl + F5.
-3. Entra al admin.
-4. Abre "Config. imágenes".
-5. Guarda sin cambiar nada.
-6. Crea un CD de prueba con Portada web + otra imagen.
-7. Verifica:
-   - ambas terminan .webp;
-   - altura <= 500 px;
-   - portada web sin marca;
-   - otra foto con reggaeton.el.real.
+PRUEBAS:
+1. Ctrl + F5.
+2. Editar un CD SIN Content y guardar.
+   Esperado: "CD actualizado correctamente." dentro de la misma pantalla.
+3. Reemplazar una imagen y guardar.
+   Esperado: misma pantalla, preview actualizado y mensaje de éxito.
+4. Volver a guardar sin seleccionar otra imagen.
+   Esperado: no duplica/reprocesa la imagen anterior.

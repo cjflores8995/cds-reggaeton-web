@@ -142,12 +142,25 @@
 
         setFieldLabel(
             size,
-            "Tamaño del logo (1–5)"
+            "Tamaño del logo (1–5 · hasta 90%)"
         );
         setFieldLabel(
             opacity,
             "Opacidad del logo (%)"
         );
+
+        if(size){
+            var sizeContainer = fieldContainer(size);
+
+            if(sizeContainer){
+                var sizeHelp = document.createElement("p");
+                sizeHelp.className = "admin-muted";
+                sizeHelp.style.margin = "8px 0 0";
+                sizeHelp.textContent =
+                    "1 = 16% · 2 = 30% · 3 = 50% · 4 = 70% · 5 = 90% del ancho de la imagen.";
+                sizeContainer.appendChild(sizeHelp);
+            }
+        }
 
         hideField(backgroundOpacity);
         hideField(paddingX);
@@ -168,10 +181,10 @@
 
             var widthByLevel = {
                 1: 16,
-                2: 22,
-                3: 28,
-                4: 34,
-                5: 40
+                2: 30,
+                3: 50,
+                4: 70,
+                5: 90
             };
 
             var opacityValue = clamp(

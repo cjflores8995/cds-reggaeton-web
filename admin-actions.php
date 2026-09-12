@@ -27,6 +27,399 @@ function adminActionRedirect($target){
     exit;
 }
 
+function adminActionNormalizePicturePath($value){
+    $value = trim((string)$value);
+
+    if($value === ""){
+        return "";
+    }
+
+    if(preg_match('#^https?://#i', $value) === 1){
+        return "";
+    }
+
+    $value = str_replace("\\", "/", $value);
+    $value = preg_replace("#/+#", "/", $value);
+    $value = ltrim($value, "/");
+
+    if(strpos($value, "pictures/") === 0){
+        $value = substr($value, strlen("pictures/"));
+    }
+
+    $segments = explode("/", $value);
+    $safeSegments = [];
+
+    foreach($segments as $segment){
+        if(
+            $segment === "" ||
+            $segment === "." ||
+            $segment === ".."
+        ){
+            continue;
+        }
+
+        $safeSegments[] = basename($segment);
+    }
+
+    if(count($safeSegments) === 0){
+        return "";
+    }
+
+    return "pictures/" . implode("/", $safeSegments);
+}
+
+function adminActionProductImagePathsFromRow($row){
+    $paths = [];
+
+    if(!is_array($row)){
+        return $paths;
+    }
+
+    $picture = adminActionNormalizePicturePath(
+        $row["picture"] ?? ""
+    );
+
+    if($picture !== ""){
+        $paths[$picture] = true;
+    }
+
+    foreach(
+        explode(",", (string)($row["moreimages"] ?? ""))
+        as $moreImage
+    ){
+        $path = adminActionNormalizePicturePath($moreImage);
+
+        if($path !== ""){
+            $paths[$path] = true;
+        }
+    }
+
+    return array_keys($paths);
+}
+
+function adminActionProductImagesTableName(){
+    global $tableprefix;
+
+    $name = (string)($tableprefix ?? "") . "product_images";
+
+    return preg_match('/^[A-Za-z0-9_]+$/', $name) === 1
+        ? $name
+        : "";
+}
+
+function adminActionTableExists($connection, $tableName){
+    if($tableName === ""){
+        return false;
+    }
+
+    $escaped = mysqli_real_escape_string(
+        $connection,
+        $tableName
+    );
+
+    $result = mysqli_query(
+        $connection,
+        "SHOW TABLES LIKE '$escaped'"
+    );
+
+    return
+        $result &&
+        mysqli_num_rows($result) > 0;
+}
+
+function adminActionLegacyProductImagePaths(
+    $connection,
+    $tableName,
+    $productId
+){
+    $paths = [];
+
+    if($tableName === "" || $productId <= 0){
+        return $paths;
+    }
+
+    $result = mysqli_query(
+        $connection,
+        "SELECT image_path FROM `$tableName` " .
+        "WHERE product_id = " . (int)$productId
+    );
+
+    if(!$result){
+        return $paths;
+    }
+
+    while($row = mysqli_fetch_assoc($result)){
+        $path = adminActionNormalizePicturePath(
+            $row["image_path"] ?? ""
+        );
+
+        if($path !== ""){
+            $paths[$path] = true;
+        }
+    }
+
+    return array_keys($paths);
+}
+
+function adminActionReferencedPicturePaths(
+    $connection,
+    $legacyImageTable,
+    $legacyImageTableExists
+){
+    global $tableposts;
+
+    $referenced = [];
+
+    $postsResult = mysqli_query(
+        $connection,
+        "SELECT picture, moreimages FROM $tableposts"
+    );
+
+    if($postsResult){
+        while($row = mysqli_fetch_assoc($postsResult)){
+            foreach(adminActionProductImagePathsFromRow($row) as $path){
+                $referenced[$path] = true;
+            }
+        }
+    }
+
+    if($legacyImageTableExists && $legacyImageTable !== ""){
+        $legacyResult = mysqli_query(
+            $connection,
+            "SELECT image_path FROM `$legacyImageTable`"
+        );
+
+        if($legacyResult){
+            while($row = mysqli_fetch_assoc($legacyResult)){
+                $path = adminActionNormalizePicturePath(
+                    $row["image_path"] ?? ""
+                );
+
+                if($path !== ""){
+                    $referenced[$path] = true;
+                }
+            }
+        }
+    }
+
+    return $referenced;
+}
+
+function adminActionDeletePictureFile($relativePath){
+    $relativePath = adminActionNormalizePicturePath($relativePath);
+
+    if($relativePath === ""){
+        return true;
+    }
+
+    $picturesDirectory = realpath(
+        __DIR__ . DIRECTORY_SEPARATOR . "pictures"
+    );
+
+    if($picturesDirectory === false){
+        return true;
+    }
+
+    $relative = substr(
+        $relativePath,
+        strlen("pictures/")
+    );
+
+    $candidate =
+        $picturesDirectory .
+        DIRECTORY_SEPARATOR .
+        str_replace(
+            "/",
+            DIRECTORY_SEPARATOR,
+            $relative
+        );
+
+    $realCandidate = realpath($candidate);
+
+    if($realCandidate === false){
+        return true;
+    }
+
+    $picturesPrefix =
+        rtrim($picturesDirectory, DIRECTORY_SEPARATOR) .
+        DIRECTORY_SEPARATOR;
+
+    if(strpos($realCandidate, $picturesPrefix) !== 0){
+        return false;
+    }
+
+    if(!is_file($realCandidate)){
+        return true;
+    }
+
+    return @unlink($realCandidate);
+}
+
+function adminActionDeleteProduct($connection, $productId){
+    global $tableposts;
+
+    $productId = (int)$productId;
+
+    if($productId <= 0){
+        return [
+            "ok" => false,
+            "message" => "CD no válido."
+        ];
+    }
+
+    $productResult = mysqli_query(
+        $connection,
+        "SELECT id, picture, moreimages " .
+        "FROM $tableposts " .
+        "WHERE id = $productId LIMIT 1"
+    );
+
+    if(
+        !$productResult ||
+        mysqli_num_rows($productResult) === 0
+    ){
+        return [
+            "ok" => false,
+            "message" => "El CD ya no existe."
+        ];
+    }
+
+    $product = mysqli_fetch_assoc($productResult);
+    $paths = [];
+
+    foreach(adminActionProductImagePathsFromRow($product) as $path){
+        $paths[$path] = true;
+    }
+
+    $legacyImageTable = adminActionProductImagesTableName();
+    $legacyImageTableExists = adminActionTableExists(
+        $connection,
+        $legacyImageTable
+    );
+
+    if($legacyImageTableExists){
+        foreach(
+            adminActionLegacyProductImagePaths(
+                $connection,
+                $legacyImageTable,
+                $productId
+            ) as $path
+        ){
+            $paths[$path] = true;
+        }
+    }
+
+    $transactionStarted = mysqli_begin_transaction($connection);
+
+    if(!$transactionStarted){
+        return [
+            "ok" => false,
+            "message" => "No se pudo iniciar la eliminación del CD."
+        ];
+    }
+
+    try{
+        if($legacyImageTableExists){
+            $legacyDeleted = mysqli_query(
+                $connection,
+                "DELETE FROM `$legacyImageTable` " .
+                "WHERE product_id = $productId"
+            );
+
+            if(!$legacyDeleted){
+                throw new RuntimeException(
+                    "No se pudo eliminar la metadata de imágenes."
+                );
+            }
+        }
+
+        $deleted = mysqli_query(
+            $connection,
+            "DELETE FROM $tableposts WHERE id = $productId"
+        );
+
+        if(!$deleted || mysqli_affected_rows($connection) !== 1){
+            throw new RuntimeException(
+                "No se pudo eliminar el CD."
+            );
+        }
+
+        if(!mysqli_commit($connection)){
+            throw new RuntimeException(
+                "No se pudo confirmar la eliminación del CD."
+            );
+        }
+    }catch(Throwable $exception){
+        @mysqli_rollback($connection);
+
+        return [
+            "ok" => false,
+            "message" => $exception->getMessage()
+        ];
+    }
+
+    $referencedPaths = adminActionReferencedPicturePaths(
+        $connection,
+        $legacyImageTable,
+        $legacyImageTableExists
+    );
+
+    $deletedFiles = 0;
+    $failedFiles = 0;
+
+    foreach(array_keys($paths) as $path){
+        if(isset($referencedPaths[$path])){
+            continue;
+        }
+
+        $normalizedPath = adminActionNormalizePicturePath($path);
+
+        if($normalizedPath === ""){
+            continue;
+        }
+
+        $beforePath =
+            __DIR__ .
+            DIRECTORY_SEPARATOR .
+            str_replace(
+                "/",
+                DIRECTORY_SEPARATOR,
+                $normalizedPath
+            );
+
+        $existed = is_file($beforePath);
+
+        if(adminActionDeletePictureFile($normalizedPath)){
+            if($existed){
+                $deletedFiles++;
+            }
+        }else{
+            $failedFiles++;
+        }
+    }
+
+    if($failedFiles > 0){
+        return [
+            "ok" => true,
+            "message" =>
+                "CD eliminado. Se borraron " .
+                $deletedFiles .
+                " imagen(es), pero " .
+                $failedFiles .
+                " archivo(s) no pudieron eliminarse del servidor."
+        ];
+    }
+
+    return [
+        "ok" => true,
+        "message" =>
+            "CD eliminado correctamente" .
+            ($deletedFiles > 0
+                ? " junto con " . $deletedFiles . " imagen(es)."
+                : ".")
+    ];
+}
+
 $action = trim(
     (string)($_POST["admin_action"] ?? "")
 );
@@ -38,22 +431,14 @@ if($action === "logout"){
 
 if($action === "delete_post"){
     $id = (int)($_POST["product_id"] ?? 0);
-
-    if($id <= 0){
-        adminActionFlash(false, "CD no válido.");
-        adminActionRedirect("admin.php");
-    }
-
-    $deleted = mysqli_query(
+    $result = adminActionDeleteProduct(
         $connection,
-        "DELETE FROM $tableposts WHERE id = $id"
+        $id
     );
 
     adminActionFlash(
-        (bool)$deleted,
-        $deleted
-            ? "CD eliminado correctamente."
-            : "No se pudo eliminar el CD."
+        !empty($result["ok"]),
+        (string)($result["message"] ?? "No se pudo eliminar el CD.")
     );
 
     adminActionRedirect("admin.php");

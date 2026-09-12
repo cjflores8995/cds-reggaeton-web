@@ -81,7 +81,7 @@ $products = [];
 $productResult = mysqli_query(
     $connection,
     "SELECT
-        postid,
+        slug,
         picture,
         moreimages
      FROM $tableposts
@@ -107,7 +107,7 @@ $artists = [];
 $artistResult = mysqli_query(
     $connection,
     "SELECT DISTINCT
-        a.id,
+        a.slug,
         a.name
      FROM $tableartists a
      INNER JOIN $tableposts p
@@ -143,8 +143,7 @@ echo '<?xml version="1.0" encoding="UTF-8"?>';
         <url>
             <loc><?php echo sitemapXml(
                 seoArtistUrl(
-                    (int)$artist["id"],
-                    (string)$artist["name"]
+                    (string)$artist["slug"]
                 )
             ); ?></loc>
         </url>
@@ -154,7 +153,7 @@ echo '<?xml version="1.0" encoding="UTF-8"?>';
         <url>
             <loc><?php echo sitemapXml(
                 seoProductUrl(
-                    $product["postid"]
+                    $product["slug"]
                 )
             ); ?></loc>
 

@@ -84,6 +84,7 @@ value TEXT CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL
 mysqli_query($connection, "CREATE TABLE IF NOT EXISTS $tableposts (
 id INT(6) UNSIGNED AUTO_INCREMENT PRIMARY KEY,
 postid VARCHAR(70) NOT NULL,
+slug VARCHAR(240) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL DEFAULT '',
 catid INT(6) NOT NULL,
 artistid INT(6) UNSIGNED NOT NULL DEFAULT 0,
 normalprice FLOAT NOT NULL,
@@ -146,6 +147,13 @@ if(!function_exists("configEnsurePostColumn")){
  *   1 = available
  *   0 = sold
  */
+configEnsurePostColumn(
+    $connection,
+    $tableposts,
+    "slug",
+    "VARCHAR(240) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL DEFAULT '' AFTER postid"
+);
+
 configEnsurePostColumn(
     $connection,
     $tableposts,
@@ -242,8 +250,76 @@ category VARCHAR(50) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL
 mysqli_query($connection, "CREATE TABLE IF NOT EXISTS $tableartists (
 id INT(6) UNSIGNED AUTO_INCREMENT PRIMARY KEY,
 name VARCHAR(150) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL,
+slug VARCHAR(180) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL DEFAULT '',
 UNIQUE KEY uq_artist_name (name)
 )");
+
+$artistSlugColumnResult = mysqli_query(
+    $connection,
+    "SHOW COLUMNS FROM $tableartists LIKE 'slug'"
+);
+
+if(
+    $artistSlugColumnResult &&
+    mysqli_num_rows(
+        $artistSlugColumnResult
+    ) == 0
+){
+    mysqli_query(
+        $connection,
+        "ALTER TABLE $tableartists " .
+        "ADD COLUMN slug VARCHAR(180) " .
+        "CHARACTER SET utf8 " .
+        "COLLATE utf8_general_ci " .
+        "NOT NULL DEFAULT '' AFTER name"
+    );
+}
+
+/*
+ * Backfill de URLs amigables para los CDs/artistas que ya existen.
+ * Solo trabaja sobre filas cuyo slug todavía está vacío.
+ */
+require_once __DIR__ . "/slughelper.php";
+
+slugBackfillAll();
+
+$productSlugIndex = mysqli_query(
+    $connection,
+    "SHOW INDEX FROM $tableposts " .
+    "WHERE Key_name = 'uq_post_slug'"
+);
+
+if(
+    $productSlugIndex &&
+    mysqli_num_rows(
+        $productSlugIndex
+    ) == 0
+){
+    mysqli_query(
+        $connection,
+        "ALTER TABLE $tableposts " .
+        "ADD UNIQUE KEY uq_post_slug (slug)"
+    );
+}
+
+$artistSlugIndex = mysqli_query(
+    $connection,
+    "SHOW INDEX FROM $tableartists " .
+    "WHERE Key_name = 'uq_artist_slug'"
+);
+
+if(
+    $artistSlugIndex &&
+    mysqli_num_rows(
+        $artistSlugIndex
+    ) == 0
+){
+    mysqli_query(
+        $connection,
+        "ALTER TABLE $tableartists " .
+        "ADD UNIQUE KEY uq_artist_slug (slug)"
+    );
+}
 
 //Creating tables - messages/orders
 mysqli_query($connection, "CREATE TABLE IF NOT EXISTS $tablemessages (

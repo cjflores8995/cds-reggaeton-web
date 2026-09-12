@@ -1,0 +1,10 @@
+Options -MultiViews
+
+RewriteEngine On
+
+# Public clean URLs.
+RewriteRule ^cd/([a-z0-9-]+)/?$ product.php?slug=$1 [L,QSA,NC]
+RewriteRule ^artista/([a-z0-9-]+)/?$ artist.php?slug=$1 [L,QSA,NC]
+
+# Cleaner sitemap endpoint.
+RewriteRule ^sitemap\.xml$ sitemap.php [L,QSA,NC]

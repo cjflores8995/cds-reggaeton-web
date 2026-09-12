@@ -194,6 +194,46 @@ $row = mysqli_fetch_assoc(
 );
 
 /*
+ * La URL pública es estable:
+ * al editar título/artista NO cambiamos un slug existente.
+ * Solo generamos uno si la fila es antigua y todavía estuviera vacía.
+ */
+$currentSlug =
+    trim(
+        (string)(
+            $row["slug"] ??
+            ""
+        )
+    );
+
+if($currentSlug === ""){
+    $currentArtistName =
+        artistGetName(
+            $artistid
+        );
+
+    $currentAlbumName =
+        slugProductAlbumFromRow(
+            $row,
+            trim(
+                (string)(
+                    $row["artist"] ??
+                    $currentArtistName
+                )
+            )
+        );
+
+    $currentSlug =
+        slugUniqueProduct(
+            $currentArtistName,
+            $currentAlbumName,
+            $row["release_year"] ??
+            null,
+            $id
+        );
+}
+
+/*
  * Category is legacy-only in this store.
  * All products are Reggaeton CDs, so Edit CD does not expose a category.
  * We preserve the existing catid silently to avoid changing old data.
@@ -316,9 +356,16 @@ $moreimagesEscaped =
         $moreimages
     );
 
+$currentSlugEscaped =
+    mysqli_real_escape_string(
+        $connection,
+        $currentSlug
+    );
+
 $updateSql =
     "UPDATE $tableposts SET " .
     "title = '$posttitle', " .
+    "slug = '$currentSlugEscaped', " .
     "catid = $catid, " .
     "artistid = $artistid, " .
     "content = '$content', " .

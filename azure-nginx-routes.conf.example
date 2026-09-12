@@ -1,0 +1,19 @@
+# REGGAETON EL REAL - Azure App Service Linux / PHP routing
+#
+# Azure App Service PHP on Linux uses NGINX, so .htaccess is NOT used there.
+# When we deploy, these routes must be merged into the active NGINX
+# server{} configuration before reloading NGINX.
+#
+# Do NOT activate this file locally.
+
+location ~ ^/cd/([a-z0-9-]+)/?$ {
+    rewrite ^/cd/([a-z0-9-]+)/?$ /product.php?slug=$1 last;
+}
+
+location ~ ^/artista/([a-z0-9-]+)/?$ {
+    rewrite ^/artista/([a-z0-9-]+)/?$ /artist.php?slug=$1 last;
+}
+
+location = /sitemap.xml {
+    rewrite ^/sitemap\.xml$ /sitemap.php last;
+}

@@ -144,38 +144,32 @@ if(!function_exists("seoUrl")){
 }
 
 if(!function_exists("seoProductUrl")){
-    function seoProductUrl($postId){
-        return
-            seoUrl("product.php") .
-            "?post=" .
+    function seoProductUrl($slug){
+        $slug = trim(
+            (string)$slug
+        );
+
+        return seoUrl(
+            "cd/" .
             rawurlencode(
-                (string)$postId
-            );
+                $slug
+            )
+        );
     }
 }
 
 if(!function_exists("seoArtistUrl")){
-    function seoArtistUrl(
-        $artistId = 0,
-        $artistName = ""
-    ){
-        $artistId = (int)$artistId;
+    function seoArtistUrl($slug){
+        $slug = trim(
+            (string)$slug
+        );
 
-        if($artistId > 0){
-            return
-                seoUrl("artist.php") .
-                "?id=" .
-                $artistId;
-        }
-
-        return
-            seoUrl("artist.php") .
-            "?artist=" .
+        return seoUrl(
+            "artista/" .
             rawurlencode(
-                trim(
-                    (string)$artistName
-                )
-            );
+                $slug
+            )
+        );
     }
 }
 

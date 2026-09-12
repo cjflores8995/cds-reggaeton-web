@@ -52,11 +52,6 @@ function storeUpper(string $value): string
         : strtoupper($value);
 }
 
-if (isset($_GET['post']) && trim((string)$_GET['post']) !== '') {
-    header('Location: product.php?post=' . urlencode((string)$_GET['post']), true, 301);
-    exit;
-}
-
 $storeBaseUrl = buildStoreBaseUrl();
 $whatsappNumber = preg_replace('/\D+/', '', (string)$adminwhatsapp);
 
@@ -74,6 +69,7 @@ $artists = [];
 $artistSql = "
     SELECT
         p.artistid,
+        a.slug AS artist_slug,
         COALESCE(
             NULLIF(TRIM(a.name), ''),
             NULLIF(TRIM(p.artist), '')
@@ -89,6 +85,7 @@ $artistSql = "
           ) IS NOT NULL
     GROUP BY
         p.artistid,
+        a.slug,
         artist_name
     ORDER BY artist_name ASC
 ";
@@ -98,6 +95,7 @@ if ($artistResult) {
     while ($row = mysqli_fetch_assoc($artistResult)) {
         $artists[] = [
             'id' => (int)($row['artistid'] ?? 0),
+            'slug' => trim((string)($row['artist_slug'] ?? '')),
             'name' => trim((string)($row['artist_name'] ?? ''))
         ];
     }
@@ -224,7 +222,7 @@ foreach ($products as $position => $seoProduct) {
             ),
         'url' =>
             seoProductUrl(
-                $seoProduct['postid'] ??
+                $seoProduct['slug'] ??
                 ''
             )
     ];
@@ -509,11 +507,8 @@ $seoHomeJsonLd = [
 
                             $artistPageUrl =
                                 seoArtistUrl(
-                                    (int)(
-                                        $artist['id'] ??
-                                        0
-                                    ),
-                                    $artistName
+                                    $artist['slug'] ??
+                                    ''
                                 );
                         ?>
                         <a
@@ -566,7 +561,7 @@ $seoHomeJsonLd = [
                             >
                                 <a
                                     class="product-card__image-wrap"
-                                    href="<?php echo e($storeBaseUrl); ?>product.php?post=<?php echo urlencode((string)$product['postid']); ?>"
+                                    href="<?php echo e(seoProductUrl($product['slug'] ?? '')); ?>"
                                 >
                                     <img
                                         class="product-card__image"
@@ -589,7 +584,7 @@ $seoHomeJsonLd = [
 
                                     <a
                                         class="product-card__title"
-                                        href="<?php echo e($storeBaseUrl); ?>product.php?post=<?php echo urlencode((string)$product['postid']); ?>"
+                                        href="<?php echo e(seoProductUrl($product['slug'] ?? '')); ?>"
                                     >
                                         <?php echo e($album !== '' ? $album : $title); ?>
                                     </a>

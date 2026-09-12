@@ -148,10 +148,10 @@ $artists = [];
 
 $listResult = mysqli_query(
     $connection,
-    "SELECT a.id, a.name, COUNT(p.id) AS cdcount " .
+    "SELECT a.id, a.name, a.slug, COUNT(p.id) AS cdcount " .
     "FROM $tableartists a " .
     "LEFT JOIN $tableposts p ON p.artistid = a.id " .
-    "GROUP BY a.id, a.name " .
+    "GROUP BY a.id, a.name, a.slug " .
     "ORDER BY a.name ASC"
 );
 
@@ -297,6 +297,7 @@ if($unassignedResult){
                         <thead>
                         <tr>
                             <th>Artista</th>
+                            <th>URL</th>
                             <th style="width:100px;">CDs</th>
                             <th style="width:260px;">Acciones</th>
                         </tr>
@@ -306,6 +307,11 @@ if($unassignedResult){
                             <tr>
                                 <td>
                                     <?php echo htmlspecialchars($artist["name"], ENT_QUOTES, "UTF-8"); ?>
+                                </td>
+                                <td>
+                                    <span class="admin-muted">
+                                        /artista/<?php echo htmlspecialchars($artist["slug"], ENT_QUOTES, "UTF-8"); ?>
+                                    </span>
                                 </td>
                                 <td>
                                     <span class="admin-badge">

@@ -1,0 +1,143 @@
+URLS AMIGABLES / SLUGS - REGGAETON EL REAL
+
+OBJETIVO
+
+ANTES:
+http://localhost/TiendaCDsReggaeton/product.php?post=a1dd476cf8
+
+AHORA:
+http://localhost/TiendaCDsReggaeton/cd/daddy-yankee-el-cartel-3
+
+ARTISTAS:
+http://localhost/TiendaCDsReggaeton/artista/daddy-yankee
+
+
+REEMPLAZAR COMPLETOS
+
+- config.php
+- seo.php
+- index.php
+- product.php
+- artist.php
+- sitemap.php
+- admin.php
+- admin-product-new.php
+- postupdate.php
+- artists.php
+- artistshelper.php
+
+AGREGAR
+
+- slughelper.php
+- .htaccess
+- azure-nginx-routes.conf.example
+
+
+BASE DE DATOS
+
+Se agregan automáticamente:
+
+posts.slug VARCHAR(240)
+artists.slug VARCHAR(180)
+
+Y después de rellenar los existentes:
+
+UNIQUE KEY uq_post_slug
+UNIQUE KEY uq_artist_slug
+
+
+GENERACIÓN
+
+Daddy Yankee + El Cartel 3
+-> daddy-yankee-el-cartel-3
+
+Héctor el Father
+-> hector-el-father
+
+Wisin & Yandel
+-> wisin-y-yandel
+
+Ñejo & Dálmata
+-> nejo-y-dalmata
+
+
+COLISIONES
+
+Si ya existe:
+/cd/daddy-yankee-barrio-fino
+
+se intenta primero:
+/cd/daddy-yankee-barrio-fino-2004
+
+y si también existiera:
+/cd/daddy-yankee-barrio-fino-2
+
+
+ESTABILIDAD
+
+Una vez creado un slug:
+- editar nombre de artista NO cambia su URL;
+- editar título del CD NO cambia su URL.
+
+Esto evita romper URLs públicas que Google ya pudiera haber indexado.
+
+
+SEO
+
+Se actualizan:
+- canonical;
+- Open Graph;
+- JSON-LD Product;
+- BreadcrumbList;
+- ItemList;
+- páginas de artista;
+- sitemap.
+
+sitemap.php ahora publica las URLs nuevas.
+Con Apache/XAMPP también puedes abrir:
+/sitemap.xml
+
+
+LOCALHOST / XAMPP
+
+.htaccess incluye las reglas de Apache.
+
+Si obtienes 404 en /cd/...:
+1. Confirma que Apache mod_rewrite esté habilitado.
+2. Confirma AllowOverride All para el directorio.
+3. Reinicia Apache.
+
+En una instalación normal de XAMPP suele estar habilitado.
+
+
+AZURE
+
+IMPORTANTE:
+Azure App Service Linux PHP utiliza NGINX, no Apache.
+Por eso .htaccess funciona en tu localhost/XAMPP pero no será la regla
+que use Azure.
+
+Incluí:
+azure-nginx-routes.conf.example
+
+Cuando hagamos la infraestructura de Azure, integraremos esas tres rutas
+en la configuración NGINX del App Service y el startup command.
+No lo actives todavía.
+
+
+PRUEBA RECOMENDADA
+
+1. Reemplaza/agrega los archivos.
+2. Abre una vez:
+   http://localhost/TiendaCDsReggaeton/
+   Esto ejecuta el backfill de slugs existentes.
+3. Abre phpMyAdmin y comprueba posts.slug / artists.slug.
+4. Desde Inicio del admin pulsa VER en El Cartel 3.
+5. Debe abrir algo como:
+   /cd/daddy-yankee-el-cartel-3
+6. Pulsa Daddy Yankee desde el frontend.
+7. Debe poder abrir:
+   /artista/daddy-yankee
+8. Abre:
+   /sitemap.xml
+   y confirma que todas las URLs sean limpias.

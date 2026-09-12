@@ -1,4 +1,5 @@
 <?php
+require_once __DIR__ . "/slughelper.php";
 function artistExists($artistId){
     global $connection, $tableartists;
 
@@ -95,9 +96,21 @@ function artistCreate($name){
 
     $escapedName = mysqli_real_escape_string($connection, $name);
 
+    $slug =
+        slugUniqueArtist(
+            $name
+        );
+
+    $escapedSlug =
+        mysqli_real_escape_string(
+            $connection,
+            $slug
+        );
+
     $result = mysqli_query(
         $connection,
-        "INSERT INTO $tableartists (name) VALUES ('$escapedName')"
+        "INSERT INTO $tableartists (name, slug) " .
+        "VALUES ('$escapedName', '$escapedSlug')"
     );
 
     if(!$result){

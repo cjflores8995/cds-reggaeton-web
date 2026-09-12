@@ -4,6 +4,7 @@ session_start();
 require_once __DIR__ . "/config.php";
 require_once __DIR__ . "/functions.php";
 require_once __DIR__ . "/uilang.php";
+require_once __DIR__ . "/seo.php";
 
 function adminEsc($value){
     return htmlspecialchars((string)$value, ENT_QUOTES, "UTF-8");
@@ -1392,6 +1393,21 @@ if(isset($_GET["editpost"])){
                         Al marcarlo como vendido dejará de mostrarse inmediatamente en el frontend.
                     </div>
 
+                    <?php if(trim((string)($editRow["slug"] ?? "")) !== ""){ ?>
+                        <label>URL pública</label>
+                        <input
+                            type="text"
+                            value="<?php echo adminEsc(seoProductUrl($editRow["slug"])); ?>"
+                            readonly
+                        >
+                        <div
+                            class="admin-muted"
+                            style="margin-top:-7px;margin-bottom:14px;"
+                        >
+                            La URL permanece estable aunque después edites el título.
+                        </div>
+                    <?php } ?>
+
                     <label>Content (opcional)</label>
                     <textarea
                         class="js-richtext"
@@ -1617,11 +1633,10 @@ if(isset($_GET["editpost"])){
                                     <a
                                         class="admin-cd-card__image-wrap"
                                         href="<?php echo adminEsc(
-                                            $baseurl .
-                                            "?post=" .
-                                            urlencode(
-                                                (string)$post["postid"]
-                                            )
+                                            seoProductUrl(
+                                            $post["slug"] ??
+                                            ""
+                                        )
                                         ); ?>"
                                         target="_blank"
                                         rel="noopener"
@@ -1693,11 +1708,10 @@ if(isset($_GET["editpost"])){
                                             <a
                                                 class="admin-cd-card__button"
                                                 href="<?php echo adminEsc(
-                                                    $baseurl .
-                                                    "?post=" .
-                                                    urlencode(
-                                                        (string)$post["postid"]
-                                                    )
+                                                    seoProductUrl(
+                                                    $post["slug"] ??
+                                                    ""
+                                                )
                                                 ); ?>"
                                                 target="_blank"
                                                 rel="noopener"

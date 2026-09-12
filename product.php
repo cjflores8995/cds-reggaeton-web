@@ -59,10 +59,37 @@ function legacyImageUrl(string $path, string $storeBaseUrl): string
 
 $storeBaseUrl = buildStoreBaseUrl();
 $whatsappNumber = preg_replace('/\D+/', '', (string)$adminwhatsapp);
-$postId = trim((string)($_GET['post'] ?? ''));
+$productSlug = trim((string)($_GET['slug'] ?? ''));
 
-if ($postId === '') {
+if ($productSlug === '') {
     header('Location: ' . $storeBaseUrl);
+    exit;
+}
+
+/*
+ * Si alguien abre directamente product.php?slug=..., consolidamos
+ * inmediatamente la URL pública en /cd/{slug}.
+ * La reescritura interna desde /cd/{slug} conserva REQUEST_URI,
+ * por lo que no entra en este redirect.
+ */
+$requestPath = parse_url(
+    (string)($_SERVER['REQUEST_URI'] ?? ''),
+    PHP_URL_PATH
+);
+
+if (
+    $requestPath !== null &&
+    str_ends_with(
+        str_replace('\\', '/', $requestPath),
+        '/product.php'
+    )
+) {
+    header(
+        'Location: ' .
+        seoProductUrl($productSlug),
+        true,
+        301
+    );
     exit;
 }
 
@@ -70,11 +97,25 @@ $product = null;
 
 $stmt = mysqli_prepare(
     $connection,
-    "SELECT * FROM $tableposts WHERE postid = ? AND active = 1 AND stock = 1 LIMIT 1"
+    "SELECT
+        p.*,
+        a.name AS artist_name,
+        a.slug AS artist_slug
+     FROM $tableposts p
+     LEFT JOIN $tableartists a
+        ON a.id = p.artistid
+     WHERE p.slug = ?
+       AND p.active = 1
+       AND p.stock = 1
+     LIMIT 1"
 );
 
 if ($stmt) {
-    mysqli_stmt_bind_param($stmt, 's', $postId);
+    mysqli_stmt_bind_param(
+        $stmt,
+        's',
+        $productSlug
+    );
     mysqli_stmt_execute($stmt);
     $result = mysqli_stmt_get_result($stmt);
     $product = mysqli_fetch_assoc($result) ?: null;
@@ -201,7 +242,13 @@ if (count($images) === 0) {
 }
 
 $mainImage = $images[0]['url'];
-$artist = trim((string)($product['artist'] ?? ''));
+$artist = trim(
+    (string)(
+        $product['artist_name'] ??
+        $product['artist'] ??
+        ''
+    )
+);
 $album = trim((string)($product['album'] ?? ''));
 $title = trim((string)($product['title'] ?? ($artist . ' - ' . $album)));
 $year = trim((string)($product['release_year'] ?? ''));
@@ -211,16 +258,23 @@ $cdCondition = trim((string)($product['cd_condition'] ?? 'No especificado'));
 $caseCondition = trim((string)($product['case_condition'] ?? 'No especificado'));
 $description = trim(strip_tags((string)($product['content'] ?? '')));
 
-$artistId = (int)($product['artistid'] ?? 0);
+$artistSlug = trim(
+    (string)(
+        $product['artist_slug'] ??
+        ''
+    )
+);
+
 $artistPageUrl =
-    seoArtistUrl(
-        $artistId,
-        $artist
-    );
+    $artistSlug !== ''
+        ? seoArtistUrl(
+            $artistSlug
+        )
+        : seoUrl();
 
 $seoCanonical =
     seoProductUrl(
-        $product['postid']
+        $product['slug']
     );
 
 $seoProductDisplayName =
@@ -772,7 +826,7 @@ if ($relatedResult) {
                             <article class="product-card">
                                 <a
                                     class="product-card__image-wrap"
-                                    href="<?php echo e($storeBaseUrl); ?>product.php?post=<?php echo urlencode((string)$related['postid']); ?>"
+                                    href="<?php echo e(seoProductUrl($related['slug'] ?? '')); ?>"
                                 >
                                     <img
                                         class="product-card__image"
@@ -787,7 +841,7 @@ if ($relatedResult) {
 
                                     <a
                                         class="product-card__title"
-                                        href="<?php echo e($storeBaseUrl); ?>product.php?post=<?php echo urlencode((string)$related['postid']); ?>"
+                                        href="<?php echo e(seoProductUrl($related['slug'] ?? '')); ?>"
                                     >
                                         <?php echo e($relatedAlbum); ?>
                                     </a>
@@ -797,7 +851,7 @@ if ($relatedResult) {
 
                                         <a
                                             class="square-action square-action--link"
-                                            href="<?php echo e($storeBaseUrl); ?>product.php?post=<?php echo urlencode((string)$related['postid']); ?>"
+                                            href="<?php echo e(seoProductUrl($related['slug'] ?? '')); ?>"
                                             aria-label="Ver <?php echo e($relatedAlbum); ?>"
                                         >
                                             →

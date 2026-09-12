@@ -31,121 +31,107 @@ function artistImageUrl(
     );
 }
 
-$artistId =
-    isset($_GET['id'])
-        ? (int)$_GET['id']
-        : 0;
-
-$artistName =
+$artistSlug =
     trim(
         (string)(
-            $_GET['artist'] ??
+            $_GET['slug'] ??
             ''
         )
     );
 
-$artistRow = null;
+if($artistSlug === ''){
+    header(
+        'Location: ' .
+        seoUrl()
+    );
+    exit;
+}
 
 /*
- * La URL canónica preferida usa artist ID.
- * El nombre queda como fallback para productos legacy.
+ * Igual que en product.php, cualquier acceso directo al archivo
+ * se consolida en la URL pública limpia.
  */
-if ($artistId > 0) {
-    $statement = mysqli_prepare(
-        $connection,
-        "SELECT id, name
-         FROM $tableartists
-         WHERE id = ?
-         LIMIT 1"
+$requestPath = parse_url(
+    (string)(
+        $_SERVER['REQUEST_URI'] ??
+        ''
+    ),
+    PHP_URL_PATH
+);
+
+if(
+    $requestPath !== null &&
+    str_ends_with(
+        str_replace(
+            '\\',
+            '/',
+            $requestPath
+        ),
+        '/artist.php'
+    )
+){
+    header(
+        'Location: ' .
+        seoArtistUrl(
+            $artistSlug
+        ),
+        true,
+        301
     );
-
-    if ($statement) {
-        mysqli_stmt_bind_param(
-            $statement,
-            'i',
-            $artistId
-        );
-
-        mysqli_stmt_execute(
-            $statement
-        );
-
-        $result =
-            mysqli_stmt_get_result(
-                $statement
-            );
-
-        $artistRow =
-            mysqli_fetch_assoc(
-                $result
-            ) ?: null;
-
-        mysqli_stmt_close(
-            $statement
-        );
-    }
-} else if ($artistName !== '') {
-    $statement = mysqli_prepare(
-        $connection,
-        "SELECT id, name
-         FROM $tableartists
-         WHERE name = ?
-         LIMIT 1"
-    );
-
-    if ($statement) {
-        mysqli_stmt_bind_param(
-            $statement,
-            's',
-            $artistName
-        );
-
-        mysqli_stmt_execute(
-            $statement
-        );
-
-        $result =
-            mysqli_stmt_get_result(
-                $statement
-            );
-
-        $artistRow =
-            mysqli_fetch_assoc(
-                $result
-            ) ?: null;
-
-        mysqli_stmt_close(
-            $statement
-        );
-
-        if ($artistRow) {
-            header(
-                'Location: ' .
-                seoArtistUrl(
-                    (int)$artistRow['id'],
-                    (string)$artistRow['name']
-                ),
-                true,
-                301
-            );
-            exit;
-        }
-    }
+    exit;
 }
 
-if ($artistRow) {
-    $artistId =
-        (int)$artistRow['id'];
+$artistRow = null;
 
-    $artistName =
-        trim(
+$statement = mysqli_prepare(
+    $connection,
+    "SELECT id, name, slug
+     FROM $tableartists
+     WHERE slug = ?
+     LIMIT 1"
+);
+
+if($statement){
+    mysqli_stmt_bind_param(
+        $statement,
+        's',
+        $artistSlug
+    );
+
+    mysqli_stmt_execute(
+        $statement
+    );
+
+    $result =
+        mysqli_stmt_get_result(
+            $statement
+        );
+
+    $artistRow =
+        mysqli_fetch_assoc(
+            $result
+        ) ?: null;
+
+    mysqli_stmt_close(
+        $statement
+    );
+}
+
+$artistId =
+    $artistRow
+        ? (int)$artistRow['id']
+        : 0;
+
+$artistName =
+    $artistRow
+        ? trim(
             (string)$artistRow['name']
-        );
-}
+        )
+        : '';
 
 $products = [];
 
-if ($artistId > 0) {
+if($artistId > 0){
     $statement = mysqli_prepare(
         $connection,
         "SELECT *
@@ -156,7 +142,7 @@ if ($artistId > 0) {
          ORDER BY id DESC"
     );
 
-    if ($statement) {
+    if($statement){
         mysqli_stmt_bind_param(
             $statement,
             'i',
@@ -172,52 +158,12 @@ if ($artistId > 0) {
                 $statement
             );
 
-        while (
+        while(
             $row =
                 mysqli_fetch_assoc(
                     $result
                 )
-        ) {
-            $products[] = $row;
-        }
-
-        mysqli_stmt_close(
-            $statement
-        );
-    }
-} else if ($artistName !== '') {
-    $statement = mysqli_prepare(
-        $connection,
-        "SELECT *
-         FROM $tableposts
-         WHERE active = 1
-           AND stock = 1
-           AND artist = ?
-         ORDER BY id DESC"
-    );
-
-    if ($statement) {
-        mysqli_stmt_bind_param(
-            $statement,
-            's',
-            $artistName
-        );
-
-        mysqli_stmt_execute(
-            $statement
-        );
-
-        $result =
-            mysqli_stmt_get_result(
-                $statement
-            );
-
-        while (
-            $row =
-                mysqli_fetch_assoc(
-                    $result
-                )
-        ) {
+        ){
             $products[] = $row;
         }
 
@@ -270,8 +216,7 @@ if (
 
 $canonical =
     seoArtistUrl(
-        $artistId,
-        $artistName
+        $artistSlug
     );
 
 $seoTitle =
@@ -321,7 +266,7 @@ foreach ($products as $position => $product) {
             $album,
         'url' =>
             seoProductUrl(
-                $product['postid'] ??
+                $product['slug'] ??
                 ''
             )
     ];
@@ -565,7 +510,7 @@ $jsonLd = [
 
                     $productUrl =
                         seoProductUrl(
-                            $product['postid'] ??
+                            $product['slug'] ??
                             ''
                         );
                     ?>

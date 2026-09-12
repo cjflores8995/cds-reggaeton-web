@@ -116,6 +116,14 @@ if($_SERVER["REQUEST_METHOD"] === "POST"){
         $uploadedPaths = $imageResult["uploaded"];
 
         $postId = bin2hex(random_bytes(5));
+
+        $slug =
+            slugUniqueProduct(
+                $artistName,
+                $album,
+                $releaseYear
+            );
+
         $title = $artistName . " - " . $album;
         $currentTime = date("Y-m-d H:i:s");
         $picture = productImagePictureValue($slots);
@@ -161,7 +169,8 @@ if($_SERVER["REQUEST_METHOD"] === "POST"){
             "stock" => 1,
             "cd_condition" => $cdCondition,
             "case_condition" => $caseCondition,
-            "active" => $active
+            "active" => $active,
+            "slug" => $slug
         ];
 
         foreach($optionalColumns as $column => $value){
@@ -273,7 +282,7 @@ $imageRoles = [
 
         <?php if($success){ ?>
             <div class="admin-alert success">
-                CD guardado correctamente.
+                CD guardado correctamente. La URL pública amigable se generó automáticamente.
                 <?php if($createdProductId > 0){ ?>
                     ID: <strong><?php echo $createdProductId; ?></strong>
                 <?php } ?>

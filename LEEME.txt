@@ -1,56 +1,24 @@
-REBRANDING OFICIAL - REGGAETON EL REAL
-
-Revisado contra la rama develop actual.
-
-MARCA OFICIAL:
-Reggaeton El Real
+CINTA DIAGONAL PARA EL ESTADO DE FOTOS
 
 REEMPLAZAR COMPLETOS:
-- config.php
-- index.php
-- product.php
-- store-footer.php
-- checkout.php
-- store.js
-- checkout.js
-- admin-menu.php
-- image-settings.php
-- ordernotes.php
+- admin.php
+- admin-modern.css
 
-CAMBIOS:
-- REGGAETON LAB -> REGGAETON EL REAL
-- Hero "REGGAETON EN CD." -> "REGGAETON EL REAL."
-- Footer -> REGGAETON EL REAL
-- Checkout -> REGGAETON EL REAL
-- Alt del logo del admin -> Reggaeton El Real
-- Preview de Config. imágenes -> REGGAETON EL REAL
-- Prefijos técnicos de logs de checkout -> ReggaetonElReal
-- Clave localStorage del carrito:
-    reggaetonLabCartV1
-  pasa a:
-    reggaetonElRealCartV1
+CAMBIO:
+- Se elimina la etiqueta pequeña.
+- Ahora el estado de fotos aparece como una banda diagonal
+  grande en la esquina superior izquierda de la portada.
+- Sigue mostrando:
+  SOLO PORTADA WEB
+  1 FOTO REAL
+  2 FOTOS REALES
+  3 FOTOS REALES
+  etc.
 
-BASE DE DATOS:
-config.php migra automáticamente websitetitle SOLO si contiene uno de estos
-nombres antiguos conocidos:
-- Toko Online WA
-- Tienda CDS Reggaeton
-- Reggaeton Lab
-- Reggaeton en CD
-- Reggaeton El CD
-
-Si Website Title contiene un valor personalizado distinto, no se sobrescribe.
+SE CONSERVA:
+- Vendido
+- Oculto
 
 IMPORTANTE:
-El watermark "reggaeton.el.real" NO se cambia porque corresponde al handle
-oficial de TikTok y fue definido expresamente para las fotografías.
-
-EFECTO DEL NUEVO STORAGE KEY:
-El carrito local actual del navegador se reinicia una sola vez porque cambia
-la clave interna de localStorage. Es intencional durante el rebranding.
-
-DESPUÉS DE COPIAR:
-1. Ctrl + F5.
-2. Abre la portada, una ficha de producto y checkout.
-3. Verifica que la marca visible sea REGGAETON EL REAL.
-4. En Admin > Settings confirma que Website Title quedó Reggaeton El Real.
+- admin-modern.css ahora va con v=14.
+- Después de reemplazar los archivos, haz Ctrl + F5.

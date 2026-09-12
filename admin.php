@@ -4,7 +4,6 @@ session_start();
 require_once __DIR__ . "/config.php";
 require_once __DIR__ . "/functions.php";
 require_once __DIR__ . "/uilang.php";
-require_once __DIR__ . "/seo.php";
 
 function adminEsc($value){
     return htmlspecialchars((string)$value, ENT_QUOTES, "UTF-8");
@@ -119,6 +118,77 @@ function adminProductAlbumName($post, $artistName){
     return $title;
 }
 
+function adminProductImageCount($post){
+    $count = 0;
+
+    $picture = trim(
+        (string)(
+            $post["picture"] ??
+            ""
+        )
+    );
+
+    if($picture !== ""){
+        $count++;
+    }
+
+    $moreImages = trim(
+        (string)(
+            $post["moreimages"] ??
+            ""
+        )
+    );
+
+    if($moreImages !== ""){
+        foreach(
+            explode(
+                ",",
+                $moreImages
+            )
+            as $imagePath
+        ){
+            if(
+                trim(
+                    (string)$imagePath
+                ) !== ""
+            ){
+                $count++;
+            }
+        }
+    }
+
+    return $count;
+}
+
+function adminProductPhotoStatus($post){
+    $imageCount =
+        adminProductImageCount(
+            $post
+        );
+
+    $realPhotoCount =
+        max(
+            0,
+            $imageCount - 1
+        );
+
+    if($realPhotoCount <= 0){
+        return [
+            "class" => "cover-only",
+            "text" => "SOLO PORTADA WEB"
+        ];
+    }
+
+    return [
+        "class" => "has-real-photos",
+        "text" =>
+            $realPhotoCount === 1
+                ? "1 FOTO REAL"
+                : $realPhotoCount .
+                    " FOTOS REALES"
+    ];
+}
+
 function adminSafePicturePath($fileName){
     $fileName = basename((string)$fileName);
 
@@ -216,7 +286,7 @@ if(!adminIsLoggedIn()){
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <title>Admin Panel | <?php echo adminEsc($websitetitle); ?></title>
-        <link rel="stylesheet" type="text/css" href="<?php echo $baseurl; ?>admin-modern.css?v=12">
+        <link rel="stylesheet" type="text/css" href="<?php echo $baseurl; ?>admin-modern.css?v=14">
     </head>
     <body class="admin-login-page">
         <div class="admin-login-card">
@@ -719,7 +789,7 @@ if(isset($_GET["editpost"])){
 
     <link rel="shortcut icon" href="<?php echo adminEsc($baseurl); ?>favicon.ico">
     <link rel="stylesheet" type="text/css" href="<?php echo adminEsc($baseurl); ?>assets/css/font-awesome.css">
-    <link rel="stylesheet" type="text/css" href="<?php echo adminEsc($baseurl); ?>admin-modern.css?v=12">
+    <link rel="stylesheet" type="text/css" href="<?php echo adminEsc($baseurl); ?>admin-modern.css?v=14">
 
     <script src="<?php echo adminEsc($baseurl); ?>jquery.min.js"></script>
     <script src="<?php echo adminEsc($baseurl); ?>jquery.form.js"></script>
@@ -1393,21 +1463,6 @@ if(isset($_GET["editpost"])){
                         Al marcarlo como vendido dejará de mostrarse inmediatamente en el frontend.
                     </div>
 
-                    <?php if(trim((string)($editRow["slug"] ?? "")) !== ""){ ?>
-                        <label>URL pública</label>
-                        <input
-                            type="text"
-                            value="<?php echo adminEsc(seoProductUrl($editRow["slug"])); ?>"
-                            readonly
-                        >
-                        <div
-                            class="admin-muted"
-                            style="margin-top:-7px;margin-bottom:14px;"
-                        >
-                            La URL permanece estable aunque después edites el título.
-                        </div>
-                    <?php } ?>
-
                     <label>Content (opcional)</label>
                     <textarea
                         class="js-richtext"
@@ -1616,6 +1671,11 @@ if(isset($_GET["editpost"])){
                                 $isActive =
                                     (int)($post["active"] ?? 1) === 1;
 
+                                $photoStatus =
+                                    adminProductPhotoStatus(
+                                        $post
+                                    );
+
                                 $searchText = trim(
                                     $artistName .
                                     " " .
@@ -1633,10 +1693,11 @@ if(isset($_GET["editpost"])){
                                     <a
                                         class="admin-cd-card__image-wrap"
                                         href="<?php echo adminEsc(
-                                            seoProductUrl(
-                                            $post["slug"] ??
-                                            ""
-                                        )
+                                            $baseurl .
+                                            "?post=" .
+                                            urlencode(
+                                                (string)$post["postid"]
+                                            )
                                         ); ?>"
                                         target="_blank"
                                         rel="noopener"
@@ -1650,10 +1711,16 @@ if(isset($_GET["editpost"])){
                                         >
 
                                         <span
-                                            class="admin-cd-card__status <?php echo $isActive ? "is-available" : "is-hidden-status"; ?>"
+                                            class="admin-cd-card__photo-status <?php echo adminEsc($photoStatus["class"]); ?>"
                                         >
-                                            <?php echo $isActive ? "Disponible" : "Oculto"; ?>
+                                            <?php echo adminEsc($photoStatus["text"]); ?>
                                         </span>
+
+                                        <?php if(!$isActive){ ?>
+                                            <span class="admin-cd-card__status is-hidden-status">
+                                                Oculto
+                                            </span>
+                                        <?php } ?>
                                     </a>
 
                                     <div class="admin-cd-card__body">
@@ -1708,10 +1775,11 @@ if(isset($_GET["editpost"])){
                                             <a
                                                 class="admin-cd-card__button"
                                                 href="<?php echo adminEsc(
-                                                    seoProductUrl(
-                                                    $post["slug"] ??
-                                                    ""
-                                                )
+                                                    $baseurl .
+                                                    "?post=" .
+                                                    urlencode(
+                                                        (string)$post["postid"]
+                                                    )
                                                 ); ?>"
                                                 target="_blank"
                                                 rel="noopener"
@@ -1830,6 +1898,11 @@ if(isset($_GET["editpost"])){
                                 $soldDate = adminFormatDate(
                                     $post["sold_at"] ?? ""
                                 );
+
+                                $photoStatus =
+                                    adminProductPhotoStatus(
+                                        $post
+                                    );
                                 ?>
 
                                 <article
@@ -1844,6 +1917,12 @@ if(isset($_GET["editpost"])){
                                             alt="<?php echo adminEsc($title); ?>"
                                             loading="lazy"
                                         >
+
+                                        <span
+                                            class="admin-cd-card__photo-status <?php echo adminEsc($photoStatus["class"]); ?>"
+                                        >
+                                            <?php echo adminEsc($photoStatus["text"]); ?>
+                                        </span>
 
                                         <span class="admin-cd-card__status is-sold">
                                             Vendido

@@ -203,24 +203,6 @@ $content = mysqli_real_escape_string(
     $contentRaw
 );
 
-$tiktokResult = productTikTokNormalize(
-    $_POST["tiktok_url"] ??
-    ""
-);
-
-if(!$tiktokResult["ok"]){
-    postUpdateRespond(
-        false,
-        $tiktokResult["message"],
-        $id
-    );
-}
-
-$tiktokUrl = mysqli_real_escape_string(
-    $connection,
-    $tiktokResult["url"]
-);
-
 $moreoptions = mysqli_real_escape_string(
     $connection,
     isset($_POST["moreoptions"])
@@ -293,10 +275,32 @@ $row = mysqli_fetch_assoc(
 );
 
 /*
- * La disponibilidad se administra exclusivamente desde Inicio.
- * Editar un CD nunca debe restaurar uno vendido ni alterar sold_at.
+ * Si por algún problema de JavaScript el campo de TikTok no llega en POST,
+ * conservamos el valor existente en lugar de borrarlo accidentalmente.
  */
-$stock = (int)($row["stock"] ?? 1);
+$tiktokResult = productTikTokNormalize(
+    isset($_POST["tiktok_url"])
+        ? $_POST["tiktok_url"]
+        : ($row["tiktok_url"] ?? "")
+);
+
+if(!$tiktokResult["ok"]){
+    postUpdateRespond(
+        false,
+        $tiktokResult["message"],
+        $id
+    );
+}
+
+$tiktokUrl = mysqli_real_escape_string(
+    $connection,
+    $tiktokResult["url"]
+);
+
+/*
+ * La disponibilidad se administra exclusivamente desde Inicio.
+ * El UPDATE de edición no modifica stock ni sold_at.
+ */
 
 /*
  * La URL pública es estable:

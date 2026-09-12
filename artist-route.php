@@ -2,6 +2,7 @@
 require_once __DIR__ . "/config.php";
 require_once __DIR__ . "/analytics-helper.php";
 require_once __DIR__ . "/analytics-phase2-helper.php";
+require_once __DIR__ . "/analytics-privacy.php";
 
 $artistSlug = trim((string)($_GET["slug"] ?? ""));
 $artistAvailable = false;
@@ -28,6 +29,7 @@ if($artistSlug !== ""){
 }
 
 if($artistSlug !== "" && !$artistAvailable){
+    analyticsPrivacySanitizeServerContext();
     analyticsPhase2RecordServerEvent(
         $connection,
         "not_found",
@@ -35,7 +37,7 @@ if($artistSlug !== "" && !$artistAvailable){
             "event_value" => "artist",
             "event_data" => [
                 "resource_type" => "artist",
-                "resource_value" => analyticsSafeText($artistSlug, 160)
+                "resource_value" => analyticsPrivacyRedactText($artistSlug, 160)
             ]
         ]
     );

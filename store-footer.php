@@ -235,8 +235,9 @@ if(isset($storeBaseUrl) && trim((string)$storeBaseUrl) !== ""){
 <?php if($footerAssetBaseUrl !== ""){ ?>
     <script
         defer
-        src="<?php echo storeFooterEsc($footerAssetBaseUrl); ?>analytics-client.js?v=1"
+        src="<?php echo storeFooterEsc($footerAssetBaseUrl); ?>analytics-client.js?v=2"
         data-endpoint="<?php echo storeFooterEsc($footerAssetBaseUrl); ?>analytics-event.php"
+        data-timeout-ms="1800"
     ></script>
     <script
         defer

@@ -173,7 +173,7 @@ function analyticsDashboardTabUrl($baseurl, $view, $environment){
 <?php }else if($selectedView === "diagnostics"){ ?>
     <script defer src="<?php echo analyticsDashboardEsc($baseurl); ?>admin-analytics-diagnostics.js?v=1"></script>
 <?php }else if($selectedView === "maintenance"){ ?>
-    <script defer src="<?php echo analyticsDashboardEsc($baseurl); ?>admin-analytics-maintenance.js?v=1"></script>
+    <script defer src="<?php echo analyticsDashboardEsc($baseurl); ?>admin-analytics-maintenance.js?v=2"></script>
 <?php }else{ ?>
     <script defer src="<?php echo analyticsDashboardEsc($baseurl); ?>admin-analytics-dashboard.js?v=2"></script>
     <script defer src="<?php echo analyticsDashboardEsc($baseurl); ?>admin-analytics-dashboard-vibrant.js?v=1"></script>

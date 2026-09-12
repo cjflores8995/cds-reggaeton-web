@@ -6,6 +6,7 @@
     var cart = loadCart();
     var quote = null;
     var selectedShippingZone = "";
+    var checkoutToken = randomHex(16);
 
     document.addEventListener("DOMContentLoaded", initializeCheckout);
 
@@ -20,6 +21,41 @@
     function money(value) {
         var amount = Number.parseFloat(String(value || "0").replace(",", "."));
         return "$" + (Number.isFinite(amount) ? amount : 0).toFixed(2);
+    }
+
+    function randomHex(bytes) {
+        var values = new Uint8Array(bytes);
+
+        if (window.crypto && window.crypto.getRandomValues) {
+            window.crypto.getRandomValues(values);
+        } else {
+            for (var i = 0; i < values.length; i++) {
+                values[i] = Math.floor(Math.random() * 256);
+            }
+        }
+
+        return Array.prototype.map.call(values, function (value) {
+            return value.toString(16).padStart(2, "0");
+        }).join("");
+    }
+
+    function analyticsTrack(eventType, options) {
+        if (!window.RERAnalytics || typeof window.RERAnalytics.track !== "function") {
+            return Promise.resolve({
+                ok: false,
+                skipped: true
+            });
+        }
+
+        return window.RERAnalytics.track(eventType, options || {});
+    }
+
+    function cartProductIds() {
+        return cart.map(function (item) {
+            return Number.parseInt(item.id, 10);
+        }).filter(function (id) {
+            return Number.isFinite(id) && id > 0;
+        }).slice(0, 50);
     }
 
     function loadCart() {
@@ -76,7 +112,25 @@
             });
 
             renderQuote();
+
+            analyticsTrack("checkout_started", {
+                checkout_token: checkoutToken,
+                event_value: "checkout",
+                event_data: {
+                    product_ids: cartProductIds()
+                }
+            });
         } catch (error) {
+            analyticsTrack("checkout_validation_failed", {
+                checkout_token: checkoutToken,
+                event_value: "quote",
+                event_data: {
+                    stage: "quote",
+                    reason: error.message || "No se pudo validar tu carrito.",
+                    product_ids: cartProductIds()
+                }
+            });
+
             showError(error.message || "No se pudo validar tu carrito.");
         }
     }
@@ -298,8 +352,27 @@
                 throw new Error("No se recibió el enlace de WhatsApp.");
             }
 
+            analyticsTrack("checkout_whatsapp", {
+                checkout_token: checkoutToken,
+                event_value: selectedShippingZone,
+                event_data: {
+                    product_ids: cartProductIds(),
+                    shipping_zone: selectedShippingZone
+                }
+            });
+
             window.location.href = result.whatsapp_url;
         } catch (error) {
+            analyticsTrack("checkout_validation_failed", {
+                checkout_token: checkoutToken,
+                event_value: "checkout",
+                event_data: {
+                    stage: "checkout",
+                    reason: error.message || "No se pudo finalizar la compra.",
+                    product_ids: cartProductIds()
+                }
+            });
+
             showInlineError(error.message || "No se pudo finalizar la compra.");
 
             if (button) {

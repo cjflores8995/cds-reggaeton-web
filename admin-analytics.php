@@ -4,7 +4,7 @@ session_start();
 require_once __DIR__ . "/config.php";
 require_once __DIR__ . "/analytics-helper.php";
 
-header("X-Robots-Tag: noindex, nofollow,noarchive", true);
+header("X-Robots-Tag: noindex, nofollow, noarchive", true);
 
 $isLoggedIn =
     isset($_SESSION["adminusername"]) &&
@@ -63,6 +63,7 @@ function analyticsDashboardTabUrl($baseurl, $view, $environment){
     <link rel="stylesheet" href="https://unpkg.com/tabulator-tables@6.5.0/dist/css/tabulator.min.css">
     <link rel="stylesheet" type="text/css" href="<?php echo analyticsDashboardEsc($baseurl); ?>admin-analytics-dashboard.css?v=2">
     <link rel="stylesheet" type="text/css" href="<?php echo analyticsDashboardEsc($baseurl); ?>admin-analytics-dashboard-enhanced.css?v=1">
+    <link rel="stylesheet" type="text/css" href="<?php echo analyticsDashboardEsc($baseurl); ?>admin-analytics-dashboard-vibrant.css?v=1">
 </head>
 <body>
 <div class="admin-page-shell">
@@ -143,5 +144,6 @@ function analyticsDashboardTabUrl($baseurl, $view, $environment){
 <script defer src="https://cdn.jsdelivr.net/npm/flatpickr@4.6.13/dist/l10n/es.js"></script>
 <script defer src="https://unpkg.com/tabulator-tables@6.5.0/dist/js/tabulator.min.js"></script>
 <script defer src="<?php echo analyticsDashboardEsc($baseurl); ?>admin-analytics-dashboard.js?v=2"></script>
+<script defer src="<?php echo analyticsDashboardEsc($baseurl); ?>admin-analytics-dashboard-vibrant.js?v=1"></script>
 </body>
 </html>

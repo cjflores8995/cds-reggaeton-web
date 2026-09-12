@@ -174,7 +174,7 @@ $adminActionsUrl = "admin-actions.php";
 <?php if($adminActiveSection === "home"){ ?>
     <script
         defer
-        src="<?php echo htmlspecialchars($baseurl . "admin-home-enhancements.js?v=2", ENT_QUOTES, "UTF-8"); ?>"
+        src="<?php echo htmlspecialchars($baseurl . "admin-home-enhancements.js?v=3", ENT_QUOTES, "UTF-8"); ?>"
     ></script>
 <?php } ?>
 

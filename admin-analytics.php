@@ -30,13 +30,22 @@ if(!in_array($selectedEnvironment, ["development", "production"], true)){
 
 $selectedView = strtolower(trim((string)($_GET["view"] ?? "summary")));
 
-if(!in_array($selectedView, ["summary", "products", "searches", "activity", "sessions", "diagnostics"], true)){
+if(!in_array($selectedView, ["summary", "products", "searches", "activity", "sessions", "diagnostics", "maintenance"], true)){
     $selectedView = "summary";
 }
 
 $selectedSessionId = max(0, (int)($_GET["session_id"] ?? 0));
 $schemaReady = analyticsEnsureSchema($connection);
 $adminActiveSection = "analytics";
+
+if(
+    !isset($_SESSION["analytics_maintenance_csrf"]) ||
+    preg_match('/^[a-f0-9]{48}$/', (string)$_SESSION["analytics_maintenance_csrf"]) !== 1
+){
+    $_SESSION["analytics_maintenance_csrf"] = bin2hex(random_bytes(24));
+}
+
+$analyticsMaintenanceCsrf = (string)$_SESSION["analytics_maintenance_csrf"];
 
 function analyticsDashboardTabUrl($baseurl, $view, $environment){
     return $baseurl . "admin-analytics.php?" . http_build_query([
@@ -68,6 +77,9 @@ function analyticsDashboardTabUrl($baseurl, $view, $environment){
     <link rel="stylesheet" type="text/css" href="<?php echo analyticsDashboardEsc($baseurl); ?>admin-analytics-sessions.css?v=1">
     <?php if($selectedView === "diagnostics"){ ?>
         <link rel="stylesheet" type="text/css" href="<?php echo analyticsDashboardEsc($baseurl); ?>admin-analytics-diagnostics.css?v=1">
+    <?php } ?>
+    <?php if($selectedView === "maintenance"){ ?>
+        <link rel="stylesheet" type="text/css" href="<?php echo analyticsDashboardEsc($baseurl); ?>admin-analytics-maintenance.css?v=1">
     <?php } ?>
 </head>
 <body>
@@ -105,6 +117,7 @@ function analyticsDashboardTabUrl($baseurl, $view, $environment){
             <a href="<?php echo analyticsDashboardEsc(analyticsDashboardTabUrl($baseurl, "activity", $selectedEnvironment)); ?>" <?php echo $selectedView === "activity" ? 'class="is-active"' : ""; ?>>Actividad</a>
             <a href="<?php echo analyticsDashboardEsc(analyticsDashboardTabUrl($baseurl, "sessions", $selectedEnvironment)); ?>" <?php echo $selectedView === "sessions" ? 'class="is-active"' : ""; ?>>Sesiones</a>
             <a href="<?php echo analyticsDashboardEsc(analyticsDashboardTabUrl($baseurl, "diagnostics", $selectedEnvironment)); ?>" <?php echo $selectedView === "diagnostics" ? 'class="is-active"' : ""; ?>>Diagnóstico</a>
+            <a href="<?php echo analyticsDashboardEsc(analyticsDashboardTabUrl($baseurl, "maintenance", $selectedEnvironment)); ?>" <?php echo $selectedView === "maintenance" ? 'class="is-active"' : ""; ?>>Mantenimiento</a>
         </nav>
 
         <section
@@ -114,32 +127,36 @@ function analyticsDashboardTabUrl($baseurl, $view, $environment){
             data-environment="<?php echo analyticsDashboardEsc($selectedEnvironment); ?>"
             data-session-id="<?php echo analyticsDashboardEsc($selectedSessionId); ?>"
             data-endpoint="<?php echo analyticsDashboardEsc($baseurl); ?>admin-analytics-dashboard-data.php"
+            data-maintenance-endpoint="<?php echo analyticsDashboardEsc($baseurl); ?>admin-analytics-maintenance-action.php"
+            data-maintenance-csrf="<?php echo analyticsDashboardEsc($analyticsMaintenanceCsrf); ?>"
         >
-            <div class="analytics-dashboard-filterbar">
-                <div class="analytics-dashboard-periods" aria-label="Período">
-                    <button type="button" data-period="today">Hoy</button>
-                    <button type="button" data-period="7d">7 días</button>
-                    <button type="button" data-period="30d" class="is-active">30 días</button>
-                    <button type="button" data-period="custom">Personalizado</button>
+            <?php if($selectedView !== "maintenance"){ ?>
+                <div class="analytics-dashboard-filterbar">
+                    <div class="analytics-dashboard-periods" aria-label="Período">
+                        <button type="button" data-period="today">Hoy</button>
+                        <button type="button" data-period="7d">7 días</button>
+                        <button type="button" data-period="30d" class="is-active">30 días</button>
+                        <button type="button" data-period="custom">Personalizado</button>
+                    </div>
+
+                    <div class="analytics-dashboard-range">
+                        <strong data-range-label>Calculando período…</strong>
+                        <span>Hora Ecuador · almacenamiento UTC</span>
+                    </div>
                 </div>
 
-                <div class="analytics-dashboard-range">
-                    <strong data-range-label>Calculando período…</strong>
-                    <span>Hora Ecuador · almacenamiento UTC</span>
+                <div class="analytics-dashboard-custom" data-custom-range hidden>
+                    <label>
+                        Desde
+                        <input id="analyticsDashboardFrom" type="date" autocomplete="off">
+                    </label>
+                    <label>
+                        Hasta
+                        <input id="analyticsDashboardTo" type="date" autocomplete="off">
+                    </label>
+                    <button type="button" data-apply-range>Aplicar</button>
                 </div>
-            </div>
-
-            <div class="analytics-dashboard-custom" data-custom-range hidden>
-                <label>
-                    Desde
-                    <input id="analyticsDashboardFrom" type="date" autocomplete="off">
-                </label>
-                <label>
-                    Hasta
-                    <input id="analyticsDashboardTo" type="date" autocomplete="off">
-                </label>
-                <button type="button" data-apply-range>Aplicar</button>
-            </div>
+            <?php } ?>
 
             <div class="analytics-dashboard-status" data-status aria-live="polite">Cargando Analytics…</div>
             <div data-dashboard-content></div>
@@ -155,6 +172,8 @@ function analyticsDashboardTabUrl($baseurl, $view, $environment){
     <script defer src="<?php echo analyticsDashboardEsc($baseurl); ?>admin-analytics-sessions.js?v=1"></script>
 <?php }else if($selectedView === "diagnostics"){ ?>
     <script defer src="<?php echo analyticsDashboardEsc($baseurl); ?>admin-analytics-diagnostics.js?v=1"></script>
+<?php }else if($selectedView === "maintenance"){ ?>
+    <script defer src="<?php echo analyticsDashboardEsc($baseurl); ?>admin-analytics-maintenance.js?v=1"></script>
 <?php }else{ ?>
     <script defer src="<?php echo analyticsDashboardEsc($baseurl); ?>admin-analytics-dashboard.js?v=2"></script>
     <script defer src="<?php echo analyticsDashboardEsc($baseurl); ?>admin-analytics-dashboard-vibrant.js?v=1"></script>

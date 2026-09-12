@@ -168,6 +168,20 @@
 
         injectStyles();
 
+        document.addEventListener(
+            "click",
+            function (event) {
+                var legacyLink = event.target.closest(
+                    "a[href*='?post=']"
+                );
+
+                if (legacyLink) {
+                    event.preventDefault();
+                }
+            },
+            true
+        );
+
         fetch(
             "productdata.php?catalog=1",
             {

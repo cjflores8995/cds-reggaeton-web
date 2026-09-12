@@ -100,7 +100,7 @@ $adminActionsUrl = "admin-actions.php";
             <?php echo adminMenuClass("analytics", $adminActiveSection); ?>
         >
             <i class="fa fa-line-chart"></i>
-            <span>Analytics</span>
+            <span>Analítica</span>
         </a>
 
         <a
@@ -108,7 +108,7 @@ $adminActionsUrl = "admin-actions.php";
             <?php echo adminMenuClass("system-logs", $adminActiveSection); ?>
         >
             <i class="fa fa-list-alt"></i>
-            <span>System Logs</span>
+            <span>Registros del sistema</span>
         </a>
 
         <a
@@ -132,7 +132,7 @@ $adminActionsUrl = "admin-actions.php";
             <?php echo adminMenuClass("pictures", $adminActiveSection); ?>
         >
             <i class="fa fa-image"></i>
-            <span>Pictures</span>
+            <span>Imágenes</span>
         </a>
 
         <a
@@ -140,7 +140,7 @@ $adminActionsUrl = "admin-actions.php";
             <?php echo adminMenuClass("image-settings", $adminActiveSection); ?>
         >
             <i class="fa fa-sliders"></i>
-            <span>Config. imágenes</span>
+            <span>Configuración de imágenes</span>
         </a>
 
         <a
@@ -148,7 +148,7 @@ $adminActionsUrl = "admin-actions.php";
             <?php echo adminMenuClass("orders", $adminActiveSection); ?>
         >
             <i class="fa fa-file-text"></i>
-            <span>Orders</span>
+            <span>Pedidos</span>
         </a>
 
         <a
@@ -156,12 +156,12 @@ $adminActionsUrl = "admin-actions.php";
             <?php echo adminMenuClass("settings", $adminActiveSection); ?>
         >
             <i class="fa fa-cogs"></i>
-            <span>Settings</span>
+            <span>Configuración</span>
         </a>
 
         <a href="<?php echo htmlspecialchars($baseurl . "admin.php?logout=1", ENT_QUOTES, "UTF-8"); ?>">
             <i class="fa fa-sign-out"></i>
-            <span>Logout</span>
+            <span>Cerrar sesión</span>
         </a>
     </nav>
 </aside>
@@ -188,6 +188,6 @@ $adminActionsUrl = "admin-actions.php";
 ){ ?>
     <script
         defer
-        src="<?php echo htmlspecialchars($baseurl . "admin-edit-product.js?v=1", ENT_QUOTES, "UTF-8"); ?>"
+        src="<?php echo htmlspecialchars($baseurl . "admin-edit-product.js?v=2", ENT_QUOTES, "UTF-8"); ?>"
     ></script>
 <?php } ?>

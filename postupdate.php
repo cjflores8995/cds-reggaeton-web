@@ -87,7 +87,11 @@ if(
 
 $id = (int)$_POST["id"];
 
-$postTitleRaw = trim(
+/*
+ * El formulario legacy conserva el nombre editposttitle para no romper
+ * JavaScript existente, pero funcionalmente este campo representa el álbum.
+ */
+$albumRaw = trim(
     (string)(
         $_POST["editposttitle"] ??
         ""
@@ -151,10 +155,10 @@ if($id <= 0){
     );
 }
 
-if($postTitleRaw === ""){
+if($albumRaw === ""){
     postUpdateRespond(
         false,
-        "El título es obligatorio.",
+        "El álbum es obligatorio.",
         $id
     );
 }
@@ -163,6 +167,20 @@ if($artistid <= 0){
     postUpdateRespond(
         false,
         "El artista es obligatorio. Selecciona un artista válido antes de actualizar el CD.",
+        $id
+    );
+}
+
+$artistName = trim(
+    (string)artistGetName(
+        $artistid
+    )
+);
+
+if($artistName === ""){
+    postUpdateRespond(
+        false,
+        "El artista seleccionado no existe.",
         $id
     );
 }
@@ -195,7 +213,7 @@ $row = mysqli_fetch_assoc(
 
 /*
  * La URL pública es estable:
- * al editar título/artista NO cambiamos un slug existente.
+ * al editar álbum/artista NO cambiamos un slug existente.
  * Solo generamos uno si la fila es antigua y todavía estuviera vacía.
  */
 $currentSlug =
@@ -207,26 +225,10 @@ $currentSlug =
     );
 
 if($currentSlug === ""){
-    $currentArtistName =
-        artistGetName(
-            $artistid
-        );
-
-    $currentAlbumName =
-        slugProductAlbumFromRow(
-            $row,
-            trim(
-                (string)(
-                    $row["artist"] ??
-                    $currentArtistName
-                )
-            )
-        );
-
     $currentSlug =
         slugUniqueProduct(
-            $currentArtistName,
-            $currentAlbumName,
+            $artistName,
+            $albumRaw,
             $row["release_year"] ??
             null,
             $id
@@ -339,9 +341,24 @@ if(
     }
 }
 
+$titleRaw =
+    $artistName .
+    " - " .
+    $albumRaw;
+
 $posttitle = mysqli_real_escape_string(
     $connection,
-    $postTitleRaw
+    $titleRaw
+);
+
+$artistEscaped = mysqli_real_escape_string(
+    $connection,
+    $artistName
+);
+
+$albumEscaped = mysqli_real_escape_string(
+    $connection,
+    $albumRaw
 );
 
 $newpictureEscaped =
@@ -368,6 +385,8 @@ $updateSql =
     "slug = '$currentSlugEscaped', " .
     "catid = $catid, " .
     "artistid = $artistid, " .
+    "artist = '$artistEscaped', " .
+    "album = '$albumEscaped', " .
     "content = '$content', " .
     "picture = '$newpictureEscaped', " .
     "normalprice = '$normalprice', " .

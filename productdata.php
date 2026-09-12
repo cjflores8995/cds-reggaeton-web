@@ -47,7 +47,7 @@ $id = isset($_GET["id"])
 if($id > 0){
     $result = mysqli_query(
         $connection,
-        "SELECT id, artistid, picture, moreimages FROM $tableposts WHERE id = $id LIMIT 1"
+        "SELECT id, artistid, artist, album, title, picture, moreimages FROM $tableposts WHERE id = $id LIMIT 1"
     );
 
     if(!$result || mysqli_num_rows($result) === 0){
@@ -62,6 +62,9 @@ if($id > 0){
     $product = [
         "id" => (int)$row["id"],
         "artistid" => (int)$row["artistid"],
+        "artist" => trim((string)($row["artist"] ?? "")),
+        "album" => trim((string)($row["album"] ?? "")),
+        "title" => trim((string)($row["title"] ?? "")),
         "slots" => productImageSlotsFromDatabase(
             $row["picture"],
             $row["moreimages"]

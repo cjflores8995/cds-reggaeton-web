@@ -5,6 +5,12 @@ require_once("config.php");
 require_once("uilang.php");
 require_once("productimages.php");
 require_once("artistshelper.php");
+require_once("product-tiktok.php");
+
+productTikTokEnsureColumn(
+    $connection,
+    $tableposts
+);
 
 function postUpdateIsAjax(){
     return
@@ -197,11 +203,23 @@ $content = mysqli_real_escape_string(
     $contentRaw
 );
 
-$stock =
-    isset($_POST["editstock"]) &&
-    (int)$_POST["editstock"] === 0
-        ? 0
-        : 1;
+$tiktokResult = productTikTokNormalize(
+    $_POST["tiktok_url"] ??
+    ""
+);
+
+if(!$tiktokResult["ok"]){
+    postUpdateRespond(
+        false,
+        $tiktokResult["message"],
+        $id
+    );
+}
+
+$tiktokUrl = mysqli_real_escape_string(
+    $connection,
+    $tiktokResult["url"]
+);
 
 $moreoptions = mysqli_real_escape_string(
     $connection,
@@ -273,6 +291,12 @@ if(
 $row = mysqli_fetch_assoc(
     $result
 );
+
+/*
+ * La disponibilidad se administra exclusivamente desde Inicio.
+ * Editar un CD nunca debe restaurar uno vendido ni alterar sold_at.
+ */
+$stock = (int)($row["stock"] ?? 1);
 
 /*
  * La URL pública es estable:
@@ -456,14 +480,8 @@ $updateSql =
     "discountprice = '$discountprice', " .
     "options = '$moreoptions', " .
     "moreimages = '$moreimagesEscaped', " .
-    "stock = $stock, " .
-    "sold_at = " .
-        (
-            $stock === 0
-                ? "COALESCE(sold_at, NOW())"
-                : "NULL"
-        ) .
-    " WHERE id = $id";
+    "tiktok_url = '$tiktokUrl' " .
+    "WHERE id = $id";
 
 $updateResult = mysqli_query(
     $connection,

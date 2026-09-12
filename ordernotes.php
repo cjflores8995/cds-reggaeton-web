@@ -5,7 +5,8 @@
  *
  * Importante:
  * - Los precios se recalculan desde la base de datos.
- * - El costo de envío se toma de Settings.
+ * - La tarifa base de envío se toma de Settings y corresponde a 1 libra.
+ * - Cada libra facturable admite hasta 5 CDs.
  * - Guardar el pedido en Orders es informativo y nunca bloquea WhatsApp.
  * - Las respuestas AJAX siempre son JSON.
  */
@@ -371,6 +372,24 @@ function orderLoadProducts(
     ];
 }
 
+function orderBillablePounds($productCount){
+    $cdsPerPound = 5;
+    $productCount = max(1, (int)$productCount);
+
+    return (int)ceil(
+        $productCount /
+        $cdsPerPound
+    );
+}
+
+function orderShippingAmount($basePrice, $billablePounds){
+    return round(
+        max(0, (float)$basePrice) *
+        max(1, (int)$billablePounds),
+        2
+    );
+}
+
 /*
  * Si abres ordernotes.php directamente en el navegador,
  * mostramos un estado de salud en lugar de "Método no permitido".
@@ -466,21 +485,54 @@ if($isJsonRequest){
         ];
     }
 
-    $quitoPrice =
+    /*
+     * Settings guarda la tarifa de UNA libra.
+     * La cantidad de libras facturables se deriva siempre en servidor para que
+     * la cotización, el total y el mensaje de WhatsApp no puedan desalinearse.
+     */
+    $quitoBasePrice =
         isset($servientregaquito)
             ? round(
                 (float)$servientregaquito,
                 2
             )
-            : 2.60;
+            : 2.90;
 
-    $outsideQuitoPrice =
+    $outsideQuitoBasePrice =
         isset($servientregaoutsidequito)
             ? round(
                 (float)$servientregaoutsidequito,
                 2
             )
             : 5.90;
+
+    $productCount = count($products);
+    $cdsPerPound = 5;
+    $billablePounds =
+        orderBillablePounds(
+            $productCount
+        );
+
+    $quitoPrice =
+        orderShippingAmount(
+            $quitoBasePrice,
+            $billablePounds
+        );
+
+    $outsideQuitoPrice =
+        orderShippingAmount(
+            $outsideQuitoBasePrice,
+            $billablePounds
+        );
+
+    $shippingSummary = [
+        "cd_count" =>
+            $productCount,
+        "cds_per_pound" =>
+            $cdsPerPound,
+        "billable_pounds" =>
+            $billablePounds
+    ];
 
     if($action === "quote"){
         orderJsonResponse([
@@ -494,6 +546,8 @@ if($isJsonRequest){
                     ".",
                     ""
                 ),
+            "shipping_summary" =>
+                $shippingSummary,
             "shipping" => [
                 "quito" => [
                     "code" =>
@@ -502,6 +556,13 @@ if($isJsonRequest){
                         "Servientrega",
                     "label" =>
                         "Quito",
+                    "base_price" =>
+                        number_format(
+                            $quitoBasePrice,
+                            2,
+                            ".",
+                            ""
+                        ),
                     "price" =>
                         number_format(
                             $quitoPrice,
@@ -516,7 +577,14 @@ if($isJsonRequest){
                     "carrier" =>
                         "Servientrega",
                     "label" =>
-                        "Fuera de Quito (Ecuador)",
+                        "Resto del Ecuador",
+                    "base_price" =>
+                        number_format(
+                            $outsideQuitoBasePrice,
+                            2,
+                            ".",
+                            ""
+                        ),
                     "price" =>
                         number_format(
                             $outsideQuitoPrice,
@@ -547,13 +615,19 @@ if($isJsonRequest){
 
     if($shippingZone === "quito"){
         $shippingLabel = "Quito";
-        $shippingPrice = $quitoPrice;
+        $shippingBasePrice =
+            $quitoBasePrice;
+        $shippingPrice =
+            $quitoPrice;
     }else if(
         $shippingZone ===
         "outside_quito"
     ){
         $shippingLabel =
-            "Fuera de Quito (Ecuador)";
+            "Resto del Ecuador";
+
+        $shippingBasePrice =
+            $outsideQuitoBasePrice;
 
         $shippingPrice =
             $outsideQuitoPrice;
@@ -627,8 +701,30 @@ if($isJsonRequest){
         orderMoney($subtotal);
 
     $lines[] =
+        "Cantidad: " .
+        $productCount .
+        (
+            $productCount === 1
+                ? " CD"
+                : " CDs"
+        );
+
+    $lines[] =
+        "Peso facturable: " .
+        $billablePounds .
+        " lb" .
+        " (hasta 5 CDs por libra)";
+
+    $lines[] =
         "Envío: Servientrega - " .
         $shippingLabel;
+
+    $lines[] =
+        "Tarifa: " .
+        orderMoney(
+            $shippingBasePrice
+        ) .
+        " por lb";
 
     $lines[] =
         "Costo de envío: " .
@@ -637,15 +733,6 @@ if($isJsonRequest){
     $lines[] =
         "Total: " .
         orderMoney($total);
-
-    $lines[] =
-        "Cantidad: " .
-        count($products) .
-        (
-            count($products) === 1
-                ? " CD"
-                : " CDs"
-        );
 
     $lines[] = "";
 
@@ -695,6 +782,8 @@ if($isJsonRequest){
                 ".",
                 ""
             ),
+        "shipping_summary" =>
+            $shippingSummary,
         "total" =>
             number_format(
                 $total,
@@ -703,7 +792,7 @@ if($isJsonRequest){
                 ""
             ),
         "count" =>
-            count($products)
+            $productCount
     ]);
 }
 

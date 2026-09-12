@@ -3,6 +3,7 @@ session_start();
 
 require_once __DIR__ . "/config.php";
 require_once __DIR__ . "/analytics-helper.php";
+require_once __DIR__ . "/analytics-performance.php";
 require_once __DIR__ . "/analytics-maintenance.php";
 
 header("Content-Type: application/json; charset=utf-8");
@@ -62,14 +63,17 @@ if(!analyticsEnsureSchema($connection)){
 $environment = analyticsMaintenanceEnvironment(
     $payload["environment"] ?? analyticsCurrentEnvironment()
 );
+$indexOptimization = analyticsPerformanceEnsureIndexes($connection);
 $result = analyticsMaintenanceRun($connection, $environment);
+$result["index_optimization"] = $indexOptimization;
+$result["performance"] = analyticsPerformanceHealth($connection);
 
 $_SESSION["analytics_maintenance_csrf"] = bin2hex(random_bytes(24));
 
 echo json_encode(
     [
         "ok" => true,
-        "message" => "Mantenimiento completado.",
+        "message" => "Mantenimiento y optimización completados.",
         "csrf" => $_SESSION["analytics_maintenance_csrf"],
         "result" => $result
     ],

@@ -2,6 +2,7 @@
 require_once __DIR__ . "/config.php";
 require_once __DIR__ . "/analytics-helper.php";
 require_once __DIR__ . "/analytics-phase2-helper.php";
+require_once __DIR__ . "/analytics-privacy.php";
 
 $productSlug = trim((string)($_GET["slug"] ?? ""));
 $productExists = false;
@@ -23,6 +24,7 @@ if($productSlug !== ""){
 }
 
 if($productSlug !== "" && !$productExists){
+    analyticsPrivacySanitizeServerContext();
     analyticsPhase2RecordServerEvent(
         $connection,
         "not_found",
@@ -30,7 +32,7 @@ if($productSlug !== "" && !$productExists){
             "event_value" => "product",
             "event_data" => [
                 "resource_type" => "product",
-                "resource_value" => analyticsSafeText($productSlug, 160)
+                "resource_value" => analyticsPrivacyRedactText($productSlug, 160)
             ]
         ]
     );

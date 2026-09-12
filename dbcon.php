@@ -190,3 +190,11 @@ adminCdAuditBootstrap();
  */
 require_once __DIR__ . "/admin-image-audit.php";
 adminImageAuditBootstrap();
+
+/*
+ * Admin/System Logs Fase 5: observe confirmed artist and configuration changes.
+ * General settings and image settings are diffed through explicit whitelists;
+ * sensitive/free-form values are never copied wholesale into the audit log.
+ */
+require_once __DIR__ . "/admin-artist-settings-audit.php";
+adminArtistSettingsAuditBootstrap();

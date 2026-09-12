@@ -13,7 +13,7 @@
 # the TLS/edge layer there; never enable HSTS on a plain-HTTP/local listener.
 
 # Runtime secrets, source helpers and database migrations are never public.
-location ~* ^/(?:env(?:\.[^/]+)?\.php|dbcon\.php|config\.php|admin-auth\.php|admin-system-log\.php|admin-cd-audit\.php|admin-image-audit\.php|admin-upload-security\.php|public-request-security\.php|security-bootstrap\.php|functions\.php|uilang\.php|thumbnailgenerator\.php|artistshelper\.php|slughelper\.php|productimages\.php|seo\.php)$ {
+location ~* ^/(?:env(?:\.[^/]+)?\.php|dbcon\.php|config\.php|admin-auth\.php|admin-system-log\.php|admin-cd-audit\.php|admin-image-audit\.php|admin-artist-settings-audit\.php|admin-upload-security\.php|public-request-security\.php|security-bootstrap\.php|functions\.php|uilang\.php|thumbnailgenerator\.php|artistshelper\.php|slughelper\.php|productimages\.php|seo\.php)$ {
     return 404;
 }
 

@@ -23,6 +23,7 @@ require_once __DIR__ . "/analytics-helper.php";
 require_once __DIR__ . "/analytics-phase2-helper.php";
 require_once __DIR__ . "/analytics-phase3-helper.php";
 require_once __DIR__ . "/analytics-phase7-helper.php";
+require_once __DIR__ . "/analytics-privacy.php";
 
 if(!analyticsSameOriginAllowed()){
     http_response_code(403);
@@ -50,6 +51,7 @@ $payload = json_decode($rawBody, true);
 $event = analyticsNormalizeEventPayload($payload);
 $event = analyticsPhase2PrepareEvent($connection, $event);
 $event = analyticsPhase3PrepareEvent($connection, $event);
+$event = analyticsPrivacySanitizeEvent($event);
 
 if(!$event){
     http_response_code(400);

@@ -5,6 +5,7 @@ require_once __DIR__ . "/config.php";
 require_once __DIR__ . "/analytics-helper.php";
 require_once __DIR__ . "/analytics-metrics.php";
 require_once __DIR__ . "/analytics-dashboard.php";
+require_once __DIR__ . "/analytics-sessions.php";
 
 header("Content-Type: application/json; charset=utf-8");
 header("Cache-Control: no-store, no-cache, must-revalidate, max-age=0");
@@ -35,7 +36,7 @@ $to = (string)($_GET["to"] ?? "");
 $range = analyticsMetricsRange($period, $from, $to);
 $view = strtolower(trim((string)($_GET["view"] ?? "summary")));
 
-if(!in_array($view, ["summary", "products", "searches", "activity"], true)){
+if(!in_array($view, ["summary", "products", "searches", "activity", "sessions"], true)){
     $view = "summary";
 }
 
@@ -53,7 +54,7 @@ if($view === "summary"){
         "overview" => analyticsMetricsOverview($connection, $environment, $range),
         "searches" => analyticsDashboardSearches($connection, $environment, $range, 50)
     ];
-}else{
+}else if($view === "activity"){
     $data = [
         "activity" => analyticsDashboardActivity(
             $connection,
@@ -65,6 +66,22 @@ if($view === "summary"){
                 "traffic" => $_GET["traffic"] ?? ""
             ]
         )
+    ];
+}else{
+    $sessionId = max(0, (int)($_GET["session_id"] ?? 0));
+    $data = [
+        "sessions" => $sessionId > 0
+            ? analyticsSessionsDetail($connection, $environment, $sessionId)
+            : analyticsSessionsList(
+                $connection,
+                $environment,
+                $range,
+                [
+                    "page" => $_GET["page"] ?? 1,
+                    "status" => $_GET["status"] ?? "",
+                    "traffic" => $_GET["traffic"] ?? ""
+                ]
+            )
     ];
 }
 

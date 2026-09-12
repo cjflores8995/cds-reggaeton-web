@@ -205,6 +205,7 @@
 
                     currentPage--;
                     renderCatalogPage("previous");
+                    scrollCatalogToTop();
                 }
             );
         }
@@ -222,6 +223,7 @@
 
                     currentPage++;
                     renderCatalogPage("next");
+                    scrollCatalogToTop();
                 }
             );
         }
@@ -649,6 +651,45 @@
                 direction === "next"
                     ? "is-page-next"
                     : "is-page-previous"
+            );
+        }
+
+        function scrollCatalogToTop() {
+            var target =
+                query("#artistas") ||
+                grid;
+
+            var reducedMotion =
+                window.matchMedia &&
+                window.matchMedia(
+                    "(prefers-reduced-motion: reduce)"
+                ).matches;
+
+            window.requestAnimationFrame(
+                function () {
+                    var currentScroll =
+                        window.scrollY ||
+                        window.pageYOffset ||
+                        0;
+
+                    var targetTop =
+                        target
+                            .getBoundingClientRect()
+                            .top +
+                        currentScroll -
+                        12;
+
+                    window.scrollTo({
+                        top: Math.max(
+                            0,
+                            targetTop
+                        ),
+                        behavior:
+                            reducedMotion
+                                ? "auto"
+                                : "smooth"
+                    });
+                }
             );
         }
 

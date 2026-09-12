@@ -61,6 +61,22 @@
         }
     }
 
+    function initializeEnhancementStyles() {
+        if (query("#storeEnhancementStyles")) {
+            return;
+        }
+
+        var style = document.createElement("style");
+        style.id = "storeEnhancementStyles";
+        style.textContent = [
+            ".cart-item__remove.cart-item__remove--icon{width:36px;height:36px;margin-top:12px;padding:0;border:1px solid var(--soft-line);border-bottom:1px solid var(--soft-line);background:#fff;color:var(--ink);display:inline-grid;place-items:center;cursor:pointer;line-height:0;transition:background .15s ease,color .15s ease,border-color .15s ease;}",
+            ".cart-item__remove.cart-item__remove--icon:hover{background:var(--ink);color:#fff;border-color:var(--ink);}",
+            ".cart-item__remove--icon svg{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round;pointer-events:none;}"
+        ].join("");
+
+        document.head.appendChild(style);
+    }
+
     function initializeSearchShortcut() {
         var searchInput =
             query("#catalogSearch");
@@ -164,10 +180,102 @@
         });
     }
 
+    function removeProductUnitsFact() {
+        queryAll(".spec-table dt")
+            .forEach(function (term) {
+                if (
+                    String(term.textContent || "")
+                        .trim()
+                        .toUpperCase() !== "UNIDADES"
+                ) {
+                    return;
+                }
+
+                var row = term.closest("div");
+
+                if (row) {
+                    row.remove();
+                }
+            });
+    }
+
+    function decorateCartRemoveButtons() {
+        queryAll(".cart-item__remove")
+            .forEach(function (button) {
+                if (
+                    button.getAttribute(
+                        "data-trash-icon"
+                    ) === "1"
+                ) {
+                    return;
+                }
+
+                button.setAttribute(
+                    "data-trash-icon",
+                    "1"
+                );
+
+                button.classList.add(
+                    "cart-item__remove--icon"
+                );
+
+                button.setAttribute(
+                    "aria-label",
+                    "Quitar CD del carrito"
+                );
+
+                button.setAttribute(
+                    "title",
+                    "Quitar del carrito"
+                );
+
+                button.innerHTML =
+                    '<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">' +
+                    '<path d="M4 7h16"></path>' +
+                    '<path d="M9 7V4h6v3"></path>' +
+                    '<path d="M7 7l1 13h8l1-13"></path>' +
+                    '<path d="M10 11v5"></path>' +
+                    '<path d="M14 11v5"></path>' +
+                    "</svg>";
+            });
+    }
+
+    function initializeCartRemoveIcons() {
+        var cartItems =
+            query(".js-cart-items");
+
+        if (!cartItems) {
+            return;
+        }
+
+        decorateCartRemoveButtons();
+
+        if (typeof MutationObserver !== "function") {
+            return;
+        }
+
+        var observer = new MutationObserver(
+            function () {
+                decorateCartRemoveButtons();
+            }
+        );
+
+        observer.observe(
+            cartItems,
+            {
+                childList: true,
+                subtree: true
+            }
+        );
+    }
+
     function initializeEnhancements() {
+        initializeEnhancementStyles();
         initializeSearchShortcut();
         initializePaginationScroll();
         initializeProductAvailability();
+        removeProductUnitsFact();
+        initializeCartRemoveIcons();
     }
 
     if (document.readyState === "loading") {

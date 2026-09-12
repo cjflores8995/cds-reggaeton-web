@@ -30,10 +30,11 @@ if(!in_array($selectedEnvironment, ["development", "production"], true)){
 
 $selectedView = strtolower(trim((string)($_GET["view"] ?? "summary")));
 
-if(!in_array($selectedView, ["summary", "products", "searches", "activity"], true)){
+if(!in_array($selectedView, ["summary", "products", "searches", "activity", "sessions"], true)){
     $selectedView = "summary";
 }
 
+$selectedSessionId = max(0, (int)($_GET["session_id"] ?? 0));
 $schemaReady = analyticsEnsureSchema($connection);
 $adminActiveSection = "analytics";
 
@@ -64,6 +65,7 @@ function analyticsDashboardTabUrl($baseurl, $view, $environment){
     <link rel="stylesheet" type="text/css" href="<?php echo analyticsDashboardEsc($baseurl); ?>admin-analytics-dashboard.css?v=2">
     <link rel="stylesheet" type="text/css" href="<?php echo analyticsDashboardEsc($baseurl); ?>admin-analytics-dashboard-enhanced.css?v=1">
     <link rel="stylesheet" type="text/css" href="<?php echo analyticsDashboardEsc($baseurl); ?>admin-analytics-dashboard-vibrant.css?v=1">
+    <link rel="stylesheet" type="text/css" href="<?php echo analyticsDashboardEsc($baseurl); ?>admin-analytics-sessions.css?v=1">
 </head>
 <body>
 <div class="admin-page-shell">
@@ -98,6 +100,7 @@ function analyticsDashboardTabUrl($baseurl, $view, $environment){
             <a href="<?php echo analyticsDashboardEsc(analyticsDashboardTabUrl($baseurl, "products", $selectedEnvironment)); ?>" <?php echo $selectedView === "products" ? 'class="is-active"' : ""; ?>>Productos</a>
             <a href="<?php echo analyticsDashboardEsc(analyticsDashboardTabUrl($baseurl, "searches", $selectedEnvironment)); ?>" <?php echo $selectedView === "searches" ? 'class="is-active"' : ""; ?>>Búsquedas</a>
             <a href="<?php echo analyticsDashboardEsc(analyticsDashboardTabUrl($baseurl, "activity", $selectedEnvironment)); ?>" <?php echo $selectedView === "activity" ? 'class="is-active"' : ""; ?>>Actividad</a>
+            <a href="<?php echo analyticsDashboardEsc(analyticsDashboardTabUrl($baseurl, "sessions", $selectedEnvironment)); ?>" <?php echo $selectedView === "sessions" ? 'class="is-active"' : ""; ?>>Sesiones</a>
         </nav>
 
         <section
@@ -105,6 +108,7 @@ function analyticsDashboardTabUrl($baseurl, $view, $environment){
             class="analytics-dashboard-app"
             data-view="<?php echo analyticsDashboardEsc($selectedView); ?>"
             data-environment="<?php echo analyticsDashboardEsc($selectedEnvironment); ?>"
+            data-session-id="<?php echo analyticsDashboardEsc($selectedSessionId); ?>"
             data-endpoint="<?php echo analyticsDashboardEsc($baseurl); ?>admin-analytics-dashboard-data.php"
         >
             <div class="analytics-dashboard-filterbar">
@@ -143,7 +147,12 @@ function analyticsDashboardTabUrl($baseurl, $view, $environment){
 <script defer src="https://cdn.jsdelivr.net/npm/flatpickr@4.6.13/dist/flatpickr.min.js"></script>
 <script defer src="https://cdn.jsdelivr.net/npm/flatpickr@4.6.13/dist/l10n/es.js"></script>
 <script defer src="https://unpkg.com/tabulator-tables@6.5.0/dist/js/tabulator.min.js"></script>
-<script defer src="<?php echo analyticsDashboardEsc($baseurl); ?>admin-analytics-dashboard.js?v=2"></script>
-<script defer src="<?php echo analyticsDashboardEsc($baseurl); ?>admin-analytics-dashboard-vibrant.js?v=1"></script>
+<?php if($selectedView === "sessions"){ ?>
+    <script defer src="<?php echo analyticsDashboardEsc($baseurl); ?>admin-analytics-sessions.js?v=1"></script>
+<?php }else{ ?>
+    <script defer src="<?php echo analyticsDashboardEsc($baseurl); ?>admin-analytics-dashboard.js?v=2"></script>
+    <script defer src="<?php echo analyticsDashboardEsc($baseurl); ?>admin-analytics-dashboard-vibrant.js?v=1"></script>
+<?php } ?>
+<script defer src="<?php echo analyticsDashboardEsc($baseurl); ?>admin-analytics-phase6-bridge.js?v=1"></script>
 </body>
 </html>

@@ -21,6 +21,10 @@ if(!function_exists("adminMenuActiveSection")){
             return "image-settings";
         }
 
+        if($script === "admin-analytics.php"){
+            return "analytics";
+        }
+
         if($script === "admin.php"){
             if(isset($_GET["pictures"])){
                 return "pictures";
@@ -78,6 +82,14 @@ function adminMenuClass($section, $current){
         >
             <i class="fa fa-home"></i>
             <span>Inicio</span>
+        </a>
+
+        <a
+            href="<?php echo htmlspecialchars($baseurl . "admin-analytics.php", ENT_QUOTES, "UTF-8"); ?>"
+            <?php echo adminMenuClass("analytics", $adminActiveSection); ?>
+        >
+            <i class="fa fa-line-chart"></i>
+            <span>Analytics</span>
         </a>
 
         <a

@@ -64,6 +64,19 @@
     }
 
     function destructiveActionFromLink(anchor){
+        var protectedProductId = String(
+            anchor.getAttribute("data-admin-delete-product-id") || ""
+        );
+
+        if(protectedProductId !== ""){
+            return {
+                action: "delete_post",
+                fields: {
+                    product_id: protectedProductId
+                }
+            };
+        }
+
         var href = String(anchor.getAttribute("href") || "");
 
         if(href === ""){
@@ -128,6 +141,26 @@
         return null;
     }
 
+    function hardenProductDeleteLinks(){
+        document.querySelectorAll("a[href*='deletepost=']").forEach(function(anchor){
+            var action = destructiveActionFromLink(anchor);
+
+            if(
+                !action ||
+                action.action !== "delete_post" ||
+                !action.fields.product_id
+            ){
+                return;
+            }
+
+            anchor.setAttribute(
+                "data-admin-delete-product-id",
+                action.fields.product_id
+            );
+            anchor.setAttribute("href", "#");
+        });
+    }
+
     function initialize(){
         var context = getSecurityContext();
 
@@ -138,6 +171,8 @@
         document.querySelectorAll("form").forEach(function(form){
             ensureCsrfField(form, context.token);
         });
+
+        hardenProductDeleteLinks();
 
         document.addEventListener(
             "submit",
@@ -154,7 +189,7 @@
                     return;
                 }
 
-                var anchor = event.target.closest("a[href]");
+                var anchor = event.target.closest("a[href], a[data-admin-delete-product-id]");
 
                 if(!anchor){
                     return;

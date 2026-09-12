@@ -33,11 +33,11 @@ function storeUpper(string $value): string
 function imageLabel(int $sortOrder): string
 {
     return match ($sortOrder) {
-        1 => 'Portada de referencia',
-        2 => 'Portada real',
-        3 => 'Contraportada real',
-        4 => 'CD real',
-        5 => 'Interior / detalle',
+        1 => 'Portada web',
+        2 => 'Portada delantera',
+        3 => 'CD',
+        4 => 'Portada posterior',
+        5 => 'Portada interior',
         default => 'Imagen'
     };
 }
@@ -147,12 +147,56 @@ if (!$product) {
 }
 
 $tableProductImages = $tableprefix . 'product_images';
-$images = [];
+$imagesByRole = [];
 
 /*
- * product_images pertenece a la versión moderna de la tienda.
- * Si la tabla no existe todavía, se usa inmediatamente el formato legacy.
+ * El administrador actual guarda las cinco posiciones en picture + moreimages.
+ * Esos campos son la fuente principal de la galería. La tabla opcional
+ * product_images se conserva únicamente como compatibilidad para instalaciones
+ * antiguas y solo puede rellenar posiciones que no estén definidas en posts.
  */
+$mainPicture = legacyImageUrl(
+    (string)($product['picture'] ?? ''),
+    $storeBaseUrl
+);
+
+if ($mainPicture !== '') {
+    $imagesByRole[1] = [
+        'url' => $mainPicture,
+        'sort_order' => 1,
+        'label' => imageLabel(1)
+    ];
+}
+
+$legacyMoreImages = trim((string)($product['moreimages'] ?? ''));
+
+if ($legacyMoreImages !== '') {
+    $paths = explode(',', $legacyMoreImages);
+
+    for ($index = 0; $index < 4; $index++) {
+        if (!isset($paths[$index])) {
+            continue;
+        }
+
+        $path = trim((string)$paths[$index]);
+
+        if ($path === '') {
+            continue;
+        }
+
+        $sortOrder = $index + 2;
+        $url = legacyImageUrl($path, $storeBaseUrl);
+
+        if ($url !== '') {
+            $imagesByRole[$sortOrder] = [
+                'url' => $url,
+                'sort_order' => $sortOrder,
+                'label' => imageLabel($sortOrder)
+            ];
+        }
+    }
+}
+
 $tableImagesExists = mysqli_query(
     $connection,
     "SHOW TABLES LIKE '" . mysqli_real_escape_string($connection, $tableProductImages) . "'"
@@ -175,63 +219,44 @@ if ($tableImagesExists && mysqli_num_rows($tableImagesExists) > 0) {
 
         while ($image = mysqli_fetch_assoc($imageResult)) {
             $path = trim((string)$image['image_path']);
+            $sortOrder = (int)$image['sort_order'];
 
-            if ($path !== '') {
-                $images[] = [
-                    'url' => $storeBaseUrl . ltrim($path, '/'),
-                    'sort_order' => (int)$image['sort_order'],
-                    'label' => imageLabel((int)$image['sort_order'])
-                ];
+            if (
+                $path === '' ||
+                $sortOrder < 1 ||
+                $sortOrder > 5 ||
+                isset($imagesByRole[$sortOrder])
+            ) {
+                continue;
             }
+
+            $url = $storeBaseUrl . ltrim($path, '/');
+            $duplicate = false;
+
+            foreach ($imagesByRole as $existingImage) {
+                if (($existingImage['url'] ?? '') === $url) {
+                    $duplicate = true;
+                    break;
+                }
+            }
+
+            if ($duplicate) {
+                continue;
+            }
+
+            $imagesByRole[$sortOrder] = [
+                'url' => $url,
+                'sort_order' => $sortOrder,
+                'label' => imageLabel($sortOrder)
+            ];
         }
 
         mysqli_stmt_close($imageStatement);
     }
 }
 
-if (count($images) === 0) {
-    $mainPicture = legacyImageUrl(
-        (string)($product['picture'] ?? ''),
-        $storeBaseUrl
-    );
-
-    if ($mainPicture !== '') {
-        $images[] = [
-            'url' => $mainPicture,
-            'sort_order' => 1,
-            'label' => 'Portada'
-        ];
-    }
-
-    $legacyMoreImages = trim((string)($product['moreimages'] ?? ''));
-
-    if ($legacyMoreImages !== '') {
-        $paths = explode(',', $legacyMoreImages);
-
-        for ($index = 0; $index < 4; $index++) {
-            if (!isset($paths[$index])) {
-                continue;
-            }
-
-            $path = trim((string)$paths[$index]);
-
-            if ($path === '') {
-                continue;
-            }
-
-            $sortOrder = $index + 2;
-            $url = legacyImageUrl($path, $storeBaseUrl);
-
-            if ($url !== '') {
-                $images[] = [
-                    'url' => $url,
-                    'sort_order' => $sortOrder,
-                    'label' => imageLabel($sortOrder)
-                ];
-            }
-        }
-    }
-}
+ksort($imagesByRole, SORT_NUMERIC);
+$images = array_values($imagesByRole);
 
 if (count($images) === 0) {
     $images[] = [
@@ -257,7 +282,6 @@ $stock = (int)($product['stock'] ?? 0);
 $cdCondition = trim((string)($product['cd_condition'] ?? 'No especificado'));
 $caseCondition = trim((string)($product['case_condition'] ?? 'No especificado'));
 $description = trim(strip_tags((string)($product['content'] ?? '')));
-
 $artistSlug = trim(
     (string)(
         $product['artist_slug'] ??

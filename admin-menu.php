@@ -155,9 +155,13 @@ function adminMenuClass($section, $current){
 <?php } ?>
 
 <?php if($adminActiveSection === "analytics"){ ?>
+    <link
+        rel="stylesheet"
+        href="<?php echo htmlspecialchars($baseurl . "admin-analytics-phase4.css?v=1", ENT_QUOTES, "UTF-8"); ?>"
+    >
     <script
         defer
-        src="<?php echo htmlspecialchars($baseurl . "admin-analytics-phase3.js?v=1", ENT_QUOTES, "UTF-8"); ?>"
-        data-endpoint="<?php echo htmlspecialchars($baseurl . "admin-analytics-phase3-data.php", ENT_QUOTES, "UTF-8"); ?>"
+        src="<?php echo htmlspecialchars($baseurl . "admin-analytics-phase4.js?v=1", ENT_QUOTES, "UTF-8"); ?>"
+        data-endpoint="<?php echo htmlspecialchars($baseurl . "admin-analytics-phase4-data.php", ENT_QUOTES, "UTF-8"); ?>"
     ></script>
 <?php } ?>

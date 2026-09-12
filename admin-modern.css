@@ -815,34 +815,34 @@ tr:hover td{
 
 .admin-cd-card__photo-status{
     position:absolute;
-    top:24px;
-    left:-58px;
+    right:0;
+    bottom:0;
+    left:0;
     z-index:3;
-    width:220px;
-    padding:10px 0;
+    display:flex;
+    align-items:center;
+    min-height:56px;
+    padding:14px 16px;
     border-top:3px solid #111111;
-    border-bottom:3px solid #111111;
-    box-shadow:0 2px 8px rgba(0,0,0,.10);
-    font-size:11px;
+    background:rgba(255,255,255,.97);
+    color:#111111;
+    font-size:12px;
     font-weight:900;
     letter-spacing:.10em;
     line-height:1.1;
-    text-align:center;
     text-transform:uppercase;
-    transform:rotate(-45deg);
-    transform-origin:center;
     pointer-events:none;
 }
 
 .admin-cd-card__photo-status.cover-only{
-    background:rgba(255,255,255,.96);
+    background:rgba(255,255,255,.97);
     color:#111111;
 }
 
 .admin-cd-card__photo-status.has-real-photos{
     background:#111111;
     color:#ffffff;
-    border-color:#111111;
+    border-top-color:#111111;
 }
 
 .admin-cd-card__status{
@@ -1177,21 +1177,17 @@ tr:hover td{
 
 @media(max-width:700px){
     .admin-cd-card__photo-status{
-        top:20px;
-        left:-70px;
-        width:240px;
-        padding:9px 0;
-        font-size:10px;
+        min-height:50px;
+        padding:12px 14px;
+        font-size:11px;
     }
 }
 
 @media(max-width:520px){
     .admin-cd-card__photo-status{
-        top:18px;
-        left:-72px;
-        width:235px;
-        padding:8px 0;
-        font-size:9px;
+        min-height:44px;
+        padding:10px 12px;
+        font-size:10px;
         letter-spacing:.08em;
     }
 

@@ -1,24 +1,26 @@
-CINTA DIAGONAL PARA EL ESTADO DE FOTOS
+ESTADO DE FOTOS EN LA PARTE INFERIOR IZQUIERDA
 
 REEMPLAZAR COMPLETOS:
 - admin.php
 - admin-modern.css
 
 CAMBIO:
-- Se elimina la etiqueta pequeña.
-- Ahora el estado de fotos aparece como una banda diagonal
-  grande en la esquina superior izquierda de la portada.
-- Sigue mostrando:
-  SOLO PORTADA WEB
-  1 FOTO REAL
-  2 FOTOS REALES
-  3 FOTOS REALES
-  etc.
+- Se elimina la cinta diagonal.
+- El estado de fotos ahora aparece en la parte inferior de la imagen,
+  con apariencia más parecida a tu boceto.
+- Se ve mucho más grande y legible.
 
-SE CONSERVA:
+TEXTOS:
+- SOLO PORTADA WEB
+- 1 FOTO REAL
+- 2 FOTOS REALES
+- 3 FOTOS REALES
+- etc.
+
+SE MANTIENE:
 - Vendido
 - Oculto
 
 IMPORTANTE:
-- admin-modern.css ahora va con v=14.
-- Después de reemplazar los archivos, haz Ctrl + F5.
+- admin-modern.css ahora va con v=15.
+- Después de reemplazar, haz Ctrl + F5.

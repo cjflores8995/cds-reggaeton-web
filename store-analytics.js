@@ -1,6 +1,10 @@
 (function () {
     "use strict";
 
+    var config = window.StoreConfig || {};
+    var storageKey = config.storageKey || "reggaetonElRealCartV1";
+    var cartState = loadCartIds();
+
     function onReady(callback) {
         if (document.readyState === "loading") {
             document.addEventListener("DOMContentLoaded", callback, { once: true });
@@ -48,6 +52,42 @@
         window.RERAnalytics.track(eventType, options || {});
     }
 
+    function loadCartIds() {
+        try {
+            var raw = window.localStorage.getItem(storageKey);
+
+            if (!raw) {
+                return [];
+            }
+
+            var parsed = JSON.parse(raw);
+
+            if (!Array.isArray(parsed)) {
+                return [];
+            }
+
+            var seen = {};
+            var result = [];
+
+            parsed.forEach(function (item) {
+                var id = parseInteger(item && item.id);
+
+                if (id > 0 && !seen[id]) {
+                    seen[id] = true;
+                    result.push(id);
+                }
+            });
+
+            return result;
+        } catch (error) {
+            return [];
+        }
+    }
+
+    function cartContains(ids, id) {
+        return ids.indexOf(id) !== -1;
+    }
+
     function visibleCatalogCount() {
         var node = query(".js-visible-count");
         return node ? Math.max(0, parseInteger(node.textContent)) : 0;
@@ -81,7 +121,7 @@
     }
 
     function initializeStoreView() {
-        if (!query(".site-footer")) {
+        if (!query(".site-footer") || query(".checkout-page")) {
             return;
         }
 
@@ -281,6 +321,88 @@
         });
     }
 
+    function trackCartOpen(ids) {
+        if (!ids.length) {
+            return;
+        }
+
+        track("cart_open", {
+            event_value: String(ids.length),
+            event_data: {
+                product_ids: ids.slice(0, 50)
+            }
+        });
+    }
+
+    function initializeCartEvents() {
+        document.addEventListener("click", function (event) {
+            var target = event.target;
+
+            if (!target || !target.closest) {
+                return;
+            }
+
+            var addButton = target.closest(".js-add-product[data-id]");
+
+            if (addButton) {
+                var productId = parseInteger(addButton.dataset.id);
+                var beforeHadProduct = cartContains(cartState, productId);
+
+                window.setTimeout(function () {
+                    var after = loadCartIds();
+                    var added = productId > 0 && !beforeHadProduct && cartContains(after, productId);
+                    cartState = after;
+
+                    if (!added) {
+                        return;
+                    }
+
+                    track("add_to_cart", {
+                        product_id: productId
+                    });
+
+                    if (addButton.classList.contains("js-open-cart-after-add")) {
+                        trackCartOpen(after);
+                    }
+                }, 0);
+
+                return;
+            }
+
+            var removeButton = target.closest(".cart-item__remove");
+
+            if (removeButton) {
+                var beforeRemove = cartState.slice();
+
+                window.setTimeout(function () {
+                    var afterRemove = loadCartIds();
+                    var removedIds = beforeRemove.filter(function (id) {
+                        return !cartContains(afterRemove, id);
+                    });
+
+                    cartState = afterRemove;
+
+                    removedIds.forEach(function (id) {
+                        track("remove_from_cart", {
+                            product_id: id
+                        });
+                    });
+                }, 0);
+
+                return;
+            }
+
+            var openButton = target.closest(".js-open-cart");
+
+            if (openButton) {
+                window.setTimeout(function () {
+                    cartState = loadCartIds();
+                    trackCartOpen(cartState);
+                }, 0);
+            }
+        });
+    }
+
     onReady(function () {
         initializeStoreView();
         initializeProductView();
@@ -289,5 +411,6 @@
         initializeSort();
         initializeGallery();
         initializeSocialClicks();
+        initializeCartEvents();
     });
 })();

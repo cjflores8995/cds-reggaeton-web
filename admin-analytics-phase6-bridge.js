@@ -68,4 +68,50 @@
 
         observer.observe(app, { childList: true, subtree: true });
     }
+
+    function loadMaintenanceResilience() {
+        if (String(app.dataset.view || "") !== "maintenance") {
+            return;
+        }
+
+        var baseUrl = new URL("./", window.location.href);
+        var probeUrl = new URL("analytics-resilience-probe.php", baseUrl).toString();
+        app.dataset.resilienceProbe = probeUrl;
+
+        if (!document.querySelector('link[data-analytics-resilience="1"]')) {
+            var style = document.createElement("link");
+            style.rel = "stylesheet";
+            style.href = new URL("admin-analytics-resilience.css?v=1", baseUrl).toString();
+            style.dataset.analyticsResilience = "1";
+            document.head.appendChild(style);
+        }
+
+        function loadPanelScript() {
+            if (document.querySelector('script[data-analytics-resilience-panel="1"]')) {
+                return;
+            }
+
+            var panelScript = document.createElement("script");
+            panelScript.src = new URL("admin-analytics-resilience.js?v=1", baseUrl).toString();
+            panelScript.defer = true;
+            panelScript.dataset.analyticsResiliencePanel = "1";
+            document.body.appendChild(panelScript);
+        }
+
+        if (window.RERAnalytics && typeof window.RERAnalytics.track === "function") {
+            loadPanelScript();
+            return;
+        }
+
+        var analyticsScript = document.createElement("script");
+        analyticsScript.src = new URL("analytics-client.js?v=2", baseUrl).toString();
+        analyticsScript.dataset.endpoint = probeUrl;
+        analyticsScript.dataset.timeoutMs = "1500";
+        analyticsScript.dataset.analyticsResilienceClient = "1";
+        analyticsScript.onload = loadPanelScript;
+        analyticsScript.onerror = loadPanelScript;
+        document.body.appendChild(analyticsScript);
+    }
+
+    loadMaintenanceResilience();
 })();

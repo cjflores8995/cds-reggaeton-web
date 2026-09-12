@@ -6,9 +6,14 @@
 #
 # IMPORTANT: keep the security regex locations above the generic PHP handler.
 # Do NOT activate this example file locally.
+#
+# Security Fase 6 response headers, CSP Report-Only and production-only HSTS
+# are emitted centrally by security-bootstrap.php for PHP responses. If the
+# production edge serves static documents directly, mirror the same headers at
+# the TLS/edge layer there; never enable HSTS on a plain-HTTP/local listener.
 
 # Runtime secrets, source helpers and database migrations are never public.
-location ~* ^/(?:env(?:\.[^/]+)?\.php|dbcon\.php|config\.php|admin-auth\.php|admin-upload-security\.php)$ {
+location ~* ^/(?:env(?:\.[^/]+)?\.php|dbcon\.php|config\.php|admin-auth\.php|admin-upload-security\.php|public-request-security\.php|security-bootstrap\.php)$ {
     return 404;
 }
 

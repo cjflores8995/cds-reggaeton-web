@@ -6,12 +6,11 @@ WhatsApp: 6287880334339
 WebSite: https://webappdev.my.id
 */
 
-//Admin panel credentials
-$username = "admin";
-$password = "admin";
+//Database/environment configuration
+require_once __DIR__ . "/dbcon.php";
+require_once __DIR__ . "/admin-auth.php";
 
-//Database connection
-include("dbcon.php");
+adminAuthBootstrap();
 
 $connection = mysqli_connect($host, $dbuser, $dbpassword, $databasename);
 

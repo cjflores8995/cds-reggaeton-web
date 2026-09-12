@@ -50,8 +50,8 @@ if((int)($_GET["catalog"] ?? 0) === 1){
     $catalogResult = mysqli_query(
         $connection,
         "SELECT " .
-            "p.id, p.artist, p.album, p.title, p.release_year, " .
-            "p.normalprice, p.stock, p.picture, p.moreimages, " .
+            "p.id, p.slug, p.artist, p.album, p.title, p.release_year, " .
+            "p.normalprice, p.stock, p.active, p.picture, p.moreimages, " .
             "a.name AS artist_name " .
         "FROM $tableposts p " .
         "LEFT JOIN $tableartists a ON a.id = p.artistid " .
@@ -78,12 +78,14 @@ if((int)($_GET["catalog"] ?? 0) === 1){
 
         $catalog[] = [
             "id" => (int)$row["id"],
+            "slug" => trim((string)($row["slug"] ?? "")),
             "artist" => $artistName,
             "album" => trim((string)($row["album"] ?? "")),
             "title" => trim((string)($row["title"] ?? "")),
             "year" => (int)($row["release_year"] ?? 0),
             "price" => (float)($row["normalprice"] ?? 0),
             "stock" => (int)($row["stock"] ?? 0),
+            "active" => (int)($row["active"] ?? 0),
             "image_count" => productDataImageCount(
                 $row["picture"] ?? "",
                 $row["moreimages"] ?? ""

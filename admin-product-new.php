@@ -4,6 +4,7 @@ session_start();
 require_once __DIR__ . "/config.php";
 require_once __DIR__ . "/artistshelper.php";
 require_once __DIR__ . "/productimages.php";
+require_once __DIR__ . "/product-tiktok.php";
 
 if(
     !isset($_SESSION["adminusername"]) ||
@@ -14,6 +15,11 @@ if(
     header("Location: " . $baseurl . "admin.php");
     exit;
 }
+
+productTikTokEnsureColumn(
+    $connection,
+    $tableposts
+);
 
 function adminNewHasColumn($connection, $table, $column){
     $safeColumn = mysqli_real_escape_string($connection, $column);
@@ -62,8 +68,14 @@ if($_SERVER["REQUEST_METHOD"] === "POST"){
     $releaseYearRaw = adminNewValue("release_year");
     $priceRaw = adminNewValue("price");
     $description = adminNewValue("description");
-    $cdCondition = adminNewValue("cd_condition", "Buen estado");
-    $caseCondition = adminNewValue("case_condition", "Buen estado");
+    $cdCondition = adminNewValue("cd_condition", "Muy buen estado");
+    $caseCondition = adminNewValue("case_condition", "Muy buen estado");
+    $tiktokResult = productTikTokNormalize(
+        adminNewValue("tiktok_url")
+    );
+    $tiktokUrl = $tiktokResult["ok"]
+        ? $tiktokResult["url"]
+        : "";
     $active = isset($_POST["active"]) ? 1 : 0;
 
     $releaseYear = $releaseYearRaw === ""
@@ -82,6 +94,10 @@ if($_SERVER["REQUEST_METHOD"] === "POST"){
 
     if($price <= 0){
         $errors[] = "El precio debe ser mayor a 0.";
+    }
+
+    if(!$tiktokResult["ok"]){
+        $errors[] = $tiktokResult["message"];
     }
 
     if(
@@ -170,7 +186,8 @@ if($_SERVER["REQUEST_METHOD"] === "POST"){
             "cd_condition" => $cdCondition,
             "case_condition" => $caseCondition,
             "active" => $active,
-            "slug" => $slug
+            "slug" => $slug,
+            "tiktok_url" => $tiktokUrl
         ];
 
         foreach($optionalColumns as $column => $value){
@@ -374,7 +391,7 @@ $imageRoles = [
                                 "Estado aceptable"
                             ];
 
-                            $selectedCdCondition = adminNewValue("cd_condition", "Buen estado");
+                            $selectedCdCondition = adminNewValue("cd_condition", "Muy buen estado");
 
                             foreach($cdConditions as $condition){
                             ?>
@@ -400,7 +417,7 @@ $imageRoles = [
                                 "Estado aceptable"
                             ];
 
-                            $selectedCaseCondition = adminNewValue("case_condition", "Buen estado");
+                            $selectedCaseCondition = adminNewValue("case_condition", "Muy buen estado");
 
                             foreach($caseConditions as $condition){
                             ?>
@@ -412,6 +429,20 @@ $imageRoles = [
                                 </option>
                             <?php } ?>
                         </select>
+                    </div>
+
+                    <div class="full">
+                        <label>Video de TikTok</label>
+                        <input
+                            type="url"
+                            name="tiktok_url"
+                            maxlength="500"
+                            placeholder="https://www.tiktok.com/@usuario/video/..."
+                            value="<?php echo htmlspecialchars(adminNewValue("tiktok_url"), ENT_QUOTES, "UTF-8"); ?>"
+                        >
+                        <div class="admin-muted" style="margin-top:-7px;margin-bottom:14px;">
+                            Opcional. Si agregas un video del CD, aparecerá como enlace en su ficha pública.
+                        </div>
                     </div>
 
                     <div class="full">

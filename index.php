@@ -1,5 +1,6 @@
 <?php
 require_once __DIR__ . '/config.php';
+require_once __DIR__ . '/seo.php';
 
 function e($value): string
 {
@@ -52,7 +53,7 @@ function storeUpper(string $value): string
 }
 
 if (isset($_GET['post']) && trim((string)$_GET['post']) !== '') {
-    header('Location: product.php?post=' . urlencode((string)$_GET['post']));
+    header('Location: product.php?post=' . urlencode((string)$_GET['post']), true, 301);
     exit;
 }
 
@@ -71,36 +72,316 @@ if ($productResult) {
 
 $artists = [];
 $artistSql = "
-    SELECT DISTINCT artist
-    FROM $tableposts
-    WHERE active = 1
-      AND stock = 1
-      AND artist IS NOT NULL
-      AND TRIM(artist) <> ''
-    ORDER BY artist ASC
+    SELECT
+        p.artistid,
+        COALESCE(
+            NULLIF(TRIM(a.name), ''),
+            NULLIF(TRIM(p.artist), '')
+        ) AS artist_name
+    FROM $tableposts p
+    LEFT JOIN $tableartists a
+        ON a.id = p.artistid
+    WHERE p.active = 1
+      AND p.stock = 1
+      AND COALESCE(
+            NULLIF(TRIM(a.name), ''),
+            NULLIF(TRIM(p.artist), '')
+          ) IS NOT NULL
+    GROUP BY
+        p.artistid,
+        artist_name
+    ORDER BY artist_name ASC
 ";
 $artistResult = mysqli_query($connection, $artistSql);
 
 if ($artistResult) {
     while ($row = mysqli_fetch_assoc($artistResult)) {
-        $artists[] = $row['artist'];
+        $artists[] = [
+            'id' => (int)($row['artistid'] ?? 0),
+            'name' => trim((string)($row['artist_name'] ?? ''))
+        ];
     }
 }
 
 $availableCount = count($products);
+
+/* ------------------------------------------------------------------
+ * SEO homepage
+ * ---------------------------------------------------------------- */
+$seoCanonical = seoUrl();
+$seoTitle =
+    'CDs de Reggaetón en Ecuador | Reggaeton El Real';
+
+$priorityArtists = [
+    'Daddy Yankee',
+    'Don Omar',
+    'Wisin & Yandel',
+    'Héctor el Father',
+    'Tego Calderón',
+    'Alexis & Fido'
+];
+
+$availableArtistNames = array_values(
+    array_filter(
+        array_map(
+            static function ($artist) {
+                return trim((string)($artist['name'] ?? ''));
+            },
+            $artists
+        )
+    )
+);
+
+$seoFeaturedArtists = [];
+
+foreach ($priorityArtists as $priorityArtist) {
+    foreach ($availableArtistNames as $availableArtist) {
+        if (
+            strcasecmp(
+                $priorityArtist,
+                $availableArtist
+            ) === 0 &&
+            !in_array(
+                $availableArtist,
+                $seoFeaturedArtists,
+                true
+            )
+        ) {
+            $seoFeaturedArtists[] = $availableArtist;
+            break;
+        }
+    }
+}
+
+foreach ($availableArtistNames as $availableArtist) {
+    if (
+        count($seoFeaturedArtists) >= 5
+    ) {
+        break;
+    }
+
+    if (
+        !in_array(
+            $availableArtist,
+            $seoFeaturedArtists,
+            true
+        )
+    ) {
+        $seoFeaturedArtists[] = $availableArtist;
+    }
+}
+
+$seoArtistPhrase =
+    count($seoFeaturedArtists) > 0
+        ? implode(
+            ', ',
+            $seoFeaturedArtists
+        )
+        : 'Daddy Yankee, Don Omar, Wisin & Yandel y más';
+
+$seoDescription = seoDescription(
+    'Compra CDs físicos de reggaetón en Ecuador. ' .
+    'Encuentra ' .
+    $seoArtistPhrase .
+    ', con fotos reales, una sola copia por título y envíos nacionales.'
+);
+
+$seoOgImage =
+    count($products) > 0
+        ? productImageUrl(
+            $products[0],
+            $storeBaseUrl
+        )
+        : seoUrl('images/logo.png');
+
+$seoItemList = [];
+
+foreach ($products as $position => $seoProduct) {
+    $seoProductArtist =
+        trim(
+            (string)(
+                $seoProduct['artist'] ??
+                ''
+            )
+        );
+
+    $seoProductAlbum =
+        trim(
+            (string)(
+                $seoProduct['album'] ??
+                ''
+            )
+        );
+
+    $seoItemList[] = [
+        '@type' => 'ListItem',
+        'position' => $position + 1,
+        'name' =>
+            trim(
+                $seoProductArtist .
+                ' - ' .
+                $seoProductAlbum
+            ),
+        'url' =>
+            seoProductUrl(
+                $seoProduct['postid'] ??
+                ''
+            )
+    ];
+}
+
+$seoStoreNode = [
+    '@type' => 'OnlineStore',
+    '@id' => $seoCanonical . '#store',
+    'name' => 'Reggaeton El Real',
+    'url' => $seoCanonical,
+    'description' => $seoDescription,
+    'logo' => seoUrl('images/logo.png'),
+    'image' => $seoOgImage,
+    'areaServed' => [
+        '@type' => 'Country',
+        'name' => 'Ecuador'
+    ],
+    'currenciesAccepted' => 'USD'
+];
+
+$seoPhoneNumber = seoPhone(
+    $saleswhatsapp ??
+    $adminwhatsapp ??
+    ''
+);
+
+if ($seoPhoneNumber !== '') {
+    $seoStoreNode['telephone'] =
+        $seoPhoneNumber;
+}
+
+$seoSameAsUrls = seoSameAs();
+
+if (count($seoSameAsUrls) > 0) {
+    $seoStoreNode['sameAs'] =
+        $seoSameAsUrls;
+}
+
+$seoHomeJsonLd = [
+    '@context' => 'https://schema.org',
+    '@graph' => [
+        $seoStoreNode,
+        [
+            '@type' => 'WebSite',
+            '@id' => $seoCanonical . '#website',
+            'url' => $seoCanonical,
+            'name' => 'Reggaeton El Real',
+            'alternateName' =>
+                'Reggaeton El Real Ecuador',
+            'inLanguage' => 'es-EC',
+            'publisher' => [
+                '@id' => $seoCanonical . '#store'
+            ]
+        ],
+        [
+            '@type' => 'CollectionPage',
+            '@id' => $seoCanonical . '#catalogo',
+            'url' => $seoCanonical . '#catalogo',
+            'name' =>
+                'CDs de reggaetón en Ecuador',
+            'description' =>
+                $seoDescription,
+            'isPartOf' => [
+                '@id' =>
+                    $seoCanonical .
+                    '#website'
+            ],
+            'mainEntity' => [
+                '@type' => 'ItemList',
+                'name' =>
+                    'CDs de reggaetón disponibles',
+                'numberOfItems' =>
+                    count($seoItemList),
+                'itemListElement' =>
+                    $seoItemList
+            ]
+        ]
+    ]
+];
 ?>
 <!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="description" content="Reggaeton El Real · tienda de CDs físicos de reggaetón en Ecuador.">
-    <title><?php echo e($websitetitle); ?></title>
+
+    <title><?php echo e($seoTitle); ?></title>
+    <meta
+        name="description"
+        content="<?php echo e($seoDescription); ?>"
+    >
+    <meta
+        name="robots"
+        content="<?php echo e(seoPublicRobots()); ?>"
+    >
+
+    <link
+        rel="canonical"
+        href="<?php echo e($seoCanonical); ?>"
+    >
+    <link
+        rel="icon"
+        href="<?php echo e(seoUrl('images/logo.png')); ?>"
+        type="image/png"
+    >
+
+    <meta property="og:type" content="website">
+    <meta
+        property="og:site_name"
+        content="Reggaeton El Real"
+    >
+    <meta property="og:locale" content="es_EC">
+    <meta
+        property="og:title"
+        content="<?php echo e($seoTitle); ?>"
+    >
+    <meta
+        property="og:description"
+        content="<?php echo e($seoDescription); ?>"
+    >
+    <meta
+        property="og:url"
+        content="<?php echo e($seoCanonical); ?>"
+    >
+    <meta
+        property="og:image"
+        content="<?php echo e($seoOgImage); ?>"
+    >
+    <meta
+        property="og:image:alt"
+        content="CDs físicos de reggaetón disponibles en Ecuador"
+    >
+
+    <meta
+        name="twitter:card"
+        content="summary_large_image"
+    >
+    <meta
+        name="twitter:title"
+        content="<?php echo e($seoTitle); ?>"
+    >
+    <meta
+        name="twitter:description"
+        content="<?php echo e($seoDescription); ?>"
+    >
+    <meta
+        name="twitter:image"
+        content="<?php echo e($seoOgImage); ?>"
+    >
+
+    <script type="application/ld+json"><?php echo seoJsonLd($seoHomeJsonLd); ?></script>
 
     <link rel="stylesheet" href="<?php echo e($storeBaseUrl); ?>store.css?v=2">
     <link rel="stylesheet" href="<?php echo e($storeBaseUrl); ?>store-footer.css?v=1">
     <link rel="stylesheet" href="<?php echo e($storeBaseUrl); ?>catalog-toolbar.css?v=1">
     <link rel="stylesheet" href="<?php echo e($storeBaseUrl); ?>catalog-carousel.css?v=2">
+    <link rel="stylesheet" href="<?php echo e($storeBaseUrl); ?>seo.css?v=1">
 
     <script>
         window.StoreConfig = <?php
@@ -116,7 +397,7 @@ $availableCount = count($products);
             );
         ?>;
     </script>
-    <script defer src="<?php echo e($storeBaseUrl); ?>store.js?v=5"></script>
+    <script defer src="<?php echo e($storeBaseUrl); ?>store.js?v=6"></script>
 </head>
 <body>
     <div class="promo-strip">
@@ -161,10 +442,10 @@ $availableCount = count($products);
     <main>
         <section class="hero page-shell">
             <div class="hero__content">
-                <p class="eyebrow">ARCHIVO FÍSICO / ECUADOR</p>
+                <p class="eyebrow">TIENDA DE CDS DE REGGAETÓN / ECUADOR</p>
                 <h1>REGGAETON<br>EL REAL.</h1>
                 <p class="hero__lead">
-                    Ediciones físicas, una sola copia por título y fotografías reales del estado del producto.
+                    Compra CDs físicos de reggaetón en Ecuador. Ediciones de colección, una sola copia por título, fotos reales y envíos nacionales.
                 </p>
                 <a class="button button--dark" href="#catalogo">VER COLECCIÓN</a>
             </div>
@@ -217,13 +498,31 @@ $availableCount = count($products);
                     <button class="artist-chip is-active" type="button" data-artist-filter="*">TODOS</button>
 
                     <?php foreach ($artists as $artist): ?>
-                        <button
+                        <?php
+                            $artistName =
+                                trim(
+                                    (string)(
+                                        $artist['name'] ??
+                                        ''
+                                    )
+                                );
+
+                            $artistPageUrl =
+                                seoArtistUrl(
+                                    (int)(
+                                        $artist['id'] ??
+                                        0
+                                    ),
+                                    $artistName
+                                );
+                        ?>
+                        <a
                             class="artist-chip"
-                            type="button"
-                            data-artist-filter="<?php echo e(storeLower($artist)); ?>"
+                            href="<?php echo e($artistPageUrl); ?>"
+                            data-artist-filter="<?php echo e(storeLower($artistName)); ?>"
                         >
-                            <?php echo e(storeUpper($artist)); ?>
-                        </button>
+                            <?php echo e(storeUpper($artistName)); ?>
+                        </a>
                     <?php endforeach; ?>
                 </div>
 
@@ -272,8 +571,10 @@ $availableCount = count($products);
                                     <img
                                         class="product-card__image"
                                         src="<?php echo e($imageUrl); ?>"
-                                        alt="<?php echo e($title); ?>"
-                                        loading="lazy"
+                                        alt="<?php echo e(trim($artist . ' - ' . ($album !== '' ? $album : $title) . ' en CD físico')); ?>"
+                                        loading="<?php echo $productIndex < 4 ? 'eager' : 'lazy'; ?>"
+                                        decoding="async"
+                                        <?php echo $productIndex === 0 ? 'fetchpriority="high"' : ''; ?>
                                     >
 
                                     <?php if ($stock === 1): ?>
@@ -359,6 +660,26 @@ $availableCount = count($products);
                         <button class="text-button js-clear-filters" type="button">LIMPIAR FILTROS</button>
                     </div>
                 <?php endif; ?>
+            </div>
+        </section>
+
+        <section class="seo-editorial">
+            <div class="page-shell seo-editorial__grid">
+                <div>
+                    <p class="eyebrow">REGGAETÓN EN ECUADOR</p>
+                    <h2>CDs físicos de reggaetón para coleccionistas</h2>
+                </div>
+
+                <div class="seo-editorial__copy">
+                    <p>
+                        Reggaeton El Real es una tienda online de CDs físicos de reggaetón con entregas únicamente en Ecuador.
+                        Nuestro catálogo reúne artistas como <?php echo e($seoArtistPhrase); ?>, según disponibilidad.
+                    </p>
+                    <p>
+                        Cada publicación corresponde a una sola copia física. Mostramos fotografías reales del ejemplar,
+                        su año, estado y precio antes de coordinar la compra y el envío por WhatsApp.
+                    </p>
+                </div>
             </div>
         </section>
 

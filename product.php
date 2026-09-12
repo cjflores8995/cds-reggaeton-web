@@ -1,5 +1,6 @@
 <?php
 require_once __DIR__ . '/config.php';
+require_once __DIR__ . '/seo.php';
 
 function e($value): string
 {
@@ -88,7 +89,8 @@ if (!$product) {
     <head>
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
-        <title>CD no encontrado</title>
+        <meta name="robots" content="noindex,nofollow,noarchive">
+        <title>CD no encontrado | Reggaeton El Real</title>
         <link rel="stylesheet" href="<?php echo e($storeBaseUrl); ?>store.css?v=2">
     </head>
     <body class="simple-error-page">
@@ -209,6 +211,232 @@ $cdCondition = trim((string)($product['cd_condition'] ?? 'No especificado'));
 $caseCondition = trim((string)($product['case_condition'] ?? 'No especificado'));
 $description = trim(strip_tags((string)($product['content'] ?? '')));
 
+$artistId = (int)($product['artistid'] ?? 0);
+$artistPageUrl =
+    seoArtistUrl(
+        $artistId,
+        $artist
+    );
+
+$seoCanonical =
+    seoProductUrl(
+        $product['postid']
+    );
+
+$seoProductDisplayName =
+    trim(
+        $artist .
+        ' - ' .
+        (
+            $album !== ''
+                ? $album
+                : $title
+        )
+    );
+
+$seoTitle =
+    $seoProductDisplayName .
+    ' CD en Ecuador | Reggaeton El Real';
+
+$seoDescription =
+    seoDescription(
+        'Compra ' .
+        $seoProductDisplayName .
+        ' en CD físico en Ecuador por $' .
+        money($price) .
+        '. Una sola copia disponible, fotos reales del ejemplar y envío nacional por Servientrega.'
+    );
+
+$seoImageUrls = array_values(
+    array_unique(
+        array_map(
+            static function ($image) {
+                return
+                    trim(
+                        (string)(
+                            $image['url'] ??
+                            ''
+                        )
+                    );
+            },
+            $images
+        )
+    )
+);
+
+$seoImageUrls = array_values(
+    array_filter(
+        $seoImageUrls
+    )
+);
+
+$seoItemCondition =
+    seoProductConditionUrl(
+        $cdCondition
+    );
+
+$seoProductJsonLd = [
+    '@context' =>
+        'https://schema.org',
+    '@graph' => [
+        [
+            '@type' => 'Product',
+            '@id' =>
+                $seoCanonical .
+                '#product',
+            'name' =>
+                $seoProductDisplayName .
+                ' - CD físico',
+            'url' =>
+                $seoCanonical,
+            'mainEntityOfPage' =>
+                $seoCanonical,
+            'image' =>
+                $seoImageUrls,
+            'description' =>
+                $seoDescription,
+            'sku' =>
+                (string)$product['postid'],
+            'category' =>
+                'CD de música / Reggaetón',
+            'additionalProperty' => [
+                [
+                    '@type' =>
+                        'PropertyValue',
+                    'name' =>
+                        'Artista',
+                    'value' =>
+                        $artist
+                ],
+                [
+                    '@type' =>
+                        'PropertyValue',
+                    'name' =>
+                        'Álbum',
+                    'value' =>
+                        (
+                            $album !== ''
+                                ? $album
+                                : $title
+                        )
+                ],
+                [
+                    '@type' =>
+                        'PropertyValue',
+                    'name' =>
+                        'Año',
+                    'value' =>
+                        (
+                            $year !== ''
+                                ? $year
+                                : 'No especificado'
+                        )
+                ],
+                [
+                    '@type' =>
+                        'PropertyValue',
+                    'name' =>
+                        'Estado del CD',
+                    'value' =>
+                        $cdCondition
+                ],
+                [
+                    '@type' =>
+                        'PropertyValue',
+                    'name' =>
+                        'Estado de la caja',
+                    'value' =>
+                        $caseCondition
+                ],
+                [
+                    '@type' =>
+                        'PropertyValue',
+                    'name' =>
+                        'Unidades',
+                    'value' =>
+                        '1'
+                ]
+            ],
+            'offers' => [
+                '@type' =>
+                    'Offer',
+                'url' =>
+                    $seoCanonical,
+                'priceCurrency' =>
+                    'USD',
+                'price' =>
+                    number_format(
+                        $price,
+                        2,
+                        '.',
+                        ''
+                    ),
+                'availability' =>
+                    'https://schema.org/InStock',
+                'itemCondition' =>
+                    $seoItemCondition,
+                'eligibleRegion' => [
+                    '@type' =>
+                        'Country',
+                    'name' =>
+                        'Ecuador'
+                ],
+                'seller' => [
+                    '@type' =>
+                        'OnlineStore',
+                    'name' =>
+                        'Reggaeton El Real',
+                    'url' =>
+                        seoUrl()
+                ]
+            ]
+        ],
+        [
+            '@type' =>
+                'BreadcrumbList',
+            '@id' =>
+                $seoCanonical .
+                '#breadcrumb',
+            'itemListElement' => [
+                [
+                    '@type' =>
+                        'ListItem',
+                    'position' =>
+                        1,
+                    'name' =>
+                        'Tienda de CDs de reggaetón',
+                    'item' =>
+                        seoUrl()
+                ],
+                [
+                    '@type' =>
+                        'ListItem',
+                    'position' =>
+                        2,
+                    'name' =>
+                        $artist,
+                    'item' =>
+                        $artistPageUrl
+                ],
+                [
+                    '@type' =>
+                        'ListItem',
+                    'position' =>
+                        3,
+                    'name' =>
+                        (
+                            $album !== ''
+                                ? $album
+                                : $title
+                        ),
+                    'item' =>
+                        $seoCanonical
+                ]
+            ]
+        ]
+    ]
+];
+
 $relatedProducts = [];
 $relatedSql = "
     SELECT *
@@ -232,11 +460,84 @@ if ($relatedResult) {
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="description" content="<?php echo e($artist . ' - ' . $album); ?>">
-    <title><?php echo e($title . ' | ' . $websitetitle); ?></title>
+
+    <title><?php echo e($seoTitle); ?></title>
+    <meta
+        name="description"
+        content="<?php echo e($seoDescription); ?>"
+    >
+    <meta
+        name="robots"
+        content="<?php echo e(seoPublicRobots()); ?>"
+    >
+
+    <link
+        rel="canonical"
+        href="<?php echo e($seoCanonical); ?>"
+    >
+    <link
+        rel="icon"
+        href="<?php echo e(seoUrl('images/logo.png')); ?>"
+        type="image/png"
+    >
+
+    <meta property="og:type" content="product">
+    <meta
+        property="og:site_name"
+        content="Reggaeton El Real"
+    >
+    <meta property="og:locale" content="es_EC">
+    <meta
+        property="og:title"
+        content="<?php echo e($seoTitle); ?>"
+    >
+    <meta
+        property="og:description"
+        content="<?php echo e($seoDescription); ?>"
+    >
+    <meta
+        property="og:url"
+        content="<?php echo e($seoCanonical); ?>"
+    >
+    <meta
+        property="og:image"
+        content="<?php echo e($mainImage); ?>"
+    >
+    <meta
+        property="og:image:alt"
+        content="<?php echo e($seoProductDisplayName . ' en CD físico'); ?>"
+    >
+    <meta
+        property="product:price:amount"
+        content="<?php echo e(number_format($price, 2, '.', '')); ?>"
+    >
+    <meta
+        property="product:price:currency"
+        content="USD"
+    >
+
+    <meta
+        name="twitter:card"
+        content="summary_large_image"
+    >
+    <meta
+        name="twitter:title"
+        content="<?php echo e($seoTitle); ?>"
+    >
+    <meta
+        name="twitter:description"
+        content="<?php echo e($seoDescription); ?>"
+    >
+    <meta
+        name="twitter:image"
+        content="<?php echo e($mainImage); ?>"
+    >
+
+    <script type="application/ld+json"><?php echo seoJsonLd($seoProductJsonLd); ?></script>
 
     <link rel="stylesheet" href="<?php echo e($storeBaseUrl); ?>store.css?v=2">
     <link rel="stylesheet" href="<?php echo e($storeBaseUrl); ?>store-footer.css?v=1">
+    <link rel="stylesheet" href="<?php echo e($storeBaseUrl); ?>seo.css?v=1">
 
     <script>
         window.StoreConfig = <?php
@@ -298,7 +599,7 @@ if ($relatedResult) {
         <div class="page-shell breadcrumb-row">
             <a href="<?php echo e($storeBaseUrl); ?>">TIENDA</a>
             <span>/</span>
-            <span><?php echo e($artist); ?></span>
+            <a href="<?php echo e($artistPageUrl); ?>"><?php echo e($artist); ?></a>
             <span>/</span>
             <span><?php echo e($album); ?></span>
         </div>
@@ -309,7 +610,9 @@ if ($relatedResult) {
                     <img
                         id="productMainImage"
                         src="<?php echo e($mainImage); ?>"
-                        alt="<?php echo e($title); ?>"
+                        alt="<?php echo e($seoProductDisplayName . ' en CD físico'); ?>"
+                        fetchpriority="high"
+                        decoding="async"
                     >
                 </div>
 
@@ -323,7 +626,12 @@ if ($relatedResult) {
                                 data-image="<?php echo e($image['url']); ?>"
                                 aria-label="Ver <?php echo e($image['label']); ?>"
                             >
-                                <img src="<?php echo e($image['url']); ?>" alt="">
+                                <img
+                                    src="<?php echo e($image['url']); ?>"
+                                    alt=""
+                                    loading="lazy"
+                                    decoding="async"
+                                >
                             </button>
                         <?php endforeach; ?>
                     </div>
@@ -353,7 +661,11 @@ if ($relatedResult) {
                 <dl class="spec-table">
                     <div>
                         <dt>ARTISTA</dt>
-                        <dd><?php echo e($artist); ?></dd>
+                        <dd>
+                            <a class="seo-inline-link" href="<?php echo e($artistPageUrl); ?>">
+                                <?php echo e($artist); ?>
+                            </a>
+                        </dd>
                     </div>
                     <div>
                         <dt>ÁLBUM</dt>
@@ -396,6 +708,13 @@ if ($relatedResult) {
                 <p class="single-unit-note">
                     Cada publicación representa un único CD físico. No se permiten cantidades mayores a 1.
                 </p>
+
+                <div class="product-seo-summary">
+                    <p>
+                        <?php echo e($seoProductDisplayName); ?> es un CD físico disponible para compra en Ecuador.
+                        Esta publicación corresponde a una sola copia y las fotografías muestran el ejemplar ofrecido.
+                    </p>
+                </div>
 
                 <?php if ($description !== ''): ?>
                     <div class="product-description">

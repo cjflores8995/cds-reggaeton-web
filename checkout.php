@@ -32,7 +32,9 @@ $storeBaseUrl = checkoutBaseUrl();
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="robots" content="noindex,nofollow,noarchive">
     <meta name="description" content="Finaliza tu compra de CDs de reggaetón y selecciona el envío por Servientrega.">
+    <link rel="icon" href="<?php echo checkoutEsc($storeBaseUrl); ?>images/logo.png" type="image/png">
     <title>Finalizar compra | <?php echo checkoutEsc($websitetitle); ?></title>
 
     <link rel="stylesheet" href="<?php echo checkoutEsc($storeBaseUrl); ?>store.css?v=2">

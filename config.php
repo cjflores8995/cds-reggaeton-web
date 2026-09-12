@@ -21,6 +21,51 @@ if(!$connection){
 
 $connection->set_charset("utf8");
 
+/*
+ * SEO hygiene:
+ * páginas administrativas, endpoints y checkout no deben aparecer en Google.
+ * Se usa X-Robots-Tag para que la regla funcione incluso sin modificar su HTML.
+ */
+$seoPrivateScripts = [
+    "admin.php",
+    "admin-product-new.php",
+    "artists.php",
+    "image-settings.php",
+    "checkout.php",
+    "ordernotes.php",
+    "postupdate.php",
+    "postupload.php",
+    "productdata.php",
+    "productimages.php",
+    "artistshelper.php",
+    "functions.php",
+    "uilang.php",
+    "thumbnailgenerator.php",
+    "config.php",
+    "dbcon.php"
+];
+
+$seoRunningScript = basename(
+    (string)(
+        $_SERVER["SCRIPT_NAME"] ??
+        ""
+    )
+);
+
+if(
+    !headers_sent() &&
+    in_array(
+        $seoRunningScript,
+        $seoPrivateScripts,
+        true
+    )
+){
+    header(
+        "X-Robots-Tag: noindex, nofollow, noarchive",
+        true
+    );
+}
+
 //Database table names
 $tableconfig = $tableprefix . "config";
 $tableposts = $tableprefix . "posts";

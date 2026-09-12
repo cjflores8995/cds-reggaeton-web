@@ -1,0 +1,117 @@
+/*
+ * REGGAETON EL REAL - SEO / artist landing presentation
+ * Content remains visible to users; nothing is hidden for search engines.
+ */
+
+.seo-editorial {
+    border-top: 1px solid var(--soft-line);
+    background: var(--paper);
+}
+
+.seo-editorial__grid {
+    display: grid;
+    grid-template-columns: minmax(260px, .8fr) minmax(0, 1.2fr);
+    gap: 48px;
+    padding-top: 52px;
+    padding-bottom: 52px;
+}
+
+.seo-editorial h2 {
+    max-width: 520px;
+    margin: 0;
+    font-size: clamp(28px, 4vw, 46px);
+    line-height: .98;
+    letter-spacing: -.045em;
+    text-transform: uppercase;
+}
+
+.seo-editorial__copy {
+    max-width: 680px;
+    color: var(--ink);
+    font-size: 13px;
+    line-height: 1.75;
+}
+
+.seo-editorial__copy p {
+    margin: 0 0 14px;
+}
+
+.seo-inline-link {
+    color: inherit;
+    text-decoration: underline;
+    text-decoration-thickness: 1px;
+    text-underline-offset: 3px;
+}
+
+.product-seo-summary {
+    margin-top: 18px;
+    padding-top: 16px;
+    border-top: 1px solid var(--soft-line);
+    color: var(--muted);
+    font-size: 11px;
+    line-height: 1.65;
+}
+
+.product-seo-summary p {
+    margin: 0;
+}
+
+.artist-landing {
+    padding-top: 30px;
+    padding-bottom: 70px;
+}
+
+.artist-landing__heading {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(220px, .45fr);
+    gap: 24px;
+    align-items: end;
+    margin-bottom: 28px;
+    padding-bottom: 24px;
+    border-bottom: 1px solid var(--soft-line);
+}
+
+.artist-landing__heading .eyebrow {
+    grid-column: 1 / -1;
+    margin-bottom: -8px;
+}
+
+.artist-landing__heading h1 {
+    margin: 0;
+    font-size: clamp(38px, 6vw, 70px);
+    line-height: .92;
+    letter-spacing: -.055em;
+}
+
+.artist-landing__heading > p:last-child {
+    margin: 0;
+    color: var(--muted);
+    font-size: 12px;
+    line-height: 1.6;
+}
+
+.artist-product-grid {
+    margin-top: 0;
+}
+
+.artist-landing__back {
+    margin-top: 28px;
+}
+
+@media (max-width: 720px) {
+    .seo-editorial__grid {
+        grid-template-columns: 1fr;
+        gap: 24px;
+        padding-top: 38px;
+        padding-bottom: 38px;
+    }
+
+    .artist-landing__heading {
+        grid-template-columns: 1fr;
+        align-items: start;
+    }
+
+    .artist-landing__heading .eyebrow {
+        grid-column: auto;
+    }
+}

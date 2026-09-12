@@ -1,0 +1,118 @@
+SEO PROFESIONAL - REGGAETON EL REAL
+
+BASE:
+Generado sobre la rama develop actual revisada antes de modificar.
+
+REEMPLAZAR COMPLETOS:
+- config.php
+- index.php
+- product.php
+- checkout.php
+- store.js
+
+NUEVOS:
+- seo.php
+- seo.css
+- artist.php
+- sitemap.php
+- robots.txt
+
+IMPLEMENTADO:
+
+1. HOME SEO
+- Title:
+  CDs de Reggaetón en Ecuador | Reggaeton El Real
+- Meta description orientada a intención de compra en Ecuador.
+- Canonical.
+- robots index/follow + max-image-preview:large.
+- Open Graph.
+- Twitter Cards.
+- favicon.
+- JSON-LD:
+  OnlineStore
+  WebSite
+  CollectionPage
+  ItemList
+- Copy visible y natural sobre CDs físicos de reggaetón en Ecuador.
+- Nombres de artistas reales del inventario.
+- No usa meta keywords ni texto oculto.
+
+2. PRODUCT SEO
+- Title único por artista + álbum.
+- Meta description única con precio, Ecuador y disponibilidad.
+- Canonical único.
+- Product + Offer JSON-LD.
+- Precio USD.
+- InStock.
+- UsedCondition/NewCondition.
+- eligibleRegion = Ecuador.
+- Seller = Reggaeton El Real.
+- BreadcrumbList JSON-LD.
+- Open Graph Product.
+- Twitter Card.
+- Imagen principal preparada como social preview.
+- Alt text descriptivo.
+- Contexto visible del producto.
+
+3. ARTIST SEO
+- Nuevo artist.php.
+- URLs indexables:
+  artist.php?id=...
+- Titles como:
+  CDs de Daddy Yankee en Ecuador | Reggaeton El Real
+- Meta descriptions únicas.
+- CollectionPage + ItemList + BreadcrumbList.
+- Los chips de artistas del home ahora son <a href> rastreables.
+- Con JavaScript activo siguen filtrando instantáneamente como antes.
+- Sin JavaScript abren la página SEO del artista.
+
+4. SITEMAP
+- sitemap.php dinámico.
+- Incluye:
+  home
+  artistas con stock
+  productos disponibles
+  imágenes de producto
+- Un CD vendido desaparece automáticamente del sitemap.
+
+5. ROBOTS / NOINDEX
+- robots.txt bloquea endpoints administrativos.
+- checkout.php tiene noindex.
+- config.php envía X-Robots-Tag noindex a admin, checkout y endpoints.
+- Productos y artistas públicos sí son indexables.
+
+6. IMÁGENES / PERFORMANCE
+- Primera portada del catálogo:
+  eager + fetchpriority=high.
+- Primeras 4:
+  eager.
+- Resto:
+  lazy.
+- decoding=async.
+- Producto:
+  imagen principal fetchpriority=high.
+- Miniaturas lazy.
+
+7. CANONICALIZACIÓN
+- index.php?post=... ahora hace 301 permanente hacia product.php?post=...
+- Home, productos y artistas tienen canonical explícito.
+
+PENDIENTE CUANDO EXISTA EL HOST DE AZURE:
+1. Abrir Google Search Console.
+2. Crear propiedad del sitio.
+3. Enviar:
+   https://TU-HOST/sitemap.php
+4. Añadir al robots.txt:
+   Sitemap: https://TU-HOST/sitemap.php
+5. Probar homepage y productos en Google Rich Results Test.
+6. Solicitar indexación de home y 3-5 productos importantes.
+7. Si luego compras dominio, redirigir *.azurewebsites.net al dominio final
+   para evitar dos hosts indexables.
+
+IMPORTANTE:
+- SEO no garantiza posición #1.
+- No se usó keyword stuffing.
+- No se inventaron reviews ni ratings.
+- No se añadieron meta keywords porque Google no las usa para ranking.
+- Las páginas de producto solo existen en Google mientras stock=1, coherente
+  con la regla de negocio actual de ocultar vendidos.

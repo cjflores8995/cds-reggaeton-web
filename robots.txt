@@ -1,0 +1,26 @@
+# Reggaeton El Real
+# Public catalog and product pages are crawlable.
+# Private/admin endpoints are not useful to search engines.
+
+User-agent: *
+Allow: /
+
+Disallow: /admin.php
+Disallow: /admin-product-new.php
+Disallow: /artists.php
+Disallow: /image-settings.php
+Disallow: /ordernotes.php
+Disallow: /postupdate.php
+Disallow: /postupload.php
+Disallow: /productdata.php
+Disallow: /productimages.php
+Disallow: /artistshelper.php
+Disallow: /functions.php
+Disallow: /uilang.php
+Disallow: /thumbnailgenerator.php
+Disallow: /config.php
+Disallow: /dbcon.php
+
+# IMPORTANT:
+# sitemap.php is dynamic and must be submitted in Google Search Console
+# after the Azure production hostname is known.

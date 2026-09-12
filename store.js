@@ -134,7 +134,16 @@
         artistButtons.forEach(function (button) {
             button.addEventListener(
                 "click",
-                function () {
+                function (event) {
+                    /*
+                     * Los filtros de artista son enlaces reales para SEO y
+                     * navegación sin JavaScript. Con JS activo conservamos
+                     * el filtrado instantáneo en la portada.
+                     */
+                    if (event) {
+                        event.preventDefault();
+                    }
+
                     selectedArtist =
                         normalizeText(
                             button.dataset.artistFilter || "*"

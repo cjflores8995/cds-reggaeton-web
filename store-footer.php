@@ -142,9 +142,9 @@ if(isset($storeBaseUrl) && trim((string)$storeBaseUrl) !== ""){
 
         <div class="site-footer__column">
             <p class="footer-label">COMPRA</p>
-            <p>Envíos por Servientrega</p>
+            <p>Servientrega · solo Ecuador</p>
             <p>Compra final por WhatsApp</p>
-            <p>Entregas únicamente en Ecuador</p>
+            <p>No realizamos envíos internacionales</p>
         </div>
 
         <div class="site-footer__column">
@@ -244,6 +244,10 @@ if(isset($storeBaseUrl) && trim((string)$storeBaseUrl) !== ""){
     <script
         defer
         src="<?php echo storeFooterEsc($footerAssetBaseUrl); ?>store-artist-filter-fit.js?v=1"
+    ></script>
+    <script
+        defer
+        src="<?php echo storeFooterEsc($footerAssetBaseUrl); ?>store-shipping-scope.js?v=1"
     ></script>
     <script
         defer

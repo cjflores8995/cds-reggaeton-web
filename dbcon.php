@@ -1,7 +1,15 @@
 <?php
 
+require_once __DIR__ . "/security-bootstrap.php";
 require_once __DIR__ . "/admin-upload-security.php";
 require_once __DIR__ . "/public-request-security.php";
+
+/*
+ * Security Fase 6: safe response headers and conservative error handling are
+ * enabled before any application output. Environment/Host rules are finalized
+ * after env.php is loaded below.
+ */
+securityBootstrapEarly();
 
 /*
  * Security Fase 3: /pictures is created with safe permissions before the
@@ -24,6 +32,21 @@ if(!file_exists($envFile)){
 }
 
 require_once $envFile;
+
+/*
+ * Security Fase 6 finalization.
+ * Existing local env.php files do not need these variables: localhost is
+ * detected as development automatically. Production should explicitly define
+ * appEnvironment=production and its allowed hosts.
+ */
+securityBootstrap(
+    isset($appEnvironment)
+        ? $appEnvironment
+        : null,
+    isset($allowedHosts)
+        ? $allowedHosts
+        : null
+);
 
 $requiredVariables = [
     "host",

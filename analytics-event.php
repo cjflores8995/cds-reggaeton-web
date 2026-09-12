@@ -22,6 +22,7 @@ require_once __DIR__ . "/config.php";
 require_once __DIR__ . "/analytics-helper.php";
 require_once __DIR__ . "/analytics-phase2-helper.php";
 require_once __DIR__ . "/analytics-phase3-helper.php";
+require_once __DIR__ . "/analytics-phase7-helper.php";
 
 if(!analyticsSameOriginAllowed()){
     http_response_code(403);
@@ -34,6 +35,8 @@ if(!analyticsEnsureSchema($connection)){
     echo json_encode(["ok" => false, "message" => "Analytics unavailable."]);
     exit;
 }
+
+analyticsPhase7EnsureDiagnostics($connection);
 
 $rawBody = file_get_contents("php://input", false, null, 0, 16385);
 
@@ -55,7 +58,10 @@ if(!$event){
 }
 
 $userAgent = analyticsSafeText($_SERVER["HTTP_USER_AGENT"] ?? "", 512);
-$classification = analyticsTrafficClassification($userAgent);
+$classification = analyticsPhase7ExtendedBotClassification(
+    $userAgent,
+    analyticsTrafficClassification($userAgent)
+);
 $session = analyticsGetOrCreateSession(
     $connection,
     $event,
@@ -68,11 +74,24 @@ if(!$session){
     exit;
 }
 
+$classification = analyticsPhase7ResolveClassification(
+    $connection,
+    $session,
+    $classification
+);
+
 $result = analyticsPhase3StoreEvent(
     $connection,
     $session,
     $classification,
     $event
+);
+
+analyticsPhase7RecordOutcome(
+    $connection,
+    $session,
+    $classification,
+    $result
 );
 
 http_response_code(200);

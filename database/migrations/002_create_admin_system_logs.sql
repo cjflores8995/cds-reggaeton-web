@@ -1,5 +1,5 @@
 -- Reggaeton El Real
--- Admin/System Logs - Phase 1
+-- Admin/System Logs - Phase 1, finalized in Phase 7
 --
 -- IMPORTANT:
 -- Replace __TABLE_PREFIX__ with the value configured in env.php as $tableprefix.
@@ -10,7 +10,8 @@
 --
 -- Admin/System Logs is intentionally separate from Customer Analytics.
 -- The PHP audit helper also uses CREATE TABLE IF NOT EXISTS as a development
--- safety net, but this migration is the canonical deployment script.
+-- safety net, but this migration is the canonical deployment script for fresh
+-- installations. Existing installations should also run migration 003.
 
 CREATE TABLE IF NOT EXISTS `__TABLE_PREFIX__admin_system_logs` (
     `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
@@ -36,7 +37,9 @@ CREATE TABLE IF NOT EXISTS `__TABLE_PREFIX__admin_system_logs` (
     KEY `idx_admin_log_category_action_created` (`category`, `action`, `created_at`),
     KEY `idx_admin_log_outcome_created` (`outcome`, `created_at`),
     KEY `idx_admin_log_entity` (`entity_type`, `entity_id`, `created_at`),
-    KEY `idx_admin_log_request` (`request_id`)
+    KEY `idx_admin_log_request` (`request_id`),
+    KEY `idx_admin_log_severity_created` (`severity`, `created_at`),
+    KEY `idx_admin_log_actor_created` (`actor`, `created_at`)
 ) ENGINE=InnoDB
   DEFAULT CHARSET=utf8mb4
   COLLATE=utf8mb4_unicode_ci;

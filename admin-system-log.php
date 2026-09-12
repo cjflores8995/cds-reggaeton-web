@@ -310,10 +310,82 @@ function adminSystemLogEnsureStorage($connection){
         "KEY `idx_admin_log_category_action_created` (`category`,`action`,`created_at`)," .
         "KEY `idx_admin_log_outcome_created` (`outcome`,`created_at`)," .
         "KEY `idx_admin_log_entity` (`entity_type`,`entity_id`,`created_at`)," .
-        "KEY `idx_admin_log_request` (`request_id`)" .
+        "KEY `idx_admin_log_request` (`request_id`)," .
+        "KEY `idx_admin_log_severity_created` (`severity`,`created_at`)," .
+        "KEY `idx_admin_log_actor_created` (`actor`,`created_at`)" .
         ") ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci";
 
     return (bool)@$connection->query($sql);
+}
+
+function adminSystemLogIndexExists($connection, $indexName){
+    if(!($connection instanceof mysqli)){
+        return false;
+    }
+
+    $table = adminSystemLogTableName();
+    $indexName = adminSystemLogSafeText($indexName, 64);
+
+    if($table === "" || $indexName === ""){
+        return false;
+    }
+
+    $escaped = mysqli_real_escape_string(
+        $connection,
+        $indexName
+    );
+
+    $result = @$connection->query(
+        "SHOW INDEX FROM `$table` WHERE Key_name = '$escaped'"
+    );
+
+    if(!$result){
+        return false;
+    }
+
+    $exists = $result->num_rows > 0;
+    $result->free();
+    return $exists;
+}
+
+function adminSystemLogEnsureOperationalIndexes($connection){
+    if(
+        !($connection instanceof mysqli) ||
+        !adminSystemLogEnsureStorage($connection)
+    ){
+        return false;
+    }
+
+    $table = adminSystemLogTableName();
+
+    if($table === ""){
+        return false;
+    }
+
+    $definitions = [
+        "idx_admin_log_severity_created" => "(`severity`,`created_at`)",
+        "idx_admin_log_actor_created" => "(`actor`,`created_at`)"
+    ];
+
+    $ok = true;
+
+    foreach($definitions as $name => $columns){
+        if(adminSystemLogIndexExists($connection, $name)){
+            continue;
+        }
+
+        try{
+            if(!@$connection->query(
+                "ALTER TABLE `$table` ADD INDEX `$name` $columns"
+            )){
+                $ok = false;
+            }
+        }catch(Throwable $exception){
+            $ok = false;
+        }
+    }
+
+    return $ok;
 }
 
 function adminSystemLogWrite($event, $connection = null){

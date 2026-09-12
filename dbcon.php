@@ -1,6 +1,7 @@
 <?php
 
 require_once __DIR__ . "/admin-upload-security.php";
+require_once __DIR__ . "/public-request-security.php";
 
 /*
  * Security Fase 3: /pictures is created with safe permissions before the
@@ -8,6 +9,13 @@ require_once __DIR__ . "/admin-upload-security.php";
  */
 adminUploadEnsurePicturesDirectory();
 adminUploadValidateIncomingAdminRequest();
+
+/*
+ * Security Fase 4: public endpoint shape/size validation runs before the
+ * database connection is opened. It only acts on explicitly registered
+ * public endpoints such as ordernotes.php.
+ */
+publicRequestSecurityBootstrap();
 
 $envFile = __DIR__ . "/env.php";
 

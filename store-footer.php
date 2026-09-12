@@ -135,7 +135,15 @@ if(isset($storeBaseUrl) && trim((string)$storeBaseUrl) !== ""){
 <footer class="site-footer">
     <div class="page-shell site-footer__grid site-footer__grid--social">
         <div class="site-footer__brand-column">
-            <div class="footer-brand">REGGAETON EL REAL</div>
+            <?php if($footerAssetBaseUrl !== ""){ ?>
+                <img
+                    class="footer-brand-logo"
+                    src="<?php echo storeFooterEsc($footerAssetBaseUrl); ?>images/branding/originals/reggaeton-el-real-logo-horizontal-white.png"
+                    alt="Reggaeton El Real"
+                >
+            <?php }else{ ?>
+                <div class="footer-brand">REGGAETON EL REAL</div>
+            <?php } ?>
             <p>CDs físicos de reggaetón · Ecuador</p>
             <p>Una sola unidad por título.</p>
         </div>
@@ -233,6 +241,10 @@ if(isset($storeBaseUrl) && trim((string)$storeBaseUrl) !== ""){
 <?php } ?>
 
 <?php if($footerAssetBaseUrl !== ""){ ?>
+    <script
+        defer
+        src="<?php echo storeFooterEsc($footerAssetBaseUrl); ?>store-branding.js?v=1"
+    ></script>
     <script
         defer
         src="<?php echo storeFooterEsc($footerAssetBaseUrl); ?>store-cart-state.js?v=1"

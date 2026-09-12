@@ -2,15 +2,17 @@
 require_once __DIR__ . "/config.php";
 require_once __DIR__ . "/analytics-helper.php";
 require_once __DIR__ . "/analytics-phase2-helper.php";
+require_once __DIR__ . "/analytics-privacy.php";
 
 http_response_code(404);
 header("X-Robots-Tag: noindex, nofollow, noarchive", true);
 
+analyticsPrivacySanitizeServerContext();
 $requestPath = parse_url(
     (string)($_SERVER["REQUEST_URI"] ?? ""),
     PHP_URL_PATH
 );
-$requestPath = analyticsSafeText($requestPath ?? "", 300);
+$requestPath = analyticsPrivacyRedactText($requestPath ?? "", 300);
 
 analyticsPhase2RecordServerEvent(
     $connection,

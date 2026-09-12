@@ -36,12 +36,16 @@ if(!function_exists("productImageOfficialWatermarkScalePercent")){
             )
         );
 
+        /*
+         * The watermark is intended to discourage reuse of product photos.
+         * Keep a small option, but let the upper levels cover most of the image.
+         */
         $scaleByLevel = [
             1 => 16,
-            2 => 22,
-            3 => 28,
-            4 => 34,
-            5 => 40
+            2 => 30,
+            3 => 50,
+            4 => 70,
+            5 => 90
         ];
 
         return $scaleByLevel[$sizeLevel];

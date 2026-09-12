@@ -4,7 +4,7 @@ session_start();
 require_once __DIR__ . "/config.php";
 require_once __DIR__ . "/analytics-helper.php";
 
-header("X-Robots-Tag: noindex, nofollow, noarchive", true);
+header("X-Robots-Tag: noindex, nofollow,noarchive", true);
 
 $isLoggedIn =
     isset($_SESSION["adminusername"]) &&
@@ -62,6 +62,7 @@ function analyticsDashboardTabUrl($baseurl, $view, $environment){
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr@4.6.13/dist/flatpickr.min.css">
     <link rel="stylesheet" href="https://unpkg.com/tabulator-tables@6.5.0/dist/css/tabulator.min.css">
     <link rel="stylesheet" type="text/css" href="<?php echo analyticsDashboardEsc($baseurl); ?>admin-analytics-dashboard.css?v=2">
+    <link rel="stylesheet" type="text/css" href="<?php echo analyticsDashboardEsc($baseurl); ?>admin-analytics-dashboard-enhanced.css?v=1">
 </head>
 <body>
 <div class="admin-page-shell">

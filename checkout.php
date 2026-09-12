@@ -39,7 +39,7 @@ $storeBaseUrl = checkoutBaseUrl();
 
     <link rel="stylesheet" href="<?php echo checkoutEsc($storeBaseUrl); ?>store.css?v=2">
     <link rel="stylesheet" href="<?php echo checkoutEsc($storeBaseUrl); ?>store-footer.css?v=1">
-    <link rel="stylesheet" href="<?php echo checkoutEsc($storeBaseUrl); ?>checkout.css?v=1">
+    <link rel="stylesheet" href="<?php echo checkoutEsc($storeBaseUrl); ?>checkout.css?v=2">
 
     <script>
         window.CheckoutConfig = <?php
@@ -139,6 +139,16 @@ $storeBaseUrl = checkoutBaseUrl();
                         <span>Envío dentro de Ecuador</span>
                     </div>
 
+                    <div class="shipping-rule" aria-live="polite">
+                        <strong>HASTA 5 CDS POR LIBRA</strong>
+                        <p>
+                            El envío se cobra por libra facturable. Desde el 6.º CD se suma otra libra por cada nuevo grupo de hasta 5 CDs.
+                        </p>
+                        <span class="shipping-rule__current js-shipping-rule-current">
+                            Calculando el peso facturable de tu pedido...
+                        </span>
+                    </div>
+
                     <label class="shipping-option">
                         <input
                             type="radio"
@@ -149,7 +159,7 @@ $storeBaseUrl = checkoutBaseUrl();
                         <span class="shipping-option__content">
                             <span>
                                 <strong>Quito</strong>
-                                <small>Entrega dentro de Quito</small>
+                                <small>$<?php echo checkoutEsc(number_format((float)$servientregaquito, 2, ".", "")); ?> por lb · total según tu pedido</small>
                             </span>
                             <strong class="js-shipping-quito-price">$0.00</strong>
                         </span>
@@ -164,8 +174,8 @@ $storeBaseUrl = checkoutBaseUrl();
                         >
                         <span class="shipping-option__content">
                             <span>
-                                <strong>Fuera de Quito</strong>
-                                <small>Resto del Ecuador</small>
+                                <strong>Resto del Ecuador</strong>
+                                <small>$<?php echo checkoutEsc(number_format((float)$servientregaoutsidequito, 2, ".", "")); ?> por lb · total según tu pedido</small>
                             </span>
                             <strong class="js-shipping-outside-price">$0.00</strong>
                         </span>
@@ -196,12 +206,78 @@ $storeBaseUrl = checkoutBaseUrl();
                 </button>
 
                 <p class="checkout-final-note">
-                    Al continuar se abrirá WhatsApp con el detalle completo del pedido, envío y total.
+                    Al continuar se abrirá WhatsApp con el detalle completo del pedido, las libras facturables, el envío y el total.
                 </p>
             </aside>
         </div>
     </main>
 
     <?php require __DIR__ . '/store-footer.php'; ?>
+
+    <script>
+        (function () {
+            "use strict";
+
+            function updateShippingSummary() {
+                var node = document.querySelector(".js-shipping-rule-current");
+
+                if (!node) {
+                    return;
+                }
+
+                var storageKey =
+                    (window.CheckoutConfig && window.CheckoutConfig.storageKey) ||
+                    "reggaetonElRealCartV1";
+
+                var count = 0;
+
+                try {
+                    var raw = window.localStorage.getItem(storageKey);
+                    var parsed = raw ? JSON.parse(raw) : [];
+                    var ids = {};
+
+                    if (Array.isArray(parsed)) {
+                        parsed.forEach(function (item) {
+                            var id = Number.parseInt(item && item.id, 10);
+
+                            if (Number.isFinite(id) && id > 0) {
+                                ids[id] = true;
+                            }
+                        });
+                    }
+
+                    count = Object.keys(ids).length;
+                } catch (error) {
+                    count = 0;
+                }
+
+                if (count <= 0) {
+                    node.textContent =
+                        "La tarifa final se calculará automáticamente según la cantidad de CDs.";
+                    return;
+                }
+
+                var pounds = Math.max(1, Math.ceil(count / 5));
+
+                node.textContent =
+                    "Tu pedido: " +
+                    count +
+                    (count === 1 ? " CD" : " CDs") +
+                    " · " +
+                    pounds +
+                    (pounds === 1 ? " lb facturable" : " lb facturables");
+            }
+
+            if (document.readyState === "loading") {
+                document.addEventListener(
+                    "DOMContentLoaded",
+                    updateShippingSummary,
+                    { once: true }
+                );
+            } else {
+                updateShippingSummary();
+            }
+        })();
+    </script>
 </body>
 </html>

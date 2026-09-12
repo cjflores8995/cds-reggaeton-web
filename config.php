@@ -374,12 +374,20 @@ $cfg->imagewatermarkpaddingy = 6;
 $cfg->imagewatermarkbackgroundopacity = 55;
 $cfg->imagewatermarktextopacity = 95;
 
-//Base URL default
-$scheme = isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on'
+//Base URL default.
+// HTTP_HOST has already passed the central allowlist in dbcon.php.
+$scheme = securityIsHttpsRequest()
     ? "https"
     : "http";
 
-$hostName = $_SERVER['HTTP_HOST'] ?? 'localhost';
+$hostName = trim(
+    (string)($_SERVER['HTTP_HOST'] ?? 'localhost')
+);
+
+if($hostName === ''){
+    $hostName = 'localhost';
+}
+
 $scriptDirectory = str_replace('\\', '/', dirname($_SERVER['SCRIPT_NAME'] ?? '/'));
 $scriptDirectory = $scriptDirectory === '/'
     ? ''
@@ -562,6 +570,16 @@ if(!isset($cfg->baseurl) || trim((string)$cfg->baseurl) === ""){
     $cfg->baseurl = $detectedBaseUrl;
 }
 
+/*
+ * Security Fase 7: never trust a persisted legacy base URL blindly.
+ * New values are validated when saved in Admin, but existing databases may
+ * predate that protection. Invalid/external values fall back to the current
+ * validated request origin and application base path.
+ */
+if(!adminAuthBaseUrlIsAllowed((string)$cfg->baseurl)){
+    $cfg->baseurl = $detectedBaseUrl;
+}
+
 if(!isset($cfg->enablerecentpostsliders)){
     $cfg->enablerecentpostsliders = true;
 }
@@ -726,8 +744,6 @@ if(
     $secondcolor = "#f2f2f2";
 }
 
-//Creating pictures folder
-if(!file_exists(__DIR__ . DIRECTORY_SEPARATOR . "pictures")){
-    mkdir(__DIR__ . DIRECTORY_SEPARATOR . "pictures", 0777, true);
-}
+//Keep the public media directory on the hardened permission path.
+adminUploadEnsurePicturesDirectory();
 ?>

@@ -21,21 +21,10 @@ if(!function_exists("seoEsc")){
 
 if(!function_exists("seoRequestScheme")){
     function seoRequestScheme(){
-        $forwardedProto =
-            isset($_SERVER["HTTP_X_FORWARDED_PROTO"])
-                ? trim(
-                    explode(
-                        ",",
-                        (string)$_SERVER["HTTP_X_FORWARDED_PROTO"]
-                    )[0]
-                )
-                : "";
-
-        if(
-            $forwardedProto === "http" ||
-            $forwardedProto === "https"
-        ){
-            return $forwardedProto;
+        if(function_exists("securityIsHttpsRequest")){
+            return securityIsHttpsRequest()
+                ? "https"
+                : "http";
         }
 
         return
@@ -48,34 +37,43 @@ if(!function_exists("seoRequestScheme")){
 
 if(!function_exists("seoRequestHost")){
     function seoRequestHost(){
-        $forwardedHost =
-            isset($_SERVER["HTTP_X_FORWARDED_HOST"])
-                ? trim(
-                    explode(
-                        ",",
-                        (string)$_SERVER["HTTP_X_FORWARDED_HOST"]
-                    )[0]
-                )
-                : "";
+        $rawHost = trim(
+            (string)($_SERVER["HTTP_HOST"] ?? "")
+        );
 
-        $host =
-            $forwardedHost !== ""
-                ? $forwardedHost
-                : (
-                    isset($_SERVER["HTTP_HOST"])
-                        ? trim(
-                            (string)$_SERVER["HTTP_HOST"]
-                        )
-                        : ""
-                );
+        if(function_exists("securityRequestHostParts")){
+            $parts = securityRequestHostParts($rawHost);
+
+            if($parts !== null){
+                $host = (string)$parts["host"];
+
+                if(
+                    filter_var(
+                        $host,
+                        FILTER_VALIDATE_IP,
+                        FILTER_FLAG_IPV6
+                    ) !== false
+                ){
+                    $host = "[" . $host . "]";
+                }
+
+                if($parts["port"] !== null){
+                    $host .= ":" . (int)$parts["port"];
+                }
+
+                return $host;
+            }
+        }
 
         /*
-         * Evita inyectar caracteres inválidos desde Host / X-Forwarded-Host.
+         * Fallback for isolated helper use. Normal storefront requests reach
+         * this file only after config.php has validated HTTP_HOST centrally.
+         * X-Forwarded-Host is intentionally never trusted here.
          */
         $host = preg_replace(
             "/[^A-Za-z0-9.:\-\[\]]/",
             "",
-            $host
+            $rawHost
         );
 
         return $host !== ""

@@ -86,8 +86,29 @@
             document.head.appendChild(style);
         }
 
+        function loadFinalValidationAssets() {
+            if (!document.querySelector('link[data-analytics-final-validation="1"]')) {
+                var finalStyle = document.createElement("link");
+                finalStyle.rel = "stylesheet";
+                finalStyle.href = new URL("admin-analytics-final-validation.css?v=1", baseUrl).toString();
+                finalStyle.dataset.analyticsFinalValidation = "1";
+                document.head.appendChild(finalStyle);
+            }
+
+            if (document.querySelector('script[data-analytics-final-validation="1"]')) {
+                return;
+            }
+
+            var finalScript = document.createElement("script");
+            finalScript.src = new URL("admin-analytics-final-validation.js?v=1", baseUrl).toString();
+            finalScript.defer = true;
+            finalScript.dataset.analyticsFinalValidation = "1";
+            document.body.appendChild(finalScript);
+        }
+
         function loadPanelScript() {
             if (document.querySelector('script[data-analytics-resilience-panel="1"]')) {
+                loadFinalValidationAssets();
                 return;
             }
 
@@ -95,6 +116,8 @@
             panelScript.src = new URL("admin-analytics-resilience.js?v=1", baseUrl).toString();
             panelScript.defer = true;
             panelScript.dataset.analyticsResiliencePanel = "1";
+            panelScript.onload = loadFinalValidationAssets;
+            panelScript.onerror = loadFinalValidationAssets;
             document.body.appendChild(panelScript);
         }
 

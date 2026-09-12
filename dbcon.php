@@ -35,17 +35,103 @@ require_once $envFile;
 
 /*
  * Security Fase 6 finalization.
- * Existing local env.php files do not need these variables: localhost is
- * detected as development automatically. Production should explicitly define
- * appEnvironment=production and its allowed hosts.
+ * Never infer the environment from HTTP_HOST: that header is client-controlled.
+ * Local development is detected from the server address instead. Production
+ * fails closed unless an explicit/Azure-provided allowlist is available.
  */
+$resolvedAppEnvironment = isset($appEnvironment)
+    ? securityNormalizeEnvironment($appEnvironment)
+    : "";
+
+if($resolvedAppEnvironment === ""){
+    foreach(["APP_ENV", "APPLICATION_ENV", "PHP_ENV"] as $environmentName){
+        $resolvedAppEnvironment = securityNormalizeEnvironment(
+            getenv($environmentName)
+        );
+
+        if($resolvedAppEnvironment !== ""){
+            break;
+        }
+    }
+}
+
+if($resolvedAppEnvironment === ""){
+    $serverAddress = strtolower(
+        trim((string)($_SERVER["SERVER_ADDR"] ?? ""))
+    );
+
+    if(
+        PHP_SAPI === "cli" ||
+        $serverAddress === "127.0.0.1" ||
+        $serverAddress === "::1"
+    ){
+        $resolvedAppEnvironment = "development";
+    }else{
+        $resolvedAppEnvironment = "production";
+    }
+}
+
+$resolvedAllowedHosts = isset($allowedHosts)
+    ? $allowedHosts
+    : null;
+
+if($resolvedAllowedHosts === null){
+    $environmentAllowedHosts = trim(
+        (string)getenv("APP_ALLOWED_HOSTS")
+    );
+
+    if($environmentAllowedHosts !== ""){
+        $resolvedAllowedHosts = $environmentAllowedHosts;
+    }
+}
+
+if($resolvedAllowedHosts === null){
+    $azureHosts = [];
+
+    foreach(["WEBSITE_HOSTNAME", "WEBSITE_DEFAULT_HOSTNAME"] as $hostVariable){
+        $hostValue = trim((string)getenv($hostVariable));
+
+        if($hostValue !== ""){
+            $azureHosts[] = $hostValue;
+        }
+    }
+
+    if(count($azureHosts) > 0){
+        $resolvedAllowedHosts = $azureHosts;
+    }
+}
+
+if($resolvedAllowedHosts === null && $resolvedAppEnvironment === "development"){
+    $resolvedAllowedHosts = [
+        "localhost",
+        "127.0.0.1",
+        "::1"
+    ];
+}
+
+$normalizedAllowedHosts = securityNormalizeAllowedHosts(
+    $resolvedAllowedHosts
+);
+
+if(
+    $resolvedAppEnvironment === "production" &&
+    count($normalizedAllowedHosts) === 0
+){
+    error_log(
+        "[security][" .
+        securityRequestId() .
+        "] Production Host allowlist is not configured."
+    );
+
+    http_response_code(500);
+    header("Content-Type: text/plain; charset=UTF-8", true);
+    echo "Configuración de seguridad incompleta.";
+    exit;
+}
+
 securityBootstrap(
-    isset($appEnvironment)
-        ? $appEnvironment
-        : null,
-    isset($allowedHosts)
-        ? $allowedHosts
-        : null
+    $resolvedAppEnvironment,
+    $normalizedAllowedHosts
 );
 
 $requiredVariables = [

@@ -206,6 +206,6 @@ $adminActionsUrl = "admin-actions.php";
 <?php if($adminActiveSection === "image-settings"){ ?>
     <script
         defer
-        src="<?php echo htmlspecialchars($baseurl . "admin-watermark-branding.js?v=1", ENT_QUOTES, "UTF-8"); ?>"
+        src="<?php echo htmlspecialchars($baseurl . "admin-watermark-branding.js?v=2", ENT_QUOTES, "UTF-8"); ?>"
     ></script>
 <?php } ?>

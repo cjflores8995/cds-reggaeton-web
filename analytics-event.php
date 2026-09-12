@@ -21,6 +21,7 @@ if($contentLength > 16384){
 require_once __DIR__ . "/config.php";
 require_once __DIR__ . "/analytics-helper.php";
 require_once __DIR__ . "/analytics-phase2-helper.php";
+require_once __DIR__ . "/analytics-phase3-helper.php";
 
 if(!analyticsSameOriginAllowed()){
     http_response_code(403);
@@ -45,6 +46,7 @@ if($rawBody === false || strlen($rawBody) > 16384){
 $payload = json_decode($rawBody, true);
 $event = analyticsNormalizeEventPayload($payload);
 $event = analyticsPhase2PrepareEvent($connection, $event);
+$event = analyticsPhase3PrepareEvent($connection, $event);
 
 if(!$event){
     http_response_code(400);
@@ -66,7 +68,7 @@ if(!$session){
     exit;
 }
 
-$result = analyticsPhase2StoreEvent(
+$result = analyticsPhase3StoreEvent(
     $connection,
     $session,
     $classification,

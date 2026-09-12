@@ -182,3 +182,11 @@ if(isset($adminPassword)){
  */
 require_once __DIR__ . "/admin-cd-audit.php";
 adminCdAuditBootstrap();
+
+/*
+ * Admin/System Logs Fase 4: observe only confirmed product-image mutations.
+ * The image manager itself remains unchanged so role uniqueness/order and the
+ * main storefront cover behavior are not affected by auditing.
+ */
+require_once __DIR__ . "/admin-image-audit.php";
+adminImageAuditBootstrap();

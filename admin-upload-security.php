@@ -33,7 +33,42 @@ function adminUploadEnsurePicturesDirectory(){
     return is_dir($directory);
 }
 
-function adminUploadReject($message, $status = 400){
+function adminUploadReject($message, $status = 400, $context = []){
+    $context = is_array($context)
+        ? $context
+        : [];
+
+    $context["reason"] = (string)$message;
+    $context["status"] = (int)$status;
+    $context["script"] = basename(
+        (string)(
+            $_SERVER["SCRIPT_NAME"] ??
+            $_SERVER["PHP_SELF"] ??
+            ""
+        )
+    );
+
+    if(function_exists("adminSystemLogWrite")){
+        $actor = trim(
+            (string)(
+                $_SESSION["admin_username"] ??
+                $_SESSION["adminusername"] ??
+                ""
+            )
+        );
+
+        adminSystemLogWrite([
+            "actor_type" => $actor === "" ? "anonymous" : "admin",
+            "actor" => $actor,
+            "category" => "security",
+            "action" => "upload_rejected",
+            "outcome" => "rejected",
+            "severity" => "warning",
+            "detail" => "Administrative upload rejected by security validation.",
+            "context_data" => $context
+        ]);
+    }
+
     http_response_code((int)$status);
 
     if(!headers_sent()){
@@ -389,7 +424,13 @@ function adminUploadValidateIncomingAdminRequest(){
             adminUploadReject(
                 "Solo se permiten hasta " .
                 ADMIN_UPLOAD_MAX_FILES_PER_REQUEST .
-                " imágenes por carga."
+                " imágenes por carga.",
+                400,
+                [
+                    "upload_field" => "newmorepicture",
+                    "file_count" => $count,
+                    "max_files" => ADMIN_UPLOAD_MAX_FILES_PER_REQUEST
+                ]
             );
         }
 
@@ -399,7 +440,14 @@ function adminUploadValidateIncomingAdminRequest(){
             );
 
             if(!$result["ok"]){
-                adminUploadReject($result["message"]);
+                adminUploadReject(
+                    $result["message"],
+                    400,
+                    [
+                        "upload_field" => "newmorepicture",
+                        "file_index" => $index
+                    ]
+                );
             }
         }
     }
@@ -416,7 +464,11 @@ function adminUploadValidateIncomingAdminRequest(){
             if(!$result["ok"]){
                 adminUploadReject(
                     "Logo rechazado: " .
-                    $result["message"]
+                    $result["message"],
+                    400,
+                    [
+                        "upload_field" => "newlogo"
+                    ]
                 );
             }
         }
@@ -432,7 +484,11 @@ function adminUploadValidateIncomingAdminRequest(){
             if(!$result["ok"]){
                 adminUploadReject(
                     "Favicon rechazado: " .
-                    $result["message"]
+                    $result["message"],
+                    400,
+                    [
+                        "upload_field" => "favicon"
+                    ]
                 );
             }
         }

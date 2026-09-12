@@ -315,6 +315,34 @@ function adminAuthSessionIsValid(){
     return true;
 }
 
+function adminAuthSessionExpirationReason(){
+    if(
+        !isset($_SESSION["admin_authenticated_at"]) ||
+        !isset($_SESSION["admin_last_activity"])
+    ){
+        return "";
+    }
+
+    $authenticatedAt = (int)$_SESSION["admin_authenticated_at"];
+    $lastActivity = (int)$_SESSION["admin_last_activity"];
+
+    if($authenticatedAt <= 0 || $lastActivity <= 0){
+        return "";
+    }
+
+    $now = time();
+
+    if(($now - $authenticatedAt) > ADMIN_AUTH_ABSOLUTE_TIMEOUT){
+        return "absolute_timeout";
+    }
+
+    if(($now - $lastActivity) > ADMIN_AUTH_IDLE_TIMEOUT){
+        return "idle_timeout";
+    }
+
+    return "";
+}
+
 function adminAuthIsAuthenticated(){
     return
         session_status() === PHP_SESSION_ACTIVE &&
@@ -378,6 +406,28 @@ function adminAuthReject($script){
 }
 
 function adminAuthRejectCsrf($script){
+    $actor = trim(
+        (string)(
+            $_SESSION["admin_username"] ??
+            $_SESSION["adminusername"] ??
+            ""
+        )
+    );
+
+    adminSystemLogWrite([
+        "actor_type" => $actor === "" ? "anonymous" : "admin",
+        "actor" => $actor,
+        "category" => "security",
+        "action" => "csrf_rejected",
+        "outcome" => "rejected",
+        "severity" => "warning",
+        "detail" => "Administrative request rejected because CSRF validation failed.",
+        "context_data" => [
+            "script" => basename((string)$script),
+            "method" => (string)($_SERVER["REQUEST_METHOD"] ?? "")
+        ]
+    ]);
+
     http_response_code(403);
 
     if(
@@ -612,6 +662,18 @@ function adminAuthLoginThrottleClear(){
 
 function adminAuthRejectLoginThrottle($retryAfter){
     $retryAfter = max(1, (int)$retryAfter);
+
+    adminSystemLogWrite([
+        "actor_type" => "anonymous",
+        "category" => "auth",
+        "action" => "rate_limited",
+        "outcome" => "rejected",
+        "severity" => "warning",
+        "detail" => "Administrative login temporarily blocked by the rate limiter.",
+        "context_data" => [
+            "retry_after_seconds" => $retryAfter
+        ]
+    ]);
 
     http_response_code(429);
     header("Retry-After: " . $retryAfter);
@@ -892,6 +954,34 @@ function adminAuthBootstrap(){
     $sessionValid = adminAuthSessionIsValid();
 
     if(!$sessionValid){
+        $expirationReason = $hadAuthenticationState
+            ? adminAuthSessionExpirationReason()
+            : "";
+
+        if($expirationReason !== ""){
+            $actor = trim(
+                (string)(
+                    $_SESSION["admin_username"] ??
+                    $_SESSION["adminusername"] ??
+                    ""
+                )
+            );
+
+            adminSystemLogWrite([
+                "actor_type" => $actor === "" ? "anonymous" : "admin",
+                "actor" => $actor,
+                "category" => "auth",
+                "action" => "session_expired",
+                "outcome" => "rejected",
+                "severity" => "warning",
+                "detail" => "Administrative session expired.",
+                "context_data" => [
+                    "reason" => $expirationReason,
+                    "script" => $script
+                ]
+            ]);
+        }
+
         adminAuthClearSession(
             $hadAuthenticationState
         );

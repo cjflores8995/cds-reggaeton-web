@@ -324,6 +324,25 @@ function securityConfiguredAllowedHosts($explicitHosts = null){
     return [];
 }
 
+function securityAuditRejectedHost($reason, $host){
+    if(!function_exists("adminSystemLogWrite")){
+        return;
+    }
+
+    adminSystemLogWrite([
+        "actor_type" => "anonymous",
+        "category" => "security",
+        "action" => "invalid_host",
+        "outcome" => "rejected",
+        "severity" => "warning",
+        "detail" => "Request rejected by Host header validation.",
+        "context_data" => [
+            "reason" => (string)$reason,
+            "host" => (string)$host
+        ]
+    ]);
+}
+
 function securityValidateRequestHost($explicitHosts = null){
     if(PHP_SAPI === "cli"){
         return true;
@@ -332,6 +351,11 @@ function securityValidateRequestHost($explicitHosts = null){
     $requestHost = securityRequestHostParts();
 
     if($requestHost === null){
+        securityAuditRejectedHost(
+            "invalid_syntax",
+            $_SERVER["HTTP_HOST"] ?? ""
+        );
+
         http_response_code(400);
         header("Content-Type: text/plain; charset=UTF-8", true);
         echo "Solicitud no válida.";
@@ -348,6 +372,11 @@ function securityValidateRequestHost($explicitHosts = null){
             "[security][" .
             securityRequestId() .
             "] Rejected Host header: " .
+            $requestHost["host"]
+        );
+
+        securityAuditRejectedHost(
+            "not_allowed",
             $requestHost["host"]
         );
 

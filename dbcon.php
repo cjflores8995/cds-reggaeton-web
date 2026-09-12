@@ -16,7 +16,6 @@ securityBootstrapEarly();
  * legacy config fallback can create it with broader permissions.
  */
 adminUploadEnsurePicturesDirectory();
-adminUploadValidateIncomingAdminRequest();
 
 /*
  * Security Fase 4: public endpoint shape/size validation runs before the
@@ -32,6 +31,7 @@ if(!file_exists($envFile)){
 }
 
 require_once $envFile;
+require_once __DIR__ . "/admin-system-log.php";
 
 /*
  * Security Fase 6 finalization.
@@ -147,6 +147,13 @@ foreach($requiredVariables as $variable){
         die("Missing configuration variable: " . $variable);
     }
 }
+
+/*
+ * Admin/System Logs Fase 2: validate administrative uploads only after env.php
+ * and Host validation are available so rejected uploads can be audited without
+ * weakening the existing pre-database security boundary.
+ */
+adminUploadValidateIncomingAdminRequest();
 
 $adminUsername = isset($adminUsername)
     ? trim((string)$adminUsername)

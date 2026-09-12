@@ -20,6 +20,7 @@ if($contentLength > 16384){
 
 require_once __DIR__ . "/config.php";
 require_once __DIR__ . "/analytics-helper.php";
+require_once __DIR__ . "/analytics-phase2-helper.php";
 
 if(!analyticsSameOriginAllowed()){
     http_response_code(403);
@@ -43,6 +44,7 @@ if($rawBody === false || strlen($rawBody) > 16384){
 
 $payload = json_decode($rawBody, true);
 $event = analyticsNormalizeEventPayload($payload);
+$event = analyticsPhase2PrepareEvent($connection, $event);
 
 if(!$event){
     http_response_code(400);
@@ -64,45 +66,20 @@ if(!$session){
     exit;
 }
 
-$sessionId = (int)$session["id"];
-$storedEvent = false;
-$rateLimited = false;
-
-if($classification["traffic_type"] === "known_bot"){
-    analyticsTouchSession(
-        $connection,
-        $sessionId,
-        $classification,
-        1
-    );
-}else{
-    $rateLimited = analyticsRateLimitExceeded(
-        $connection,
-        $sessionId
-    );
-
-    if(!$rateLimited){
-        $storedEvent = analyticsInsertEvent(
-            $connection,
-            $sessionId,
-            $event
-        );
-
-        analyticsTouchSession(
-            $connection,
-            $sessionId,
-            $classification,
-            $storedEvent ? 1 : 0
-        );
-    }
-}
+$result = analyticsPhase2StoreEvent(
+    $connection,
+    $session,
+    $classification,
+    $event
+);
 
 http_response_code(200);
 echo json_encode(
     [
         "ok" => true,
-        "stored" => $storedEvent,
-        "rate_limited" => $rateLimited,
+        "stored" => (bool)$result["stored"],
+        "rate_limited" => (bool)$result["rate_limited"],
+        "duplicate_suppressed" => (bool)$result["duplicate_suppressed"],
         "environment" => analyticsCurrentEnvironment(),
         "traffic_type" => $classification["traffic_type"]
     ],

@@ -3,6 +3,7 @@ require_once __DIR__ . "/config.php";
 require_once __DIR__ . "/analytics-helper.php";
 require_once __DIR__ . "/analytics-phase2-helper.php";
 require_once __DIR__ . "/analytics-privacy.php";
+require_once __DIR__ . "/analytics-resilience.php";
 
 $artistSlug = trim((string)($_GET["slug"] ?? ""));
 $artistAvailable = false;
@@ -29,8 +30,7 @@ if($artistSlug !== ""){
 }
 
 if($artistSlug !== "" && !$artistAvailable){
-    analyticsPrivacySanitizeServerContext();
-    analyticsPhase2RecordServerEvent(
+    analyticsResilienceRecordServerEvent(
         $connection,
         "not_found",
         [

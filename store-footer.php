@@ -218,6 +218,6 @@ $footerHasSocials =
 <?php if(isset($storeBaseUrl) && trim((string)$storeBaseUrl) !== ""){ ?>
     <script
         defer
-        src="<?php echo storeFooterEsc($storeBaseUrl); ?>store-enhancements.js?v=1"
+        src="<?php echo storeFooterEsc($storeBaseUrl); ?>store-enhancements.js?v=2"
     ></script>
 <?php } ?>

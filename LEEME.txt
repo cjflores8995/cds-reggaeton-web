@@ -1,26 +1,30 @@
-ESTADO DE FOTOS EN LA PARTE INFERIOR IZQUIERDA
+INDICADOR CIRCULAR DE FOTOS
 
 REEMPLAZAR COMPLETOS:
 - admin.php
 - admin-modern.css
 
 CAMBIO:
-- Se elimina la cinta diagonal.
-- El estado de fotos ahora aparece en la parte inferior de la imagen,
-  con apariencia más parecida a tu boceto.
-- Se ve mucho más grande y legible.
+- Se elimina la banda inferior.
+- Ahora el estado de imágenes aparece en un círculo en la esquina superior derecha.
 
-TEXTOS:
-- SOLO PORTADA WEB
-- 1 FOTO REAL
-- 2 FOTOS REALES
-- 3 FOTOS REALES
-- etc.
+COMPORTAMIENTO:
+- Si solo existe la portada web:
+  círculo blanco con texto: WEB
+- Si existen fotos reales:
+  círculo negro con la cantidad:
+  1, 2, 3, 4, etc.
+
+ACLARACIÓN:
+- El número representa las fotos reales adicionales,
+  no cuenta la portada web.
+- El significado completo se muestra en el atributo title:
+  "1 foto real", "2 fotos reales", etc.
 
 SE MANTIENE:
 - Vendido
 - Oculto
 
 IMPORTANTE:
-- admin-modern.css ahora va con v=15.
+- admin-modern.css ahora va con v=16.
 - Después de reemplazar, haz Ctrl + F5.

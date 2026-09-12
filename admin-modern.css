@@ -815,41 +815,43 @@ tr:hover td{
 
 .admin-cd-card__photo-status{
     position:absolute;
-    right:0;
-    bottom:0;
-    left:0;
-    z-index:3;
+    top:12px;
+    right:12px;
+    z-index:4;
     display:flex;
     align-items:center;
-    min-height:56px;
-    padding:14px 16px;
-    border-top:3px solid #111111;
-    background:rgba(255,255,255,.97);
-    color:#111111;
-    font-size:12px;
+    justify-content:center;
+    width:54px;
+    height:54px;
+    border:3px solid #111111;
+    border-radius:999px;
+    box-shadow:0 3px 10px rgba(0,0,0,.10);
     font-weight:900;
-    letter-spacing:.10em;
-    line-height:1.1;
+    line-height:1;
+    text-align:center;
     text-transform:uppercase;
     pointer-events:none;
 }
 
 .admin-cd-card__photo-status.cover-only{
-    background:rgba(255,255,255,.97);
+    background:rgba(255,255,255,.96);
     color:#111111;
+    font-size:11px;
+    letter-spacing:.08em;
 }
 
 .admin-cd-card__photo-status.has-real-photos{
     background:#111111;
     color:#ffffff;
-    border-top-color:#111111;
+    font-size:24px;
+    letter-spacing:0;
 }
 
 .admin-cd-card__status{
     position:absolute;
     top:10px;
-    right:10px;
-    left:auto;
+    left:10px;
+    right:auto;
     z-index:4;
     padding:6px 8px;
     border:1px solid #111111;
@@ -1177,23 +1179,42 @@ tr:hover td{
 
 @media(max-width:700px){
     .admin-cd-card__photo-status{
-        min-height:50px;
-        padding:12px 14px;
-        font-size:11px;
+        top:10px;
+        right:10px;
+        width:50px;
+        height:50px;
+    }
+
+    .admin-cd-card__photo-status.cover-only{
+        font-size:10px;
+    }
+
+    .admin-cd-card__photo-status.has-real-photos{
+        font-size:22px;
     }
 }
 
 @media(max-width:520px){
     .admin-cd-card__photo-status{
-        min-height:44px;
-        padding:10px 12px;
-        font-size:10px;
-        letter-spacing:.08em;
+        top:8px;
+        right:8px;
+        width:44px;
+        height:44px;
+        border-width:2px;
+    }
+
+    .admin-cd-card__photo-status.cover-only{
+        font-size:9px;
+        letter-spacing:.06em;
+    }
+
+    .admin-cd-card__photo-status.has-real-photos{
+        font-size:18px;
     }
 
     .admin-cd-card__status{
         top:8px;
-        right:8px;
+        left:8px;
         padding:5px 6px;
         font-size:7px;
     }

@@ -175,17 +175,19 @@ function adminProductPhotoStatus($post){
     if($realPhotoCount <= 0){
         return [
             "class" => "cover-only",
-            "text" => "SOLO PORTADA WEB"
+            "text" => "WEB",
+            "title" => "Solo portada web"
         ];
     }
 
     return [
         "class" => "has-real-photos",
-        "text" =>
+        "text" => (string)$realPhotoCount,
+        "title" =>
             $realPhotoCount === 1
-                ? "1 FOTO REAL"
+                ? "1 foto real"
                 : $realPhotoCount .
-                    " FOTOS REALES"
+                    " fotos reales"
     ];
 }
 
@@ -286,7 +288,7 @@ if(!adminIsLoggedIn()){
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <title>Admin Panel | <?php echo adminEsc($websitetitle); ?></title>
-        <link rel="stylesheet" type="text/css" href="<?php echo $baseurl; ?>admin-modern.css?v=15">
+        <link rel="stylesheet" type="text/css" href="<?php echo $baseurl; ?>admin-modern.css?v=16">
     </head>
     <body class="admin-login-page">
         <div class="admin-login-card">
@@ -789,7 +791,7 @@ if(isset($_GET["editpost"])){
 
     <link rel="shortcut icon" href="<?php echo adminEsc($baseurl); ?>favicon.ico">
     <link rel="stylesheet" type="text/css" href="<?php echo adminEsc($baseurl); ?>assets/css/font-awesome.css">
-    <link rel="stylesheet" type="text/css" href="<?php echo adminEsc($baseurl); ?>admin-modern.css?v=15">
+    <link rel="stylesheet" type="text/css" href="<?php echo adminEsc($baseurl); ?>admin-modern.css?v=16">
 
     <script src="<?php echo adminEsc($baseurl); ?>jquery.min.js"></script>
     <script src="<?php echo adminEsc($baseurl); ?>jquery.form.js"></script>
@@ -1712,6 +1714,8 @@ if(isset($_GET["editpost"])){
 
                                         <span
                                             class="admin-cd-card__photo-status <?php echo adminEsc($photoStatus["class"]); ?>"
+                                            title="<?php echo adminEsc($photoStatus["title"]); ?>"
+                                            aria-label="<?php echo adminEsc($photoStatus["title"]); ?>"
                                         >
                                             <?php echo adminEsc($photoStatus["text"]); ?>
                                         </span>
@@ -1920,6 +1924,8 @@ if(isset($_GET["editpost"])){
 
                                         <span
                                             class="admin-cd-card__photo-status <?php echo adminEsc($photoStatus["class"]); ?>"
+                                            title="<?php echo adminEsc($photoStatus["title"]); ?>"
+                                            aria-label="<?php echo adminEsc($photoStatus["title"]); ?>"
                                         >
                                             <?php echo adminEsc($photoStatus["text"]); ?>
                                         </span>

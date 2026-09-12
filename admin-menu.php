@@ -202,3 +202,10 @@ $adminActionsUrl = "admin-actions.php";
         src="<?php echo htmlspecialchars($baseurl . "admin-settings-cleanup.js?v=1", ENT_QUOTES, "UTF-8"); ?>"
     ></script>
 <?php } ?>
+
+<?php if($adminActiveSection === "image-settings"){ ?>
+    <script
+        defer
+        src="<?php echo htmlspecialchars($baseurl . "admin-watermark-branding.js?v=1", ENT_QUOTES, "UTF-8"); ?>"
+    ></script>
+<?php } ?>

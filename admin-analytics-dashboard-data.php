@@ -4,6 +4,7 @@ session_start();
 require_once __DIR__ . "/config.php";
 require_once __DIR__ . "/analytics-helper.php";
 require_once __DIR__ . "/analytics-metrics.php";
+require_once __DIR__ . "/analytics-performance.php";
 require_once __DIR__ . "/analytics-dashboard.php";
 require_once __DIR__ . "/analytics-sessions.php";
 require_once __DIR__ . "/analytics-phase7-helper.php";
@@ -99,12 +100,12 @@ if($view === "summary"){
         )
     ];
 }else{
-    $data = [
-        "maintenance" => analyticsMaintenancePreview(
-            $connection,
-            $environment
-        )
-    ];
+    $maintenance = analyticsMaintenancePreview(
+        $connection,
+        $environment
+    );
+    $maintenance["performance"] = analyticsPerformanceHealth($connection);
+    $data = ["maintenance" => $maintenance];
 }
 
 echo json_encode(

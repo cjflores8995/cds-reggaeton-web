@@ -139,6 +139,10 @@ echo '<?xml version="1.0" encoding="UTF-8"?>';
         <loc><?php echo sitemapXml(seoUrl()); ?></loc>
     </url>
 
+    <url>
+        <loc><?php echo sitemapXml(seoUrl("como-comprar")); ?></loc>
+    </url>
+
     <?php foreach($artists as $artist){ ?>
         <url>
             <loc><?php echo sitemapXml(

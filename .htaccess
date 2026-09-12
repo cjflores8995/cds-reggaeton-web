@@ -17,6 +17,7 @@ RewriteRule ^pictures/.*\.(?:php[0-9]?|phtml|pht|phar|cgi|pl|py|sh)$ - [F,L,NC]
 # before delegating to the existing product/artist pages.
 RewriteRule ^cd/([a-z0-9-]+)/?$ product-route.php?slug=$1 [L,QSA,NC]
 RewriteRule ^artista/([a-z0-9-]+)/?$ artist-route.php?slug=$1 [L,QSA,NC]
+RewriteRule ^como-comprar/?$ como-comprar.php [L,QSA,NC]
 
 # Cleaner sitemap endpoint.
 RewriteRule ^sitemap\.xml$ sitemap.php [L,QSA,NC]

@@ -7,6 +7,18 @@ $dbuser = "root";
 $dbpassword = "";
 
 /*
+ * Runtime security environment.
+ * Local Laragon can keep development. Production must use production and list
+ * every public hostname that is allowed to serve the store.
+ */
+$appEnvironment = "development";
+$allowedHosts = [
+    "localhost",
+    "127.0.0.1",
+    "::1"
+];
+
+/*
  * Admin credentials must remain outside Git.
  * Generate the password hash locally with password_hash(..., PASSWORD_DEFAULT).
  */

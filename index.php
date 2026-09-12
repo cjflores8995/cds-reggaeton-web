@@ -395,7 +395,7 @@ $seoHomeJsonLd = [
             );
         ?>;
     </script>
-    <script defer src="<?php echo e($storeBaseUrl); ?>store.js?v=6"></script>
+    <script defer src="<?php echo e($storeBaseUrl); ?>store.js?v=7"></script>
 </head>
 <body>
     <div class="promo-strip">
@@ -417,8 +417,8 @@ $seoHomeJsonLd = [
 
             <nav class="main-nav" aria-label="Navegación principal">
                 <a href="#catalogo">TIENDA</a>
-                <a href="#artistas">ARTISTAS</a>
-                <a href="#info">INFO</a>
+                <a href="#coleccion">COLECCIÓN</a>
+                <a href="#nosotros">NOSOTROS</a>
             </nav>
 
             <div class="header-actions">
@@ -527,6 +527,8 @@ $seoHomeJsonLd = [
                         <h3>No hay CDs publicados todavía.</h3>
                     </div>
                 <?php else: ?>
+                    <div id="coleccion" aria-hidden="true"></div>
+
                     <div class="product-grid" id="productGrid" data-page-size="12">
                         <?php foreach ($products as $productIndex => $product): ?>
                             <?php
@@ -571,12 +573,6 @@ $seoHomeJsonLd = [
                                         decoding="async"
                                         <?php echo $productIndex === 0 ? 'fetchpriority="high"' : ''; ?>
                                     >
-
-                                    <?php if ($stock === 1): ?>
-                                        <span class="status-badge">ÚLTIMA COPIA</span>
-                                    <?php else: ?>
-                                        <span class="status-badge status-badge--sold">VENDIDO</span>
-                                    <?php endif; ?>
                                 </a>
 
                                 <div class="product-card__body">
@@ -658,7 +654,7 @@ $seoHomeJsonLd = [
             </div>
         </section>
 
-        <section class="seo-editorial">
+        <section class="seo-editorial" id="nosotros">
             <div class="page-shell seo-editorial__grid">
                 <div>
                     <p class="eyebrow">REGGAETÓN EN ECUADOR</p>

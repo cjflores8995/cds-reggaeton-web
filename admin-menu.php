@@ -168,7 +168,7 @@ $adminActionsUrl = "admin-actions.php";
 
 <script
     defer
-    src="admin-security.js?v=1"
+    src="admin-security.js?v=2"
 ></script>
 
 <?php if($adminActiveSection === "home"){ ?>
@@ -189,5 +189,12 @@ $adminActionsUrl = "admin-actions.php";
     <script
         defer
         src="<?php echo htmlspecialchars($baseurl . "admin-edit-product.js?v=2", ENT_QUOTES, "UTF-8"); ?>"
+    ></script>
+<?php } ?>
+
+<?php if($adminActiveSection === "settings"){ ?>
+    <script
+        defer
+        src="<?php echo htmlspecialchars($baseurl . "admin-settings-cleanup.js?v=1", ENT_QUOTES, "UTF-8"); ?>"
     ></script>
 <?php } ?>

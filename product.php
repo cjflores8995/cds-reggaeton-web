@@ -314,6 +314,7 @@ if ($relatedResult) {
 
                 <?php if (count($images) > 1): ?>
                     <div class="product-gallery__thumbs">
+                        <?php /* Miniaturas sin texto visible. Conservamos aria-label para accesibilidad. */ ?>
                         <?php foreach ($images as $index => $image): ?>
                             <button
                                 class="gallery-thumb js-gallery-thumb <?php echo $index === 0 ? 'is-active' : ''; ?>"
@@ -322,7 +323,6 @@ if ($relatedResult) {
                                 aria-label="Ver <?php echo e($image['label']); ?>"
                             >
                                 <img src="<?php echo e($image['url']); ?>" alt="">
-                                <span><?php echo e($image['label']); ?></span>
                             </button>
                         <?php endforeach; ?>
                     </div>

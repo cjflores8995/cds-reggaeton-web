@@ -78,3 +78,110 @@
         border-top: 1px solid var(--soft-line);
     }
 }
+
+/* =========================================================
+   BUSCADOR Y PRECIO — MEJORAS DE JERARQUÍA VISUAL
+   ========================================================= */
+
+.search-box {
+    position: relative;
+    min-width: 0;
+    padding: 0 20px;
+    background: #fafafa;
+    transition:
+        background .18s ease,
+        box-shadow .18s ease;
+}
+
+.search-box::after {
+    content: "";
+    position: absolute;
+    right: 20px;
+    bottom: 0;
+    left: 54px;
+    height: 2px;
+    background: var(--ink);
+    transform: scaleX(0);
+    transform-origin: left center;
+    transition: transform .2s ease;
+}
+
+.search-box:hover {
+    background: #f7f7f7;
+}
+
+.search-box:focus-within {
+    z-index: 2;
+    background: #ffffff;
+    box-shadow: inset 0 0 0 2px var(--ink);
+}
+
+.search-box:focus-within::after {
+    transform: scaleX(1);
+}
+
+.search-box svg {
+    width: 19px;
+    height: 19px;
+    margin-right: 16px;
+    stroke-width: 1.8;
+    transition: transform .18s ease;
+}
+
+.search-box:focus-within svg {
+    transform: scale(1.08);
+}
+
+.search-box input {
+    min-width: 0;
+    height: 60px;
+    font-size: 16px;
+    font-weight: 600;
+    letter-spacing: -.01em;
+}
+
+.search-box input::placeholder {
+    color: #7a7a7a;
+    font-weight: 500;
+}
+
+.product-card__footer {
+    margin-top: 20px;
+    padding-top: 16px;
+    border-top: 1px solid var(--soft-line);
+    align-items: center;
+}
+
+.product-card__price {
+    display: inline-flex;
+    flex-direction: column;
+    gap: 5px;
+    font-size: 31px;
+    line-height: .92;
+    font-weight: 900;
+    letter-spacing: -.055em;
+}
+
+.product-card__price::before {
+    content: "PRECIO";
+    color: var(--muted);
+    font-size: 8px;
+    line-height: 1;
+    font-weight: 800;
+    letter-spacing: .15em;
+}
+
+@media (max-width: 640px) {
+    .search-box {
+        padding-inline: 16px;
+    }
+
+    .search-box::after {
+        right: 16px;
+        left: 50px;
+    }
+
+    .product-card__price {
+        font-size: 28px;
+    }
+}

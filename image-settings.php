@@ -720,7 +720,7 @@ $currentStorage =
                 >
                     <div class="image-settings-preview__art">
                         REGGAETON
-                        <span>CD</span>
+                        <span>EL REAL</span>
                     </div>
 
                     <div

@@ -1,38 +1,56 @@
-FIX EDICIÓN AJAX + CONTENT OPCIONAL
+REBRANDING OFICIAL - REGGAETON EL REAL
 
-Problemas encontrados en develop:
-1. admin.php tenía un `});` extra al final del script.
-   Eso provocaba un error de sintaxis JavaScript y evitaba que ajaxForm()
-   interceptara el submit. Por eso el navegador terminaba en postupdate.php.
+Revisado contra la rama develop actual.
 
-2. postupdate.php validaba:
-      título vacío OR content vacío => error
-   pero Content no debe ser obligatorio.
+MARCA OFICIAL:
+Reggaeton El Real
 
 REEMPLAZAR COMPLETOS:
-- admin.php
-- postupdate.php
+- config.php
+- index.php
+- product.php
+- store-footer.php
+- checkout.php
+- store.js
+- checkout.js
+- admin-menu.php
+- image-settings.php
+- ordernotes.php
 
-QUÉ CAMBIA:
-- Guardar Editar CD vuelve a ser AJAX.
-- No navega a postupdate.php.
-- El resultado aparece en #product-update-status.
-- Content es opcional.
-- TinyMCE se sincroniza antes del submit.
-- Al cambiar imágenes, las nuevas rutas se sincronizan en el image manager
-  sin recargar la página.
-- Los file inputs se limpian después del guardado correcto para evitar
-  subir la misma imagen una segunda vez accidentalmente.
-- Si JavaScript llegara a fallar, postupdate.php redirige de regreso a
-  admin.php?editpost=ID en vez de dejar una página blanca.
-- Se acepta WebP también en el fallback legacy.
-- somefunctions.js sube a ?v=11 para romper caché.
+CAMBIOS:
+- REGGAETON LAB -> REGGAETON EL REAL
+- Hero "REGGAETON EN CD." -> "REGGAETON EL REAL."
+- Footer -> REGGAETON EL REAL
+- Checkout -> REGGAETON EL REAL
+- Alt del logo del admin -> Reggaeton El Real
+- Preview de Config. imágenes -> REGGAETON EL REAL
+- Prefijos técnicos de logs de checkout -> ReggaetonElReal
+- Clave localStorage del carrito:
+    reggaetonLabCartV1
+  pasa a:
+    reggaetonElRealCartV1
 
-PRUEBAS:
+BASE DE DATOS:
+config.php migra automáticamente websitetitle SOLO si contiene uno de estos
+nombres antiguos conocidos:
+- Toko Online WA
+- Tienda CDS Reggaeton
+- Reggaeton Lab
+- Reggaeton en CD
+- Reggaeton El CD
+
+Si Website Title contiene un valor personalizado distinto, no se sobrescribe.
+
+IMPORTANTE:
+El watermark "reggaeton.el.real" NO se cambia porque corresponde al handle
+oficial de TikTok y fue definido expresamente para las fotografías.
+
+EFECTO DEL NUEVO STORAGE KEY:
+El carrito local actual del navegador se reinicia una sola vez porque cambia
+la clave interna de localStorage. Es intencional durante el rebranding.
+
+DESPUÉS DE COPIAR:
 1. Ctrl + F5.
-2. Editar un CD SIN Content y guardar.
-   Esperado: "CD actualizado correctamente." dentro de la misma pantalla.
-3. Reemplazar una imagen y guardar.
-   Esperado: misma pantalla, preview actualizado y mensaje de éxito.
-4. Volver a guardar sin seleccionar otra imagen.
-   Esperado: no duplica/reprocesa la imagen anterior.
+2. Abre la portada, una ficha de producto y checkout.
+3. Verifica que la marca visible sea REGGAETON EL REAL.
+4. En Admin > Settings confirma que Website Title quedó Reggaeton El Real.

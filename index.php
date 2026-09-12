@@ -94,7 +94,7 @@ $availableCount = count($products);
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="description" content="Tienda de CDs físicos de reggaetón en Ecuador.">
+    <meta name="description" content="Reggaeton El Real · tienda de CDs físicos de reggaetón en Ecuador.">
     <title><?php echo e($websitetitle); ?></title>
 
     <link rel="stylesheet" href="<?php echo e($storeBaseUrl); ?>store.css?v=2">
@@ -109,13 +109,14 @@ $availableCount = count($products);
                     'baseUrl' => $storeBaseUrl,
                     'whatsapp' => $whatsappNumber,
                     'currency' => '$',
-                    'orderEndpoint' => $storeBaseUrl . 'ordernotes.php'
+                    'orderEndpoint' => $storeBaseUrl . 'ordernotes.php',
+                    'storageKey' => 'reggaetonElRealCartV1'
                 ],
                 JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES
             );
         ?>;
     </script>
-    <script defer src="<?php echo e($storeBaseUrl); ?>store.js?v=4"></script>
+    <script defer src="<?php echo e($storeBaseUrl); ?>store.js?v=5"></script>
 </head>
 <body>
     <div class="promo-strip">
@@ -132,7 +133,7 @@ $availableCount = count($products);
         <div class="page-shell site-header__main">
             <a class="brand" href="<?php echo e($storeBaseUrl); ?>" aria-label="Ir al inicio">
                 <span class="brand__mark">CD</span>
-                <span class="brand__text">REGGAETON LAB</span>
+                <span class="brand__text">REGGAETON EL REAL</span>
             </a>
 
             <nav class="main-nav" aria-label="Navegación principal">
@@ -161,7 +162,7 @@ $availableCount = count($products);
         <section class="hero page-shell">
             <div class="hero__content">
                 <p class="eyebrow">ARCHIVO FÍSICO / ECUADOR</p>
-                <h1>REGGAETON<br>EN CD.</h1>
+                <h1>REGGAETON<br>EL REAL.</h1>
                 <p class="hero__lead">
                     Ediciones físicas, una sola copia por título y fotografías reales del estado del producto.
                 </p>

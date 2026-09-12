@@ -2,7 +2,7 @@
     "use strict";
 
     var config = window.CheckoutConfig || {};
-    var storageKey = config.storageKey || "reggaetonLabCartV1";
+    var storageKey = config.storageKey || "reggaetonElRealCartV1";
     var cart = loadCart();
     var quote = null;
     var selectedShippingZone = "";

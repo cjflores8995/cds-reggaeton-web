@@ -125,7 +125,7 @@ $footerHasSocials =
 <footer class="site-footer">
     <div class="page-shell site-footer__grid site-footer__grid--social">
         <div class="site-footer__brand-column">
-            <div class="footer-brand">REGGAETON LAB</div>
+            <div class="footer-brand">REGGAETON EL REAL</div>
             <p>CDs físicos de reggaetón · Ecuador</p>
             <p>Una sola unidad por título.</p>
         </div>
@@ -209,7 +209,7 @@ $footerHasSocials =
 
             <p class="footer-copyright">
                 © <?php echo date("Y"); ?>
-                <?php echo storeFooterEsc($websitetitle ?? "Reggaeton Lab"); ?>
+                <?php echo storeFooterEsc($websitetitle ?? "Reggaeton El Real"); ?>
             </p>
         </div>
     </div>

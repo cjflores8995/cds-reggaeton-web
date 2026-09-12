@@ -2,7 +2,7 @@
     "use strict";
 
     var config = window.StoreConfig || {};
-    var storageKey = "reggaetonLabCartV1";
+    var storageKey = config.storageKey || "reggaetonElRealCartV1";
     var cart = loadCart();
 
     onReady(function () {

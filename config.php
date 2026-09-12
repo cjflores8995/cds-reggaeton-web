@@ -209,7 +209,7 @@ message VARCHAR(1300) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL
 
 //Default website config values
 $cfg = new \stdClass();
-$cfg->websitetitle = "Toko Online WA";
+$cfg->websitetitle = "Reggaeton El Real";
 $cfg->maincolor = "#f28433";
 $cfg->secondcolor = "#ffb98a";
 $cfg->about = "<p>Toko online simpel sederhana berbasis WhatsApp.</p>";
@@ -289,11 +289,97 @@ if(!$result || mysqli_num_rows($result) == 0){
 }
 
 /*
+ * Official brand migration.
+ * Only known legacy titles are replaced so a custom title is never overwritten.
+ */
+$officialWebsiteTitle = "Reggaeton El Real";
+$brandConfigChanged = false;
+
+$legacyWebsiteTitles = [
+    "toko online wa",
+    "tienda cds reggaeton",
+    "reggaeton lab",
+    "reggaeton en cd",
+    "reggaeton el cd"
+];
+
+$currentWebsiteTitle = isset($cfg->websitetitle)
+    ? trim((string)$cfg->websitetitle)
+    : "";
+
+$currentWebsiteTitleNormalized = strtolower(
+    preg_replace(
+        "/\s+/",
+        " ",
+        $currentWebsiteTitle
+    )
+);
+
+if(
+    $currentWebsiteTitle === "" ||
+    in_array(
+        $currentWebsiteTitleNormalized,
+        $legacyWebsiteTitles,
+        true
+    )
+){
+    $cfg->websitetitle = $officialWebsiteTitle;
+    $brandConfigChanged = true;
+}
+
+/*
+ * If About contains an old public brand name, migrate only that wording.
+ * Social handles such as reggaeton.el.real are intentionally untouched.
+ */
+if(isset($cfg->about) && is_string($cfg->about)){
+    $migratedAbout = str_ireplace(
+        [
+            "REGGAETON LAB",
+            "Reggaeton Lab",
+            "REGGAETON EN CD",
+            "Reggaeton en CD",
+            "REGGAETON EL CD",
+            "Reggaeton El CD",
+            "Tienda CDS Reggaeton"
+        ],
+        "Reggaeton El Real",
+        $cfg->about
+    );
+
+    if($migratedAbout !== $cfg->about){
+        $cfg->about = $migratedAbout;
+        $brandConfigChanged = true;
+    }
+}
+
+if($brandConfigChanged){
+    $brandJson = json_encode(
+        $cfg,
+        JSON_UNESCAPED_UNICODE |
+        JSON_UNESCAPED_SLASHES
+    );
+
+    if($brandJson !== false){
+        $escapedBrandJson = mysqli_real_escape_string(
+            $connection,
+            $brandJson
+        );
+
+        mysqli_query(
+            $connection,
+            "UPDATE $tableconfig " .
+            "SET value = '$escapedBrandJson' " .
+            "WHERE config = 'cfg'"
+        );
+    }
+}
+
+/*
  * Backward-compatible defaults for settings added after the original template.
  * Existing installations receive these values immediately without requiring a DB migration.
  */
 if(!isset($cfg->websitetitle)){
-    $cfg->websitetitle = "Tienda CDS Reggaeton";
+    $cfg->websitetitle = "Reggaeton El Real";
 }
 
 if(!isset($cfg->maincolor)){

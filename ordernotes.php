@@ -1,6 +1,6 @@
 <?php
 /*
- * Tienda CDS Reggaeton
+ * Reggaeton El Real
  * Endpoint para cotización, checkout y redirección a WhatsApp.
  *
  * Importante:
@@ -47,7 +47,7 @@ function orderJsonResponse($payload, $statusCode = 200){
 
 set_exception_handler(function($exception){
     error_log(
-        "TiendaCDsReggaeton checkout exception: " .
+        "ReggaetonElReal checkout exception: " .
         $exception->getMessage() .
         " in " .
         $exception->getFile() .
@@ -79,7 +79,7 @@ function orderColumnExists($connection, $table, $column){
         return $result && mysqli_num_rows($result) > 0;
     }catch(Throwable $exception){
         error_log(
-            "TiendaCDsReggaeton column check error: " .
+            "ReggaetonElReal column check error: " .
             $exception->getMessage()
         );
 
@@ -182,7 +182,7 @@ function orderSaveMessage($connection, $tablemessages, $message){
 
         if(!$saved){
             error_log(
-                "TiendaCDsReggaeton order log failed: " .
+                "ReggaetonElReal order log failed: " .
                 mysqli_error($connection)
             );
 
@@ -192,7 +192,7 @@ function orderSaveMessage($connection, $tablemessages, $message){
         return true;
     }catch(Throwable $exception){
         error_log(
-            "TiendaCDsReggaeton order log exception: " .
+            "ReggaetonElReal order log exception: " .
             $exception->getMessage()
         );
 
@@ -311,7 +311,7 @@ function orderLoadProducts(
         );
     }catch(Throwable $exception){
         error_log(
-            "TiendaCDsReggaeton product query exception: " .
+            "ReggaetonElReal product query exception: " .
             $exception->getMessage()
         );
 

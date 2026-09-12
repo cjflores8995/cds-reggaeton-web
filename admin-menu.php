@@ -66,7 +66,7 @@ function adminMenuClass($section, $current){
         <a href="<?php echo htmlspecialchars($baseurl . "admin.php", ENT_QUOTES, "UTF-8"); ?>">
             <img
                 src="<?php echo htmlspecialchars($currentlogo, ENT_QUOTES, "UTF-8"); ?>"
-                alt="Tienda CDS Reggaeton"
+                alt="Reggaeton El Real"
             >
         </a>
     </div>

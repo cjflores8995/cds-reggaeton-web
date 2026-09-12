@@ -45,13 +45,13 @@ $storeBaseUrl = checkoutBaseUrl();
                 [
                     'baseUrl' => $storeBaseUrl,
                     'orderEndpoint' => $storeBaseUrl . 'ordernotes.php',
-                    'storageKey' => 'reggaetonLabCartV1'
+                    'storageKey' => 'reggaetonElRealCartV1'
                 ],
                 JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES
             );
         ?>;
     </script>
-    <script defer src="<?php echo checkoutEsc($storeBaseUrl); ?>checkout.js?v=1"></script>
+    <script defer src="<?php echo checkoutEsc($storeBaseUrl); ?>checkout.js?v=2"></script>
 </head>
 <body>
     <div class="promo-strip">
@@ -68,7 +68,7 @@ $storeBaseUrl = checkoutBaseUrl();
         <div class="page-shell checkout-header__main">
             <a class="brand" href="<?php echo checkoutEsc($storeBaseUrl); ?>" aria-label="Volver a la tienda">
                 <span class="brand__mark">CD</span>
-                <span class="brand__text">REGGAETON LAB</span>
+                <span class="brand__text">REGGAETON EL REAL</span>
             </a>
 
             <a class="checkout-back-link" href="<?php echo checkoutEsc($storeBaseUrl); ?>">

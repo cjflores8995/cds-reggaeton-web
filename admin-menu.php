@@ -170,6 +170,10 @@ $adminActionsUrl = "admin-actions.php";
     defer
     src="admin-security.js?v=2"
 ></script>
+<script
+    defer
+    src="<?php echo htmlspecialchars($baseurl . "admin-branding.js?v=1", ENT_QUOTES, "UTF-8"); ?>"
+></script>
 
 <?php if($adminActiveSection === "home"){ ?>
     <script

@@ -1,5 +1,14 @@
 <?php
 
+require_once __DIR__ . "/admin-upload-security.php";
+
+/*
+ * Security Fase 3: /pictures is created with safe permissions before the
+ * legacy config fallback can create it with broader permissions.
+ */
+adminUploadEnsurePicturesDirectory();
+adminUploadValidateIncomingAdminRequest();
+
 $envFile = __DIR__ . "/env.php";
 
 if(!file_exists($envFile)){

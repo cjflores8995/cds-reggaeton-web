@@ -1,10 +1,36 @@
-# REGGAETON EL REAL - Azure App Service Linux / PHP routing
+# REGGAETON EL REAL - Azure App Service Linux / PHP routing and hardening
 #
 # Azure App Service PHP on Linux uses NGINX, so .htaccess is NOT used there.
-# When we deploy, these routes must be merged into the active NGINX
-# server{} configuration before reloading NGINX.
+# When we deploy, these rules must be merged into the active NGINX server{}
+# configuration before reloading NGINX.
 #
-# Do NOT activate this file locally.
+# IMPORTANT: keep the security regex locations above the generic PHP handler.
+# Do NOT activate this example file locally.
+
+# Runtime secrets, source helpers and database migrations are never public.
+location ~* ^/(?:env(?:\.[^/]+)?\.php|dbcon\.php|config\.php|admin-auth\.php|admin-upload-security\.php)$ {
+    return 404;
+}
+
+location ~* ^/(?:database|\.git)(?:/|$) {
+    return 404;
+}
+
+# Hide dot-files except ACME /.well-known challenges.
+location ~ (^|/)\.(?!well-known(?:/|$)) {
+    return 404;
+}
+
+# Common backup/source artifacts must not be downloadable.
+location ~* \.(?:sql|log|bak|backup|old|orig|save|swp|zip|tar|gz|7z)$ {
+    return 404;
+}
+
+# /pictures contains public media only. Never pass executable-looking files
+# from this directory to PHP/CGI or another interpreter.
+location ~* ^/pictures/.*\.(?:php[0-9]?|phtml|pht|phar|cgi|pl|py|sh)$ {
+    return 404;
+}
 
 location ~ ^/cd/([a-z0-9-]+)/?$ {
     rewrite ^/cd/([a-z0-9-]+)/?$ /product.php?slug=$1 last;

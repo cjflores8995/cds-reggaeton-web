@@ -1,6 +1,16 @@
-Options -MultiViews
+Options -MultiViews -Indexes
 
 RewriteEngine On
+
+# Security Fase 3 - deny direct web access to runtime/source files and
+# common backup artifacts. Server-side require/include continues to work.
+RewriteRule ^(?:env(?:\.[^/]+)?\.php|dbcon\.php|config\.php|admin-auth\.php|admin-upload-security\.php)$ - [F,L,NC]
+RewriteRule ^(?:database|\.git)(?:/|$) - [F,L,NC]
+RewriteRule (^|/)\.(?!well-known(?:/|$)) - [F,L]
+RewriteRule \.(?:sql|log|bak|backup|old|orig|save|swp|zip|tar|gz|7z)$ - [F,L,NC]
+
+# Uploaded files are public media, never executable server-side code.
+RewriteRule ^pictures/.*\.(?:php[0-9]?|phtml|pht|phar|cgi|pl|py|sh)$ - [F,L,NC]
 
 # Public clean URLs. The route wrappers add lightweight analytics for 404s
 # before delegating to the existing product/artist pages.

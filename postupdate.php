@@ -75,6 +75,68 @@ function postUpdateRespond(
     exit;
 }
 
+function postUpdateNormalizePlainText($value){
+    $value = str_replace(
+        ["\r\n", "\r"],
+        "\n",
+        (string)$value
+    );
+
+    /*
+     * TinyMCE 4 podía guardar párrafos y saltos HTML aunque el storefront
+     * actual trate Content exclusivamente como texto plano.
+     */
+    $value = preg_replace(
+        "/<\\s*br\\s*\\/?\\s*>/i",
+        "\n",
+        $value
+    );
+
+    $value = preg_replace(
+        "/<\\s*\\/\\s*(p|div|li|h[1-6])\\s*>/i",
+        "\n",
+        $value
+    );
+
+    $value = html_entity_decode(
+        $value,
+        ENT_QUOTES | ENT_HTML5,
+        "UTF-8"
+    );
+
+    $value = strip_tags($value);
+
+    /*
+     * &nbsp; se convierte en U+00A0 al decodificar entidades. En líneas
+     * vacías de TinyMCE debe comportarse como espacio normal y no imprimirse.
+     */
+    $value = str_replace(
+        "\xC2\xA0",
+        " ",
+        $value
+    );
+
+    $value = preg_replace(
+        "/[ \\t]+\\n/u",
+        "\n",
+        $value
+    );
+
+    $value = preg_replace(
+        "/\\n[ \\t]+/u",
+        "\n",
+        $value
+    );
+
+    $value = preg_replace(
+        "/\\n{3,}/",
+        "\n\n",
+        $value
+    );
+
+    return trim((string)$value);
+}
+
 if(
     !isset($_POST["editposttitle"]) ||
     !isset($_POST["id"])
@@ -120,14 +182,15 @@ $discountprice = mysqli_real_escape_string(
 );
 
 /*
- * Content es opcional.
- * La columna de base de datos es NOT NULL, por lo que guardamos
- * cadena vacía cuando el usuario no escribe una descripción.
+ * Content es opcional y el storefront moderno lo trata como texto plano.
+ * También limpiamos aquí residuos de TinyMCE 4 para que la seguridad no
+ * dependa de la caché o del JavaScript que tenga cargado el navegador.
  */
-$contentRaw =
+$contentRaw = postUpdateNormalizePlainText(
     isset($_POST["editpostcontent"])
         ? (string)$_POST["editpostcontent"]
-        : "";
+        : ""
+);
 
 $content = mysqli_real_escape_string(
     $connection,

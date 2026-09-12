@@ -12,6 +12,26 @@ function productDataResponse($payload, $statusCode = 200){
     exit;
 }
 
+function productDataImageCount($picture, $moreImages){
+    $count = trim((string)$picture) !== ""
+        ? 1
+        : 0;
+
+    $moreImages = trim((string)$moreImages);
+
+    if($moreImages === ""){
+        return $count;
+    }
+
+    foreach(explode(",", $moreImages) as $imagePath){
+        if(trim((string)$imagePath) !== ""){
+            $count++;
+        }
+    }
+
+    return $count;
+}
+
 if(
     !isset($_SESSION["adminusername"]) ||
     !isset($_SESSION["adminpassword"]) ||
@@ -22,6 +42,59 @@ if(
         "ok" => false,
         "message" => "No autorizado."
     ], 403);
+}
+
+if((int)($_GET["catalog"] ?? 0) === 1){
+    $catalog = [];
+
+    $catalogResult = mysqli_query(
+        $connection,
+        "SELECT " .
+            "p.id, p.artist, p.album, p.title, p.release_year, " .
+            "p.normalprice, p.stock, p.picture, p.moreimages, " .
+            "a.name AS artist_name " .
+        "FROM $tableposts p " .
+        "LEFT JOIN $tableartists a ON a.id = p.artistid " .
+        "ORDER BY p.id DESC"
+    );
+
+    if(!$catalogResult){
+        productDataResponse([
+            "ok" => false,
+            "message" => "No se pudo cargar el catálogo administrativo."
+        ], 500);
+    }
+
+    while($row = mysqli_fetch_assoc($catalogResult)){
+        $artistName = trim(
+            (string)($row["artist_name"] ?? "")
+        );
+
+        if($artistName === ""){
+            $artistName = trim(
+                (string)($row["artist"] ?? "")
+            );
+        }
+
+        $catalog[] = [
+            "id" => (int)$row["id"],
+            "artist" => $artistName,
+            "album" => trim((string)($row["album"] ?? "")),
+            "title" => trim((string)($row["title"] ?? "")),
+            "year" => (int)($row["release_year"] ?? 0),
+            "price" => (float)($row["normalprice"] ?? 0),
+            "stock" => (int)($row["stock"] ?? 0),
+            "image_count" => productDataImageCount(
+                $row["picture"] ?? "",
+                $row["moreimages"] ?? ""
+            )
+        ];
+    }
+
+    productDataResponse([
+        "ok" => true,
+        "catalog" => $catalog
+    ]);
 }
 
 $artists = [];

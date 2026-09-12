@@ -121,6 +121,16 @@ $footerHasSocials =
     $footerYouTube !== "" ||
     $footerInstagram !== "" ||
     $footerFacebook !== "";
+
+$footerAssetBaseUrl = "";
+
+if(isset($storeBaseUrl) && trim((string)$storeBaseUrl) !== ""){
+    $footerAssetBaseUrl = trim((string)$storeBaseUrl);
+}else if(function_exists("seoUrl")){
+    $footerAssetBaseUrl = seoUrl();
+}else if(isset($baseurl)){
+    $footerAssetBaseUrl = trim((string)$baseurl);
+}
 ?>
 <footer class="site-footer">
     <div class="page-shell site-footer__grid site-footer__grid--social">
@@ -219,5 +229,17 @@ $footerHasSocials =
     <script
         defer
         src="<?php echo storeFooterEsc($storeBaseUrl); ?>store-enhancements.js?v=2"
+    ></script>
+<?php } ?>
+
+<?php if($footerAssetBaseUrl !== ""){ ?>
+    <script
+        defer
+        src="<?php echo storeFooterEsc($footerAssetBaseUrl); ?>analytics-client.js?v=1"
+        data-endpoint="<?php echo storeFooterEsc($footerAssetBaseUrl); ?>analytics-event.php"
+    ></script>
+    <script
+        defer
+        src="<?php echo storeFooterEsc($footerAssetBaseUrl); ?>store-analytics.js?v=1"
     ></script>
 <?php } ?>

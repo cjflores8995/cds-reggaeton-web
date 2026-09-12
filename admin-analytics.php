@@ -58,7 +58,10 @@ function analyticsDashboardTabUrl($baseurl, $view, $environment){
     <link rel="shortcut icon" href="<?php echo analyticsDashboardEsc($baseurl); ?>favicon.ico">
     <link rel="stylesheet" type="text/css" href="<?php echo analyticsDashboardEsc($baseurl); ?>assets/css/font-awesome.css">
     <link rel="stylesheet" type="text/css" href="<?php echo analyticsDashboardEsc($baseurl); ?>admin-modern.css?v=16">
-    <link rel="stylesheet" type="text/css" href="<?php echo analyticsDashboardEsc($baseurl); ?>admin-analytics-dashboard.css?v=1">
+
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr@4.6.13/dist/flatpickr.min.css">
+    <link rel="stylesheet" href="https://unpkg.com/tabulator-tables@6.5.0/dist/css/tabulator.min.css">
+    <link rel="stylesheet" type="text/css" href="<?php echo analyticsDashboardEsc($baseurl); ?>admin-analytics-dashboard.css?v=2">
 </head>
 <body>
 <div class="admin-page-shell">
@@ -117,8 +120,14 @@ function analyticsDashboardTabUrl($baseurl, $view, $environment){
             </div>
 
             <div class="analytics-dashboard-custom" data-custom-range hidden>
-                <label>Desde<input id="analyticsDashboardFrom" type="date"></label>
-                <label>Hasta<input id="analyticsDashboardTo" type="date"></label>
+                <label>
+                    Desde
+                    <input id="analyticsDashboardFrom" type="date" autocomplete="off">
+                </label>
+                <label>
+                    Hasta
+                    <input id="analyticsDashboardTo" type="date" autocomplete="off">
+                </label>
                 <button type="button" data-apply-range>Aplicar</button>
             </div>
 
@@ -128,6 +137,10 @@ function analyticsDashboardTabUrl($baseurl, $view, $environment){
     </main>
 </div>
 
-<script defer src="<?php echo analyticsDashboardEsc($baseurl); ?>admin-analytics-dashboard.js?v=1"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/chart.js@4.5.1/dist/chart.umd.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/flatpickr@4.6.13/dist/flatpickr.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/flatpickr@4.6.13/dist/l10n/es.js"></script>
+<script defer src="https://unpkg.com/tabulator-tables@6.5.0/dist/js/tabulator.min.js"></script>
+<script defer src="<?php echo analyticsDashboardEsc($baseurl); ?>admin-analytics-dashboard.js?v=2"></script>
 </body>
 </html>

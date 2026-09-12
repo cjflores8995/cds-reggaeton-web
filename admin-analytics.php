@@ -30,7 +30,7 @@ if(!in_array($selectedEnvironment, ["development", "production"], true)){
 
 $selectedView = strtolower(trim((string)($_GET["view"] ?? "summary")));
 
-if(!in_array($selectedView, ["summary", "products", "searches", "activity", "sessions"], true)){
+if(!in_array($selectedView, ["summary", "products", "searches", "activity", "sessions", "diagnostics"], true)){
     $selectedView = "summary";
 }
 
@@ -66,6 +66,9 @@ function analyticsDashboardTabUrl($baseurl, $view, $environment){
     <link rel="stylesheet" type="text/css" href="<?php echo analyticsDashboardEsc($baseurl); ?>admin-analytics-dashboard-enhanced.css?v=1">
     <link rel="stylesheet" type="text/css" href="<?php echo analyticsDashboardEsc($baseurl); ?>admin-analytics-dashboard-vibrant.css?v=1">
     <link rel="stylesheet" type="text/css" href="<?php echo analyticsDashboardEsc($baseurl); ?>admin-analytics-sessions.css?v=1">
+    <?php if($selectedView === "diagnostics"){ ?>
+        <link rel="stylesheet" type="text/css" href="<?php echo analyticsDashboardEsc($baseurl); ?>admin-analytics-diagnostics.css?v=1">
+    <?php } ?>
 </head>
 <body>
 <div class="admin-page-shell">
@@ -101,6 +104,7 @@ function analyticsDashboardTabUrl($baseurl, $view, $environment){
             <a href="<?php echo analyticsDashboardEsc(analyticsDashboardTabUrl($baseurl, "searches", $selectedEnvironment)); ?>" <?php echo $selectedView === "searches" ? 'class="is-active"' : ""; ?>>Búsquedas</a>
             <a href="<?php echo analyticsDashboardEsc(analyticsDashboardTabUrl($baseurl, "activity", $selectedEnvironment)); ?>" <?php echo $selectedView === "activity" ? 'class="is-active"' : ""; ?>>Actividad</a>
             <a href="<?php echo analyticsDashboardEsc(analyticsDashboardTabUrl($baseurl, "sessions", $selectedEnvironment)); ?>" <?php echo $selectedView === "sessions" ? 'class="is-active"' : ""; ?>>Sesiones</a>
+            <a href="<?php echo analyticsDashboardEsc(analyticsDashboardTabUrl($baseurl, "diagnostics", $selectedEnvironment)); ?>" <?php echo $selectedView === "diagnostics" ? 'class="is-active"' : ""; ?>>Diagnóstico</a>
         </nav>
 
         <section
@@ -149,6 +153,8 @@ function analyticsDashboardTabUrl($baseurl, $view, $environment){
 <script defer src="https://unpkg.com/tabulator-tables@6.5.0/dist/js/tabulator.min.js"></script>
 <?php if($selectedView === "sessions"){ ?>
     <script defer src="<?php echo analyticsDashboardEsc($baseurl); ?>admin-analytics-sessions.js?v=1"></script>
+<?php }else if($selectedView === "diagnostics"){ ?>
+    <script defer src="<?php echo analyticsDashboardEsc($baseurl); ?>admin-analytics-diagnostics.js?v=1"></script>
 <?php }else{ ?>
     <script defer src="<?php echo analyticsDashboardEsc($baseurl); ?>admin-analytics-dashboard.js?v=2"></script>
     <script defer src="<?php echo analyticsDashboardEsc($baseurl); ?>admin-analytics-dashboard-vibrant.js?v=1"></script>

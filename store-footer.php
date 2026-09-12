@@ -240,6 +240,6 @@ if(isset($storeBaseUrl) && trim((string)$storeBaseUrl) !== ""){
     ></script>
     <script
         defer
-        src="<?php echo storeFooterEsc($footerAssetBaseUrl); ?>store-analytics.js?v=1"
+        src="<?php echo storeFooterEsc($footerAssetBaseUrl); ?>store-analytics.js?v=2"
     ></script>
 <?php } ?>

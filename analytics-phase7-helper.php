@@ -11,61 +11,70 @@ if(!function_exists("analyticsPhase7DiagnosticColumns")){
     }
 }
 
-if(!function_exists("analyticsPhase7ColumnExists")){
-    function analyticsPhase7ColumnExists($connection, $column){
+if(!function_exists("analyticsPhase7ExistingColumns")){
+    function analyticsPhase7ExistingColumns($connection){
         $tables = analyticsTables();
-        $column = preg_replace('/[^a-z0-9_]/i', '', (string)$column);
+        $columns = [];
+        $result = mysqli_query($connection, "SHOW COLUMNS FROM " . $tables["sessions"]);
 
-        if($column === ""){
-            return false;
+        while($result && ($row = mysqli_fetch_assoc($result))){
+            $field = (string)($row["Field"] ?? "");
+            if($field !== ""){
+                $columns[$field] = true;
+            }
         }
-
-        $escaped = mysqli_real_escape_string($connection, $column);
-        $result = mysqli_query(
-            $connection,
-            "SHOW COLUMNS FROM " . $tables["sessions"] . " LIKE '" . $escaped . "'"
-        );
-        $exists = $result && mysqli_num_rows($result) > 0;
 
         if($result){
             mysqli_free_result($result);
         }
 
-        return $exists;
+        return $columns;
     }
 }
 
 if(!function_exists("analyticsPhase7EnsureDiagnostics")){
     function analyticsPhase7EnsureDiagnostics($connection){
+        static $resolved = null;
+
+        if($resolved !== null){
+            return $resolved;
+        }
+
         $tables = analyticsTables();
+        $columns = analyticsPhase7ExistingColumns($connection);
         $available = true;
 
         foreach(analyticsPhase7DiagnosticColumns() as $column => $definition){
-            if(analyticsPhase7ColumnExists($connection, $column)){
+            if(isset($columns[$column])){
                 continue;
             }
 
             $sql = "ALTER TABLE " . $tables["sessions"] . " ADD COLUMN `" . $column . "` " . $definition;
 
-            if(!mysqli_query($connection, $sql)){
+            if(mysqli_query($connection, $sql)){
+                $columns[$column] = true;
+            }else{
                 $available = false;
             }
         }
 
         foreach(array_keys(analyticsPhase7DiagnosticColumns()) as $column){
-            if(!analyticsPhase7ColumnExists($connection, $column)){
+            if(!isset($columns[$column])){
                 $available = false;
             }
         }
 
+        $resolved = $available;
         return $available;
     }
 }
 
 if(!function_exists("analyticsPhase7CountersAvailable")){
     function analyticsPhase7CountersAvailable($connection){
+        $columns = analyticsPhase7ExistingColumns($connection);
+
         foreach(array_keys(analyticsPhase7DiagnosticColumns()) as $column){
-            if(!analyticsPhase7ColumnExists($connection, $column)){
+            if(!isset($columns[$column])){
                 return false;
             }
         }
@@ -80,10 +89,6 @@ if(!function_exists("analyticsPhase7IncrementCounter")){
         $allowed = analyticsPhase7DiagnosticColumns();
 
         if($sessionId <= 0 || !isset($allowed[$counter])){
-            return false;
-        }
-
-        if(!analyticsPhase7ColumnExists($connection, $counter)){
             return false;
         }
 

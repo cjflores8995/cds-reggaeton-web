@@ -174,3 +174,11 @@ $analyticsHashSecret = isset($analyticsHashSecret)
 if(isset($adminPassword)){
     unset($adminPassword);
 }
+
+/*
+ * Admin/System Logs Fase 3: capture the pre-mutation CD state before config.php
+ * opens the application's normal database connection. The observer writes only
+ * after it confirms that the underlying row actually changed.
+ */
+require_once __DIR__ . "/admin-cd-audit.php";
+adminCdAuditBootstrap();

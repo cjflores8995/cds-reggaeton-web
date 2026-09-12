@@ -48,6 +48,15 @@ function securityRequestHostParts($rawHost = null){
     }
 
     $host = strtolower(trim((string)$parts["host"]));
+
+    if(
+        strlen($host) >= 2 &&
+        $host[0] === "[" &&
+        substr($host, -1) === "]"
+    ){
+        $host = substr($host, 1, -1);
+    }
+
     $port = isset($parts["port"])
         ? (int)$parts["port"]
         : null;
@@ -255,6 +264,13 @@ function securityNormalizeAllowedHosts($allowedHosts){
         $candidate = trim((string)$candidate);
 
         if($candidate === ""){
+            continue;
+        }
+
+        $ipCandidate = trim($candidate, "[]");
+
+        if(filter_var($ipCandidate, FILTER_VALIDATE_IP) !== false){
+            $normalized[strtolower($ipCandidate)] = true;
             continue;
         }
 

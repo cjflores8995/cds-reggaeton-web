@@ -63,12 +63,9 @@
             ".admin-home-select-control select{width:auto;min-width:0;height:46px;margin:0;padding:0 24px 0 0;border:0;background-color:transparent;color:#111;font-size:10px;font-weight:700;letter-spacing:.02em;outline:0;}",
             ".admin-home-sort-control{flex:0 1 235px;}",
             ".admin-home-status-control{flex:0 1 170px;}",
-            ".admin-home-filter-button{flex:0 0 auto;min-width:128px;min-height:48px;margin:0;padding:0 14px;border:0;border-right:1px solid var(--admin-line);background:#fff;color:#111;display:inline-flex;align-items:center;justify-content:center;gap:7px;font:inherit;font-size:9px;font-weight:800;letter-spacing:.07em;text-transform:uppercase;cursor:pointer;transition:background .15s ease,color .15s ease;}",
-            ".admin-home-filter-button:hover,.admin-home-filter-button.is-active{background:#111;color:#fff;}",
-            ".admin-home-filter-button__count{min-width:22px;height:22px;padding:0 6px;border:1px solid currentColor;display:inline-grid;place-items:center;font-size:9px;line-height:1;}",
             ".admin-home-tools--catalog-filters .admin-home-visible-count{flex:0 0 auto;}",
             "@media(max-width:900px){.admin-home-tools--catalog-filters .admin-home-search{flex-basis:100%;border-bottom:1px solid var(--admin-line);}.admin-home-sort-control{flex:1 1 260px;}.admin-home-status-control{flex:1 1 180px;}}",
-            "@media(max-width:700px){.admin-home-tools.admin-home-tools--catalog-filters{display:flex;}.admin-home-tools--catalog-filters .admin-home-search,.admin-home-select-control,.admin-home-filter-button,.admin-home-tools--catalog-filters .admin-home-visible-count{flex:1 1 100%;width:100%;border-right:0;border-bottom:1px solid var(--admin-line);}.admin-home-select-control{justify-content:space-between;}.admin-home-select-control select{flex:1;text-align:right;}.admin-home-filter-button{justify-content:flex-start;padding-left:15px;}.admin-home-tools--catalog-filters .admin-home-visible-count{min-height:48px;border-bottom:0;}}"
+            "@media(max-width:700px){.admin-home-tools.admin-home-tools--catalog-filters{display:flex;}.admin-home-tools--catalog-filters .admin-home-search,.admin-home-select-control,.admin-home-tools--catalog-filters .admin-home-visible-count{flex:1 1 100%;width:100%;border-right:0;border-bottom:1px solid var(--admin-line);}.admin-home-select-control{justify-content:space-between;}.admin-home-select-control select{flex:1;text-align:right;}.admin-home-tools--catalog-filters .admin-home-visible-count{min-height:48px;border-bottom:0;}}"
         ].join("");
 
         document.head.appendChild(style);
@@ -261,20 +258,6 @@
             ]
         );
 
-        var webOnlyButton = document.createElement("button");
-        webOnlyButton.type = "button";
-        webOnlyButton.id = "adminWebOnlyFilter";
-        webOnlyButton.className = "admin-home-filter-button";
-        webOnlyButton.setAttribute("aria-pressed", "false");
-        webOnlyButton.setAttribute(
-            "title",
-            "Mostrar CDs disponibles que solo tienen portada web"
-        );
-        webOnlyButton.innerHTML =
-            '<i class="fa fa-picture-o" aria-hidden="true"></i>' +
-            '<span>SOLO WEB</span>' +
-            '<span class="admin-home-filter-button__count">0</span>';
-
         var visibleCountBlock = query(
             ".admin-home-visible-count",
             tools
@@ -289,26 +272,14 @@
                 statusControl.wrapper,
                 visibleCountBlock
             );
-            tools.insertBefore(
-                webOnlyButton,
-                visibleCountBlock
-            );
         } else {
             tools.appendChild(sortControl.wrapper);
             tools.appendChild(statusControl.wrapper);
-            tools.appendChild(webOnlyButton);
         }
 
         tools.classList.add(
             "admin-home-tools--catalog-filters"
         );
-
-        var webOnlyCount = query(
-            ".admin-home-filter-button__count",
-            webOnlyButton
-        );
-
-        var webOnlyActive = false;
 
         if (window.jQuery) {
             window.jQuery(search).off(
@@ -420,21 +391,6 @@
             });
         }
 
-        function updateWebOnlyCount() {
-            var total = cards.filter(function (card) {
-                var metadata = metadataForCard(card);
-
-                return (
-                    parseInteger(metadata.stock) === 1 &&
-                    parseInteger(metadata.image_count) <= 1
-                );
-            }).length;
-
-            if (webOnlyCount) {
-                webOnlyCount.textContent = String(total);
-            }
-        }
-
         function matchesSearch(card, terms) {
             var searchText = normalizeSearch(
                 card.getAttribute("data-search")
@@ -473,13 +429,6 @@
                     matches = matches && stock === 1;
                 } else if (status === "sold") {
                     matches = matches && stock === 0;
-                }
-
-                if (webOnlyActive) {
-                    matches =
-                        matches &&
-                        stock === 1 &&
-                        parseInteger(metadata.image_count) <= 1;
                 }
 
                 card.style.display = matches
@@ -555,51 +504,9 @@
 
         statusControl.select.addEventListener(
             "change",
-            function () {
-                if (
-                    webOnlyActive &&
-                    statusControl.select.value === "sold"
-                ) {
-                    webOnlyActive = false;
-                    webOnlyButton.classList.remove(
-                        "is-active"
-                    );
-                    webOnlyButton.setAttribute(
-                        "aria-pressed",
-                        "false"
-                    );
-                }
-
-                applyFilters();
-            }
+            applyFilters
         );
 
-        webOnlyButton.addEventListener(
-            "click",
-            function () {
-                webOnlyActive = !webOnlyActive;
-
-                if (webOnlyActive) {
-                    statusControl.select.value = "available";
-                }
-
-                webOnlyButton.classList.toggle(
-                    "is-active",
-                    webOnlyActive
-                );
-
-                webOnlyButton.setAttribute(
-                    "aria-pressed",
-                    webOnlyActive
-                        ? "true"
-                        : "false"
-                );
-
-                applyFilters();
-            }
-        );
-
-        updateWebOnlyCount();
         applyFilters();
 
         fetch(
@@ -654,7 +561,6 @@
                     };
                 });
 
-                updateWebOnlyCount();
                 applyFilters();
             })
             .catch(function () {

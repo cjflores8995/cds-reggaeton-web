@@ -2,9 +2,17 @@ Options -MultiViews
 
 RewriteEngine On
 
-# Public clean URLs.
-RewriteRule ^cd/([a-z0-9-]+)/?$ product.php?slug=$1 [L,QSA,NC]
-RewriteRule ^artista/([a-z0-9-]+)/?$ artist.php?slug=$1 [L,QSA,NC]
+# Public clean URLs. The route wrappers add lightweight analytics for 404s
+# before delegating to the existing product/artist pages.
+RewriteRule ^cd/([a-z0-9-]+)/?$ product-route.php?slug=$1 [L,QSA,NC]
+RewriteRule ^artista/([a-z0-9-]+)/?$ artist-route.php?slug=$1 [L,QSA,NC]
 
 # Cleaner sitemap endpoint.
 RewriteRule ^sitemap\.xml$ sitemap.php [L,QSA,NC]
+
+# Human-facing clean URLs that do not exist. Missing assets keep the normal
+# web-server 404 and do not generate customer analytics noise.
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteCond %{REQUEST_URI} !\.[A-Za-z0-9]{1,8}$ [NC]
+RewriteRule ^ not-found.php [L,QSA]

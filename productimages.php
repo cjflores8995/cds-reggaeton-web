@@ -1,6 +1,7 @@
 <?php
 require_once("config.php");
 require_once("thumbnailgenerator.php");
+require_once("product-watermark-logo.php");
 
 function productImageRoleLabels(){
     return [
@@ -869,131 +870,8 @@ function productImageApplyWatermark(
         return;
     }
 
-    $text =
-        productImageWatermarkText();
-
-    if($text === ""){
-        return;
-    }
-
-    $width = imagesx($image);
-    $height = imagesy($image);
-
-    if(
-        $width < 80 ||
-        $height < 80
-    ){
-        return;
-    }
-
-    $font =
-        productImageWatermarkFontSize();
-
-    $paddingX =
-        productImageWatermarkPaddingX();
-
-    $paddingY =
-        productImageWatermarkPaddingY();
-
-    $margin =
-        productImageWatermarkMargin();
-
-    $textWidth =
-        imagefontwidth($font) *
-        strlen($text);
-
-    $textHeight =
-        imagefontheight($font);
-
-    /*
-     * Reduce automáticamente la fuente hasta que quepa.
-     */
-    while(
-        $font > 1 &&
-        (
-            $textWidth +
-            ($paddingX * 2) +
-            ($margin * 2)
-        ) >
-        $width
-    ){
-        $font--;
-
-        $textWidth =
-            imagefontwidth($font) *
-            strlen($text);
-
-        $textHeight =
-            imagefontheight($font);
-    }
-
-    $boxWidth =
-        min(
-            $width,
-            $textWidth +
-            ($paddingX * 2)
-        );
-
-    $boxHeight =
-        min(
-            $height,
-            $textHeight +
-            ($paddingY * 2)
-        );
-
-    [$x, $y] =
-        productImageWatermarkCoordinates(
-            $width,
-            $height,
-            $boxWidth,
-            $boxHeight,
-            $margin
-        );
-
-    $background =
-        imagecolorallocatealpha(
-            $image,
-            0,
-            0,
-            0,
-            productImageOpacityToGdAlpha(
-                productImageWatermarkBackgroundOpacity()
-            )
-        );
-
-    $foreground =
-        imagecolorallocatealpha(
-            $image,
-            255,
-            255,
-            255,
-            productImageOpacityToGdAlpha(
-                productImageWatermarkTextOpacity()
-            )
-        );
-
-    imagefilledrectangle(
-        $image,
-        $x,
-        $y,
-        min(
-            $width - 1,
-            $x + $boxWidth
-        ),
-        min(
-            $height - 1,
-            $y + $boxHeight
-        ),
-        $background
-    );
-
-    imagestring(
-        $image,
-        $font,
-        $x + $paddingX,
-        $y + $paddingY,
-        $text,
-        $foreground
+    productImageApplyOfficialLogoWatermark(
+        $image
     );
 }
 

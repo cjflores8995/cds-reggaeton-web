@@ -153,3 +153,11 @@ function adminMenuClass($section, $current){
         src="<?php echo htmlspecialchars($baseurl . "admin-home-enhancements.js?v=1", ENT_QUOTES, "UTF-8"); ?>"
     ></script>
 <?php } ?>
+
+<?php if($adminActiveSection === "analytics"){ ?>
+    <script
+        defer
+        src="<?php echo htmlspecialchars($baseurl . "admin-analytics-phase3.js?v=1", ENT_QUOTES, "UTF-8"); ?>"
+        data-endpoint="<?php echo htmlspecialchars($baseurl . "admin-analytics-phase3-data.php", ENT_QUOTES, "UTF-8"); ?>"
+    ></script>
+<?php } ?>

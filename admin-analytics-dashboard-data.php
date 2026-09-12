@@ -8,6 +8,7 @@ require_once __DIR__ . "/analytics-dashboard.php";
 require_once __DIR__ . "/analytics-sessions.php";
 require_once __DIR__ . "/analytics-phase7-helper.php";
 require_once __DIR__ . "/analytics-diagnostics.php";
+require_once __DIR__ . "/analytics-maintenance.php";
 
 header("Content-Type: application/json; charset=utf-8");
 header("Cache-Control: no-store, no-cache, must-revalidate, max-age=0");
@@ -40,7 +41,7 @@ $to = (string)($_GET["to"] ?? "");
 $range = analyticsMetricsRange($period, $from, $to);
 $view = strtolower(trim((string)($_GET["view"] ?? "summary")));
 
-if(!in_array($view, ["summary", "products", "searches", "activity", "sessions", "diagnostics"], true)){
+if(!in_array($view, ["summary", "products", "searches", "activity", "sessions", "diagnostics", "maintenance"], true)){
     $view = "summary";
 }
 
@@ -87,7 +88,7 @@ if($view === "summary"){
                 ]
             )
     ];
-}else{
+}else if($view === "diagnostics"){
     $sessionId = max(0, (int)($_GET["session_id"] ?? 0));
     $data = [
         "diagnostics" => analyticsDiagnosticsBuild(
@@ -95,6 +96,13 @@ if($view === "summary"){
             $environment,
             $range,
             $sessionId
+        )
+    ];
+}else{
+    $data = [
+        "maintenance" => analyticsMaintenancePreview(
+            $connection,
+            $environment
         )
     ];
 }

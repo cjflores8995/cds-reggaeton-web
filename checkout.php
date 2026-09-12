@@ -53,7 +53,7 @@ $storeBaseUrl = checkoutBaseUrl();
             );
         ?>;
     </script>
-    <script defer src="<?php echo checkoutEsc($storeBaseUrl); ?>checkout.js?v=2"></script>
+    <script defer src="<?php echo checkoutEsc($storeBaseUrl); ?>checkout.js?v=3"></script>
 </head>
 <body>
     <div class="promo-strip">

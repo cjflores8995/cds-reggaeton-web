@@ -70,6 +70,99 @@ function analyticsAdminTrafficLabel($trafficType){
     return $labels[$trafficType] ?? $trafficType;
 }
 
+function analyticsAdminEventLabel($eventType){
+    $labels = [
+        "analytics_test" => "Prueba Analytics",
+        "store_view" => "Entrada a tienda",
+        "product_view" => "Vista de CD",
+        "gallery_image_view" => "Vista de imagen",
+        "search" => "Búsqueda",
+        "artist_filter" => "Filtro de artista",
+        "sort_changed" => "Ordenamiento",
+        "social_click" => "Clic social",
+        "not_found" => "No encontrado",
+        "add_to_cart" => "Agregar carrito",
+        "remove_from_cart" => "Quitar carrito",
+        "cart_open" => "Abrir carrito",
+        "checkout_started" => "Inicio checkout",
+        "checkout_validation_failed" => "Validación checkout",
+        "checkout_whatsapp" => "Clic WhatsApp"
+    ];
+
+    return $labels[$eventType] ?? $eventType;
+}
+
+function analyticsAdminEventData($value){
+    $decoded = json_decode((string)$value, true);
+    return is_array($decoded) ? $decoded : [];
+}
+
+function analyticsAdminEventDetail($event){
+    $type = (string)($event["event_type"] ?? "");
+    $value = trim((string)($event["event_value"] ?? ""));
+    $data = analyticsAdminEventData($event["event_data"] ?? "");
+
+    if($type === "store_view"){
+        return "Catálogo principal";
+    }
+
+    if($type === "product_view" || $type === "gallery_image_view"){
+        $product = is_array($data["product"] ?? null)
+            ? $data["product"]
+            : [];
+        $title = trim((string)($product["product_title"] ?? ""));
+
+        if($type === "gallery_image_view"){
+            $label = trim((string)($data["image_label"] ?? "Imagen"));
+            return trim($title . ($title !== "" ? " · " : "") . $label);
+        }
+
+        return $title !== "" ? $title : "CD #" . (int)($event["product_id"] ?? 0);
+    }
+
+    if($type === "search"){
+        $results = (int)($data["results"] ?? 0);
+        return '"' . $value . '" · ' . $results . ($results === 1 ? " resultado" : " resultados");
+    }
+
+    if($type === "artist_filter"){
+        $artist = trim((string)($data["artist"] ?? $value));
+        $results = (int)($data["results"] ?? 0);
+        return ($artist !== "" ? $artist : "Todos") . " · " . $results . " resultado(s)";
+    }
+
+    if($type === "sort_changed"){
+        $labels = [
+            "newest" => "Más recientes",
+            "artist" => "Artista A–Z",
+            "year_desc" => "Año: nuevo a antiguo",
+            "price_asc" => "Precio: menor a mayor",
+            "price_desc" => "Precio: mayor a menor"
+        ];
+
+        return $labels[$value] ?? $value;
+    }
+
+    if($type === "social_click"){
+        $labels = [
+            "tiktok" => "TikTok",
+            "youtube" => "YouTube",
+            "instagram" => "Instagram",
+            "facebook" => "Facebook",
+            "whatsapp_contact" => "WhatsApp de contacto"
+        ];
+
+        return $labels[$value] ?? $value;
+    }
+
+    if($type === "not_found"){
+        $resource = trim((string)($data["resource_value"] ?? ""));
+        return ($value !== "" ? $value : "url") . ($resource !== "" ? " · " . $resource : "");
+    }
+
+    return $value;
+}
+
 $schemaReady = analyticsEnsureSchema($connection);
 $currentEnvironment = analyticsCurrentEnvironment();
 $selectedEnvironment = trim((string)($_GET["environment"] ?? $currentEnvironment));
@@ -85,6 +178,20 @@ $summary = [
     "automated" => 0,
     "internal" => 0
 ];
+
+$navigation = [
+    "store_views" => 0,
+    "product_views" => 0,
+    "unique_products" => 0,
+    "searches" => 0,
+    "zero_searches" => 0,
+    "gallery_views" => 0,
+    "artist_filters" => 0,
+    "sort_changes" => 0,
+    "social_clicks" => 0,
+    "not_found" => 0
+];
+
 $recentEvents = [];
 $recentSessions = [];
 
@@ -131,12 +238,49 @@ if($schemaReady){
         mysqli_stmt_close($eventsCountStmt);
     }
 
-    $eventsSql = "SELECT e.id, e.event_type, e.event_value, e.page_path, e.created_at, " .
-        "s.id AS session_id, s.traffic_type, s.device_type, " .
-        "INET6_NTOA(s.ip_address) AS ip_address " .
+    $navigationTrafficSql = $selectedEnvironment === "development"
+        ? "s.traffic_type IN ('human', 'internal_test')"
+        : "s.traffic_type = 'human'";
+
+    $navigationSql = "SELECT " .
+        "SUM(e.event_type = 'store_view') AS store_views, " .
+        "SUM(e.event_type = 'product_view') AS product_views, " .
+        "COUNT(DISTINCT CASE WHEN e.event_type = 'product_view' THEN e.product_id END) AS unique_products, " .
+        "SUM(e.event_type = 'search') AS searches, " .
+        "SUM(e.event_type = 'search' AND JSON_EXTRACT(e.event_data, '$.results') IS NOT NULL " .
+            "AND CAST(JSON_UNQUOTE(JSON_EXTRACT(e.event_data, '$.results')) AS UNSIGNED) = 0) AS zero_searches, " .
+        "SUM(e.event_type = 'gallery_image_view') AS gallery_views, " .
+        "SUM(e.event_type = 'artist_filter') AS artist_filters, " .
+        "SUM(e.event_type = 'sort_changed') AS sort_changes, " .
+        "SUM(e.event_type = 'social_click') AS social_clicks, " .
+        "SUM(e.event_type = 'not_found') AS not_found " .
         "FROM " . $tables["events"] . " e " .
         "INNER JOIN " . $tables["sessions"] . " s ON s.id = e.session_id " .
-        "WHERE s.environment = ? ORDER BY e.id DESC LIMIT 50";
+        "WHERE s.environment = ? AND " . $navigationTrafficSql;
+
+    $navigationStmt = mysqli_prepare($connection, $navigationSql);
+
+    if($navigationStmt){
+        mysqli_stmt_bind_param($navigationStmt, "s", $selectedEnvironment);
+        mysqli_stmt_execute($navigationStmt);
+        $navigationResult = mysqli_stmt_get_result($navigationStmt);
+        $navigationRow = $navigationResult ? mysqli_fetch_assoc($navigationResult) : null;
+
+        if($navigationRow){
+            foreach($navigation as $key => $value){
+                $navigation[$key] = (int)($navigationRow[$key] ?? 0);
+            }
+        }
+
+        mysqli_stmt_close($navigationStmt);
+    }
+
+    $eventsSql = "SELECT e.id, e.event_type, e.event_value, e.product_id, e.artist_id, " .
+        "e.page_path, e.event_data, e.created_at, s.id AS session_id, s.traffic_type, " .
+        "s.device_type, INET6_NTOA(s.ip_address) AS ip_address " .
+        "FROM " . $tables["events"] . " e " .
+        "INNER JOIN " . $tables["sessions"] . " s ON s.id = e.session_id " .
+        "WHERE s.environment = ? ORDER BY e.id DESC LIMIT 70";
 
     $eventsStmt = mysqli_prepare($connection, $eventsSql);
 
@@ -191,7 +335,7 @@ $adminActiveSection = "analytics";
     <link rel="shortcut icon" href="<?php echo analyticsAdminEsc($baseurl); ?>favicon.ico">
     <link rel="stylesheet" type="text/css" href="<?php echo analyticsAdminEsc($baseurl); ?>assets/css/font-awesome.css">
     <link rel="stylesheet" type="text/css" href="<?php echo analyticsAdminEsc($baseurl); ?>admin-modern.css?v=16">
-    <link rel="stylesheet" type="text/css" href="<?php echo analyticsAdminEsc($baseurl); ?>admin-analytics.css?v=1">
+    <link rel="stylesheet" type="text/css" href="<?php echo analyticsAdminEsc($baseurl); ?>admin-analytics.css?v=2">
 </head>
 <body>
 <div class="admin-page-shell">
@@ -201,7 +345,7 @@ $adminActiveSection = "analytics";
         <section class="analytics-toolbar">
             <div class="analytics-toolbar__title">
                 <h1>Analytics</h1>
-                <p>Fase 1 · Fundación, sesiones y clasificación de tráfico.</p>
+                <p>Fase 2 · Navegación e interés del cliente.</p>
             </div>
 
             <div class="analytics-toolbar__actions">
@@ -218,7 +362,7 @@ $adminActiveSection = "analytics";
                 <div>
                     <button class="analytics-test-button" id="analyticsTestButton" type="button">
                         <i class="fa fa-bolt" aria-hidden="true"></i>
-                        Registrar evento de prueba
+                        Probar infraestructura
                     </button>
                     <div id="analyticsTestStatus" aria-live="polite"></div>
                 </div>
@@ -227,26 +371,18 @@ $adminActiveSection = "analytics";
 
         <?php if(!$schemaReady){ ?>
             <div class="admin-alert error">
-                No fue posible inicializar las tablas de Analytics. La tienda puede seguir funcionando normalmente.
+                No fue posible inicializar Analytics. La tienda puede seguir funcionando normalmente.
             </div>
         <?php } ?>
 
         <div class="analytics-status-line">
-            <span class="analytics-chip is-dark">
-                Vista: <?php echo analyticsAdminEsc($selectedEnvironment); ?>
-            </span>
-            <span class="analytics-chip">
-                Ambiente actual: <?php echo analyticsAdminEsc($currentEnvironment); ?>
-            </span>
-            <span class="analytics-chip">
-                Hora mostrada: Ecuador
-            </span>
-            <span class="analytics-chip">
-                DB almacena UTC
-            </span>
+            <span class="analytics-chip is-dark">Vista: <?php echo analyticsAdminEsc($selectedEnvironment); ?></span>
+            <span class="analytics-chip">Ambiente actual: <?php echo analyticsAdminEsc($currentEnvironment); ?></span>
+            <span class="analytics-chip">Hora: Ecuador</span>
+            <span class="analytics-chip">DB: UTC</span>
         </div>
 
-        <section class="analytics-metrics" aria-label="Resumen de Analytics">
+        <section class="analytics-metrics" aria-label="Resumen técnico de Analytics">
             <div class="analytics-metric">
                 <span>Sesiones</span>
                 <strong><?php echo (int)$summary["sessions"]; ?></strong>
@@ -269,29 +405,56 @@ $adminActiveSection = "analytics";
             </div>
         </section>
 
+        <section class="analytics-section-block">
+            <header class="analytics-section-heading">
+                <div>
+                    <span class="analytics-section-kicker">FASE 2</span>
+                    <h2>Navegación e interés</h2>
+                </div>
+                <p>
+                    <?php echo $selectedEnvironment === "development"
+                        ? "Development incluye humanos y pruebas internas para que puedas validar los eventos."
+                        : "Production muestra únicamente actividad humana en estas métricas."; ?>
+                </p>
+            </header>
+
+            <div class="analytics-phase2-metrics">
+                <div class="analytics-metric"><span>Entradas tienda</span><strong><?php echo (int)$navigation["store_views"]; ?></strong></div>
+                <div class="analytics-metric"><span>Vistas de CD</span><strong><?php echo (int)$navigation["product_views"]; ?></strong></div>
+                <div class="analytics-metric"><span>CDs distintos vistos</span><strong><?php echo (int)$navigation["unique_products"]; ?></strong></div>
+                <div class="analytics-metric"><span>Búsquedas</span><strong><?php echo (int)$navigation["searches"]; ?></strong></div>
+                <div class="analytics-metric"><span>Sin resultados</span><strong><?php echo (int)$navigation["zero_searches"]; ?></strong></div>
+                <div class="analytics-metric"><span>Fotos vistas</span><strong><?php echo (int)$navigation["gallery_views"]; ?></strong></div>
+                <div class="analytics-metric"><span>Filtros artista</span><strong><?php echo (int)$navigation["artist_filters"]; ?></strong></div>
+                <div class="analytics-metric"><span>Cambios de orden</span><strong><?php echo (int)$navigation["sort_changes"]; ?></strong></div>
+                <div class="analytics-metric"><span>Clics sociales</span><strong><?php echo (int)$navigation["social_clicks"]; ?></strong></div>
+                <div class="analytics-metric"><span>404 / no encontrado</span><strong><?php echo (int)$navigation["not_found"]; ?></strong></div>
+            </div>
+        </section>
+
         <div class="analytics-grid">
             <section class="analytics-panel">
                 <header class="analytics-panel__header">
                     <div>
                         <h2>Actividad reciente</h2>
-                        <p>Eventos aceptados por el endpoint de Analytics.</p>
+                        <p>Recorrido cronológico de eventos aceptados por Analytics.</p>
                     </div>
                 </header>
 
                 <?php if(count($recentEvents) === 0){ ?>
                     <div class="analytics-empty">
-                        Todavía no existen eventos en este ambiente. Usa “Registrar evento de prueba” para validar la Fase 1.
+                        Todavía no existen eventos en este ambiente. Navega por la tienda para validar la Fase 2.
                     </div>
                 <?php }else{ ?>
                     <div class="analytics-table-wrap">
-                        <table class="analytics-table">
+                        <table class="analytics-table analytics-table--activity">
                             <thead>
                                 <tr>
                                     <th>Hora Ecuador</th>
                                     <th>Evento</th>
+                                    <th>Detalle</th>
                                     <th>Tráfico</th>
                                     <th>Sesión</th>
-                                    <th>IP</th>
                                     <th>Página</th>
                                 </tr>
                             </thead>
@@ -301,13 +464,14 @@ $adminActiveSection = "analytics";
                                         <td><?php echo analyticsAdminEsc(analyticsAdminLocalTime($event["created_at"])); ?></td>
                                         <td>
                                             <span class="analytics-event-name">
-                                                <?php echo analyticsAdminEsc($event["event_type"]); ?>
+                                                <?php echo analyticsAdminEsc(analyticsAdminEventLabel($event["event_type"])); ?>
                                             </span>
-                                            <?php if(trim((string)$event["event_value"]) !== ""){ ?>
-                                                <span class="analytics-event-path">
-                                                    <?php echo analyticsAdminEsc($event["event_value"]); ?>
-                                                </span>
-                                            <?php } ?>
+                                            <span class="analytics-event-path"><?php echo analyticsAdminEsc($event["event_type"]); ?></span>
+                                        </td>
+                                        <td>
+                                            <span class="analytics-event-detail" title="<?php echo analyticsAdminEsc(analyticsAdminEventDetail($event)); ?>">
+                                                <?php echo analyticsAdminEsc(analyticsAdminEventDetail($event)); ?>
+                                            </span>
                                         </td>
                                         <td>
                                             <span class="analytics-traffic <?php echo analyticsAdminEsc($event["traffic_type"]); ?>">
@@ -315,7 +479,6 @@ $adminActiveSection = "analytics";
                                             </span>
                                         </td>
                                         <td>#<?php echo (int)$event["session_id"]; ?></td>
-                                        <td><?php echo analyticsAdminEsc(analyticsAdminMaskIp($event["ip_address"])); ?></td>
                                         <td>
                                             <span class="analytics-event-path" title="<?php echo analyticsAdminEsc($event["page_path"]); ?>">
                                                 <?php echo analyticsAdminEsc($event["page_path"]); ?>
@@ -333,7 +496,7 @@ $adminActiveSection = "analytics";
                 <header class="analytics-panel__header">
                     <div>
                         <h2>Sesiones recientes</h2>
-                        <p>Clasificación independiente de humanos, bots y pruebas internas.</p>
+                        <p>Humanos, bots, sospechosos y pruebas internas siguen separados.</p>
                     </div>
                 </header>
 
@@ -368,7 +531,7 @@ $adminActiveSection = "analytics";
         </div>
 
         <div class="analytics-phase-note">
-            <strong>Fase 1:</strong> esta pantalla es deliberadamente de diagnóstico. Los dashboards comerciales, productos, búsquedas y embudo se construirán en las siguientes fases. Los eventos de un administrador autenticado se clasifican como <strong>Prueba interna</strong> y no se mezclarán con clientes reales.
+            <strong>Cómo validar Fase 2:</strong> abre la tienda, busca un artista o álbum, cambia un filtro, cambia el orden, abre un CD y cambia de fotografía. Al volver a Analytics verás los eventos con producto, búsqueda y sesión. Refrescos rápidos y dobles clics se suprimen durante ventanas cortas para no inflar los datos.
         </div>
     </main>
 </div>

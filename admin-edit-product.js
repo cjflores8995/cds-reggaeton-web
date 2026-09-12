@@ -38,6 +38,86 @@
         return title;
     }
 
+    function removeAvailabilityField(form){
+        var stockSelect = form.querySelector(
+            "select[name='editstock']"
+        );
+
+        if(!stockSelect){
+            return;
+        }
+
+        var label = stockSelect.previousElementSibling;
+        var helper = stockSelect.nextElementSibling;
+
+        if(
+            label &&
+            label.tagName &&
+            label.tagName.toLowerCase() === "label"
+        ){
+            label.remove();
+        }
+
+        stockSelect.remove();
+
+        if(
+            helper &&
+            helper.classList &&
+            helper.classList.contains("admin-muted")
+        ){
+            helper.remove();
+        }
+    }
+
+    function injectTikTokField(form, value){
+        if(form.querySelector("input[name='tiktok_url']")){
+            return;
+        }
+
+        var content = form.querySelector(
+            "textarea[name='editpostcontent']"
+        );
+
+        if(!content){
+            return;
+        }
+
+        var contentLabel = content.previousElementSibling;
+        var wrapper = document.createElement("div");
+        wrapper.className = "admin-edit-tiktok-field";
+
+        var label = document.createElement("label");
+        label.setAttribute("for", "editTikTokUrl");
+        label.textContent = "Video de TikTok";
+
+        var input = document.createElement("input");
+        input.id = "editTikTokUrl";
+        input.type = "url";
+        input.name = "tiktok_url";
+        input.maxLength = 500;
+        input.placeholder =
+            "https://www.tiktok.com/@usuario/video/...";
+        input.value = String(value || "").trim();
+
+        var help = document.createElement("div");
+        help.className = "admin-muted";
+        help.style.marginTop = "-7px";
+        help.style.marginBottom = "14px";
+        help.textContent =
+            "Opcional. Se mostrará como enlace en la ficha pública del CD.";
+
+        wrapper.appendChild(label);
+        wrapper.appendChild(input);
+        wrapper.appendChild(help);
+
+        form.insertBefore(
+            wrapper,
+            contentLabel && contentLabel.tagName
+                ? contentLabel
+                : content
+        );
+    }
+
     ready(function(){
         var form = document.querySelector(
             "form[data-ajax-product='1']"
@@ -46,6 +126,8 @@
         if(!form){
             return;
         }
+
+        removeAvailabilityField(form);
 
         var albumInput = form.querySelector(
             "input[name='editposttitle']"
@@ -108,6 +190,11 @@
                 if(album !== ""){
                     albumInput.value = album;
                 }
+
+                injectTikTokField(
+                    form,
+                    payload.product.tiktok_url || ""
+                );
             })
             .catch(function(){
                 /*

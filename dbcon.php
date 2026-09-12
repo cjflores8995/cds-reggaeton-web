@@ -134,6 +134,14 @@ securityBootstrap(
     $normalizedAllowedHosts
 );
 
+/*
+ * Admin/System Logs Fase 6: record only fatal-class PHP failures and uncaught
+ * production exceptions. The helper wraps the existing production exception
+ * handler instead of replacing its generic response behavior.
+ */
+require_once __DIR__ . "/admin-technical-error-log.php";
+adminTechnicalErrorLogBootstrap();
+
 $requiredVariables = [
     "host",
     "tableprefix",

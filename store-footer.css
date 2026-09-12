@@ -18,6 +18,13 @@
     justify-content: flex-start;
 }
 
+.footer-brand-logo {
+    display: block;
+    width: min(100%, 280px);
+    height: auto;
+    margin: 0 0 20px;
+}
+
 .site-footer__column {
     display: flex;
     flex-direction: column;
@@ -95,6 +102,34 @@
     font-size: 10px !important;
 }
 
+/*
+ * Official Reggaeton El Real brand lockup.
+ * The existing semantic text stays in the HTML for accessibility/fallback,
+ * while the visual brand is rendered from the approved identity assets.
+ */
+.brand {
+    width: 272px;
+    height: 54px;
+    flex: 0 0 auto;
+    background-image: url("images/branding/originals/reggaeton-el-real-logo-horizontal-black.png");
+    background-repeat: no-repeat;
+    background-position: left center;
+    background-size: contain;
+}
+
+.brand .brand__mark,
+.brand .brand__text {
+    position: absolute !important;
+    width: 1px !important;
+    height: 1px !important;
+    padding: 0 !important;
+    margin: -1px !important;
+    overflow: hidden !important;
+    clip: rect(0, 0, 0, 0) !important;
+    white-space: nowrap !important;
+    border: 0 !important;
+}
+
 @media (max-width: 1000px) {
     .site-footer__grid--social {
         grid-template-columns: 1fr 1fr;
@@ -105,6 +140,15 @@
     }
 }
 
+@media (max-width: 700px) {
+    .brand {
+        width: 46px;
+        height: 46px;
+        background-image: url("images/branding/originals/reggaeton-el-real-isotipo.png");
+        background-position: center;
+    }
+}
+
 @media (max-width: 640px) {
     .site-footer__grid--social {
         grid-template-columns: 1fr;
@@ -112,5 +156,9 @@
 
     .site-footer__grid--social > div {
         padding: 30px 24px;
+    }
+
+    .footer-brand-logo {
+        width: min(100%, 250px);
     }
 }

@@ -64,8 +64,15 @@ function adminMenuClass($section, $current){
         ? ' class="active"'
         : "";
 }
+
+$adminCsrfToken = adminAuthCsrfToken();
+$adminActionsUrl = "admin-actions.php";
 ?>
-<aside class="admin-page-sidebar">
+<aside
+    class="admin-page-sidebar"
+    data-admin-csrf-token="<?php echo htmlspecialchars($adminCsrfToken, ENT_QUOTES, "UTF-8"); ?>"
+    data-admin-actions-url="<?php echo htmlspecialchars($adminActionsUrl, ENT_QUOTES, "UTF-8"); ?>"
+>
     <div class="admin-page-logo">
         <a href="<?php echo htmlspecialchars($baseurl . "admin.php", ENT_QUOTES, "UTF-8"); ?>">
             <img
@@ -146,6 +153,11 @@ function adminMenuClass($section, $current){
         </a>
     </nav>
 </aside>
+
+<script
+    defer
+    src="admin-security.js?v=1"
+></script>
 
 <?php if($adminActiveSection === "home"){ ?>
     <script

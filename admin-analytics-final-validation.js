@@ -142,6 +142,7 @@
     }
 
     function runValidation() {
+        csrf = String(app.dataset.maintenanceCsrf || csrf);
         var panel = document.getElementById("analyticsFinalValidationPanel");
         var button = panel ? panel.querySelector("[data-run-final-validation]") : null;
         var body = panel ? panel.querySelector("[data-final-body]") : null;

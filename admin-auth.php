@@ -1,5 +1,7 @@
 <?php
 
+require_once __DIR__ . "/admin-system-log.php";
+
 const ADMIN_AUTH_SESSION_SENTINEL = "__REGGAETON_ADMIN_AUTH_V1__";
 const ADMIN_AUTH_IDLE_TIMEOUT = 1800;
 const ADMIN_AUTH_ABSOLUTE_TIMEOUT = 28800;
@@ -27,6 +29,7 @@ function adminAuthProtectedScripts(){
         "postupload.php",
         "productdata.php",
         "admin-actions.php",
+        "admin-system-logs.php",
         "admin-analytics.php",
         "admin-analytics-dashboard-data.php",
         "admin-analytics-final-validation.php",
@@ -179,6 +182,24 @@ function adminAuthLogout(){
     if(session_status() !== PHP_SESSION_ACTIVE){
         return;
     }
+
+    $actor = trim(
+        (string)(
+            $_SESSION["admin_username"] ??
+            $_SESSION["adminusername"] ??
+            ""
+        )
+    );
+
+    adminSystemLogWrite([
+        "actor_type" => "admin",
+        "actor" => $actor,
+        "category" => "auth",
+        "action" => "logout",
+        "outcome" => "success",
+        "severity" => "info",
+        "detail" => "Administrative session closed."
+    ]);
 
     adminAuthClearSession(true);
     session_destroy();
@@ -824,11 +845,32 @@ function adminAuthBootstrap(){
             adminAuthEstablishSession()
         ){
             adminAuthLoginThrottleClear();
+
+            adminSystemLogWrite([
+                "actor_type" => "admin",
+                "actor" => (string)$adminUsername,
+                "category" => "auth",
+                "action" => "login_success",
+                "outcome" => "success",
+                "severity" => "info",
+                "detail" => "Administrative login completed."
+            ]);
+
             header("Location: admin.php");
             exit;
         }
 
         adminAuthLoginThrottleRecordFailure();
+
+        adminSystemLogWrite([
+            "actor_type" => "anonymous",
+            "category" => "auth",
+            "action" => "login_failed",
+            "outcome" => "failure",
+            "severity" => "warning",
+            "detail" => "Administrative login failed."
+        ]);
+
         $retryAfter =
             adminAuthLoginThrottleRetryAfter();
 

@@ -25,6 +25,10 @@ if(!function_exists("adminMenuActiveSection")){
             return "analytics";
         }
 
+        if($script === "admin-system-logs.php"){
+            return "system-logs";
+        }
+
         if($script === "admin.php"){
             if(isset($_GET["pictures"])){
                 return "pictures";
@@ -97,6 +101,14 @@ $adminActionsUrl = "admin-actions.php";
         >
             <i class="fa fa-line-chart"></i>
             <span>Analytics</span>
+        </a>
+
+        <a
+            href="<?php echo htmlspecialchars($baseurl . "admin-system-logs.php", ENT_QUOTES, "UTF-8"); ?>"
+            <?php echo adminMenuClass("system-logs", $adminActiveSection); ?>
+        >
+            <i class="fa fa-list-alt"></i>
+            <span>System Logs</span>
         </a>
 
         <a

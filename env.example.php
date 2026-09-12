@@ -31,3 +31,9 @@ $adminPasswordHash = "REPLACE_WITH_PASSWORD_HASH";
  * hashes remain comparable after changing the admin password.
  */
 $analyticsHashSecret = "REPLACE_WITH_STABLE_64_CHARACTER_HEX_SECRET";
+
+/*
+ * Independent 64-character hexadecimal HMAC secret for Admin/System Logs.
+ * Do not reuse the admin password/hash or the Customer Analytics secret.
+ */
+$adminLogHashSecret = "REPLACE_WITH_DIFFERENT_STABLE_64_CHARACTER_HEX_SECRET";

@@ -335,6 +335,11 @@ $imageRoles = [
         <?php } ?>
 
         <form method="post" enctype="multipart/form-data">
+            <input
+                type="hidden"
+                name="admin_csrf"
+                value="<?php echo htmlspecialchars(adminAuthCsrfToken(), ENT_QUOTES, "UTF-8"); ?>"
+            >
             <section class="admin-form-card">
                 <h2>Información del CD</h2>
 
@@ -442,7 +447,7 @@ $imageRoles = [
                                     value="<?php echo htmlspecialchars($condition, ENT_QUOTES, "UTF-8"); ?>"
                                     <?php echo $selectedCaseCondition === $condition ? "selected" : ""; ?>
                                 >
-                                    <?php echo htmlspecialchars($condition, ENT_QUOTES, "UTF-8"); ?>
+                                    <?php echo htmlspecialchars($condition, ENT_QUOTES, "UTF-8"); ?>"
                                 </option>
                             <?php } ?>
                         </select>

@@ -214,7 +214,13 @@ main,
     scroll-snap-align: start;
 }
 
-.product-grid,
+/*
+ * Keep exactly the same two-column phone rhythm used by the
+ * "OTROS CDS" related-products block on product detail pages.
+ * The stronger homepage selector intentionally overrides store.css's
+ * legacy <=390px single-column rule.
+ */
+.catalog-section .product-grid,
 .product-grid--related {
     width: 100%;
     grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -405,7 +411,7 @@ main,
         font-size: clamp(36px, 11vw, 44px);
     }
 
-    .product-grid,
+    .catalog-section .product-grid,
     .product-grid--related {
         grid-template-columns: repeat(2, minmax(0, 1fr));
     }

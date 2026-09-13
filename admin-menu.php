@@ -198,7 +198,7 @@ if(
 ></script>
 <script
     defer
-    src="<?php echo htmlspecialchars($baseurl . "admin-media-resolver.js?v=1", ENT_QUOTES, "UTF-8"); ?>"
+    src="<?php echo htmlspecialchars($baseurl . "admin-media-resolver.js?v=2", ENT_QUOTES, "UTF-8"); ?>"
 ></script>
 
 <?php if($adminActiveSection === "home"){ ?>

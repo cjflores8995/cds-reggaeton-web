@@ -277,15 +277,46 @@ function productImageOpacityToGdAlpha($opacityPercent){
         )
     );
 
-    /*
-     * GD alpha:
-     * 0   = fully opaque
-     * 127 = fully transparent
-     */
     return 127 - (int)round(
         127 *
         ($opacityPercent / 100)
     );
+}
+
+function productImageNormalizeBlobReference($value){
+    $value = trim((string)$value);
+
+    if(strpos($value, "blob:") !== 0){
+        return "";
+    }
+
+    $key = substr($value, strlen("blob:"));
+    $key = str_replace("\\", "/", $key);
+    $key = preg_replace("#/+#", "/", $key);
+    $key = ltrim((string)$key, "/");
+
+    if($key === ""){
+        return "";
+    }
+
+    $segments = explode("/", $key);
+    $safeSegments = [];
+
+    foreach($segments as $segment){
+        $segment = trim((string)$segment);
+
+        if(
+            $segment === "" ||
+            $segment === "." ||
+            $segment === ".."
+        ){
+            return "";
+        }
+
+        $safeSegments[] = basename($segment);
+    }
+
+    return "blob:" . implode("/", $safeSegments);
 }
 
 function productImageNormalizePath($value){
@@ -293,6 +324,10 @@ function productImageNormalizePath($value){
 
     if($value === ""){
         return "";
+    }
+
+    if(strpos($value, "blob:") === 0){
+        return productImageNormalizeBlobReference($value);
     }
 
     $value = str_replace("\\", "/", $value);
@@ -318,8 +353,7 @@ function productImageNormalizePath($value){
             continue;
         }
 
-        $safeSegments[] =
-            basename($segment);
+        $safeSegments[] = basename($segment);
     }
 
     if(count($safeSegments) === 0){
@@ -346,56 +380,31 @@ function productImageSlotsFromDatabase(
         5 => ""
     ];
 
-    if(
-        trim(
-            (string)$picture
-        ) !== ""
-    ){
-        $slots[1] =
-            productImageNormalizePath(
-                $picture
-            );
+    if(trim((string)$picture) !== ""){
+        $slots[1] = productImageNormalizePath($picture);
     }
 
-    $items =
-        explode(
-            ",",
-            (string)$moreimages
-        );
+    $items = explode(",", (string)$moreimages);
 
     for($i = 0; $i < 4; $i++){
         if(
             isset($items[$i]) &&
-            trim(
-                (string)$items[$i]
-            ) !== ""
+            trim((string)$items[$i]) !== ""
         ){
-            $slots[$i + 2] =
-                productImageNormalizePath(
-                    $items[$i]
-                );
+            $slots[$i + 2] = productImageNormalizePath($items[$i]);
         }
     }
 
     return $slots;
 }
 
-function productImageSerializeMoreImages(
-    $slots
-){
+function productImageSerializeMoreImages($slots){
     $items = [];
 
-    for(
-        $role = 2;
-        $role <= 5;
-        $role++
-    ){
-        $items[] =
-            isset($slots[$role])
-                ? productImageNormalizePath(
-                    $slots[$role]
-                )
-                : "";
+    for($role = 2; $role <= 5; $role++){
+        $items[] = isset($slots[$role])
+            ? productImageNormalizePath($slots[$role])
+            : "";
     }
 
     return implode(",", $items);
@@ -404,24 +413,18 @@ function productImageSerializeMoreImages(
 function productImagePictureValue($slots){
     if(
         !isset($slots[1]) ||
-        trim(
-            (string)$slots[1]
-        ) === ""
+        trim((string)$slots[1]) === ""
     ){
         return "";
     }
 
-    $normalized =
-        productImageNormalizePath(
-            $slots[1]
-        );
+    $normalized = productImageNormalizePath($slots[1]);
 
-    if(
-        strpos(
-            $normalized,
-            "pictures/"
-        ) === 0
-    ){
+    if(strpos($normalized, "blob:") === 0){
+        return $normalized;
+    }
+
+    if(strpos($normalized, "pictures/") === 0){
         return substr(
             $normalized,
             strlen("pictures/")
@@ -431,45 +434,45 @@ function productImagePictureValue($slots){
     return $normalized;
 }
 
-function productImageValidateExistingPath(
-    $path
-){
-    $normalizedPath =
-        productImageNormalizePath(
-            $path
-        );
+function productImageValidateExistingPath($path){
+    $normalizedPath = productImageNormalizePath($path);
 
     if($normalizedPath === ""){
         return "";
     }
 
-    $picturesDirectory =
-        realpath(
-            __DIR__ .
-            DIRECTORY_SEPARATOR .
-            "pictures"
-        );
+    if(strpos($normalizedPath, "blob:") === 0){
+        $key = substr($normalizedPath, strlen("blob:"));
+
+        return strpos($key, "products/") === 0
+            ? $normalizedPath
+            : "";
+    }
+
+    $picturesDirectory = realpath(
+        __DIR__ .
+        DIRECTORY_SEPARATOR .
+        "pictures"
+    );
 
     if($picturesDirectory === false){
         return "";
     }
 
-    $relative =
-        substr(
-            $normalizedPath,
-            strlen("pictures/")
-        );
+    $relative = substr(
+        $normalizedPath,
+        strlen("pictures/")
+    );
 
-    $candidatePath =
-        realpath(
-            $picturesDirectory .
-            DIRECTORY_SEPARATOR .
-            str_replace(
-                "/",
-                DIRECTORY_SEPARATOR,
-                $relative
-            )
-        );
+    $candidatePath = realpath(
+        $picturesDirectory .
+        DIRECTORY_SEPARATOR .
+        str_replace(
+            "/",
+            DIRECTORY_SEPARATOR,
+            $relative
+        )
+    );
 
     if(
         $candidatePath === false ||
@@ -485,12 +488,7 @@ function productImageValidateExistingPath(
         ) .
         DIRECTORY_SEPARATOR;
 
-    if(
-        strpos(
-            $candidatePath,
-            $picturesPrefix
-        ) !== 0
-    ){
+    if(strpos($candidatePath, $picturesPrefix) !== 0){
         return "";
     }
 
@@ -502,48 +500,38 @@ function productImageGetUploadedFileAt(
     $index
 ){
     return [
-        "name" =>
-            isset($files["name"][$index])
-                ? $files["name"][$index]
-                : "",
-        "type" =>
-            isset($files["type"][$index])
-                ? $files["type"][$index]
-                : "",
-        "tmp_name" =>
-            isset($files["tmp_name"][$index])
-                ? $files["tmp_name"][$index]
-                : "",
-        "error" =>
-            isset($files["error"][$index])
-                ? $files["error"][$index]
-                : UPLOAD_ERR_NO_FILE,
-        "size" =>
-            isset($files["size"][$index])
-                ? $files["size"][$index]
-                : 0
+        "name" => isset($files["name"][$index])
+            ? $files["name"][$index]
+            : "",
+        "type" => isset($files["type"][$index])
+            ? $files["type"][$index]
+            : "",
+        "tmp_name" => isset($files["tmp_name"][$index])
+            ? $files["tmp_name"][$index]
+            : "",
+        "error" => isset($files["error"][$index])
+            ? $files["error"][$index]
+            : UPLOAD_ERR_NO_FILE,
+        "size" => isset($files["size"][$index])
+            ? $files["size"][$index]
+            : 0
     ];
 }
 
 function productImageEnsureGdWebpSupport(){
     if(!extension_loaded("gd")){
-        return
-            "El servidor PHP no tiene habilitada la extensión GD.";
+        return "El servidor PHP no tiene habilitada la extensión GD.";
     }
 
     if(!function_exists("imagewebp")){
-        return
-            "La instalación de GD no tiene soporte WebP habilitado.";
+        return "La instalación de GD no tiene soporte WebP habilitado.";
     }
 
     return "";
 }
 
 function productImageDetectType($tmpPath){
-    $imageType =
-        @exif_imagetype(
-            $tmpPath
-        );
+    $imageType = @exif_imagetype($tmpPath);
 
     if($imageType === IMAGETYPE_JPEG){
         return IMAGETYPE_JPEG;
@@ -568,30 +556,19 @@ function productImageCreateSource(
     $imageType
 ){
     if($imageType === IMAGETYPE_JPEG){
-        return
-            @imagecreatefromjpeg(
-                $tmpPath
-            );
+        return @imagecreatefromjpeg($tmpPath);
     }
 
     if($imageType === IMAGETYPE_PNG){
-        return
-            @imagecreatefrompng(
-                $tmpPath
-            );
+        return @imagecreatefrompng($tmpPath);
     }
 
     if(
         defined("IMAGETYPE_WEBP") &&
         $imageType === IMAGETYPE_WEBP &&
-        function_exists(
-            "imagecreatefromwebp"
-        )
+        function_exists("imagecreatefromwebp")
     ){
-        return
-            @imagecreatefromwebp(
-                $tmpPath
-            );
+        return @imagecreatefromwebp($tmpPath);
     }
 
     return false;
@@ -610,10 +587,7 @@ function productImageApplyJpegOrientation(
         return $image;
     }
 
-    $exif =
-        @exif_read_data(
-            $tmpPath
-        );
+    $exif = @exif_read_data($tmpPath);
 
     if(
         !$exif ||
@@ -622,32 +596,15 @@ function productImageApplyJpegOrientation(
         return $image;
     }
 
-    $orientation =
-        (int)$exif["Orientation"];
-
+    $orientation = (int)$exif["Orientation"];
     $rotated = false;
 
     if($orientation === 3){
-        $rotated =
-            @imagerotate(
-                $image,
-                180,
-                0
-            );
+        $rotated = @imagerotate($image, 180, 0);
     }else if($orientation === 6){
-        $rotated =
-            @imagerotate(
-                $image,
-                -90,
-                0
-            );
+        $rotated = @imagerotate($image, -90, 0);
     }else if($orientation === 8){
-        $rotated =
-            @imagerotate(
-                $image,
-                90,
-                0
-            );
+        $rotated = @imagerotate($image, 90, 0);
     }
 
     if($rotated !== false){
@@ -669,34 +626,21 @@ function productImageResize($source){
         return false;
     }
 
-    $maxHeight =
-        productImageMaxHeight();
+    $maxHeight = productImageMaxHeight();
+    $maxWidth = productImageMaxWidth();
 
-    $maxWidth =
-        productImageMaxWidth();
+    $heightScale = $maxHeight / $sourceHeight;
+    $widthScale = $maxWidth > 0
+        ? $maxWidth / $sourceWidth
+        : PHP_FLOAT_MAX;
 
-    $heightScale =
-        $maxHeight /
-        $sourceHeight;
-
-    $widthScale =
-        $maxWidth > 0
-            ? $maxWidth /
-                $sourceWidth
-            : PHP_FLOAT_MAX;
-
-    $scale =
-        min(
-            $heightScale,
-            $widthScale
-        );
+    $scale = min(
+        $heightScale,
+        $widthScale
+    );
 
     if(!productImageUpscaleSmall()){
-        $scale =
-            min(
-                1,
-                $scale
-            );
+        $scale = min(1, $scale);
     }
 
     if(
@@ -706,52 +650,39 @@ function productImageResize($source){
         $scale = 1;
     }
 
-    $targetWidth =
-        max(
-            1,
-            (int)round(
-                $sourceWidth *
-                $scale
-            )
-        );
+    $targetWidth = max(
+        1,
+        (int)round(
+            $sourceWidth * $scale
+        )
+    );
 
-    $targetHeight =
-        max(
-            1,
-            (int)round(
-                $sourceHeight *
-                $scale
-            )
-        );
+    $targetHeight = max(
+        1,
+        (int)round(
+            $sourceHeight * $scale
+        )
+    );
 
-    $destination =
-        imagecreatetruecolor(
-            $targetWidth,
-            $targetHeight
-        );
+    $destination = imagecreatetruecolor(
+        $targetWidth,
+        $targetHeight
+    );
 
     if($destination === false){
         return false;
     }
 
-    imagealphablending(
-        $destination,
-        false
-    );
+    imagealphablending($destination, false);
+    imagesavealpha($destination, true);
 
-    imagesavealpha(
+    $transparent = imagecolorallocatealpha(
         $destination,
-        true
+        0,
+        0,
+        0,
+        127
     );
-
-    $transparent =
-        imagecolorallocatealpha(
-            $destination,
-            0,
-            0,
-            0,
-            127
-        );
 
     imagefill(
         $destination,
@@ -760,29 +691,25 @@ function productImageResize($source){
         $transparent
     );
 
-    $resampled =
-        imagecopyresampled(
-            $destination,
-            $source,
-            0,
-            0,
-            0,
-            0,
-            $targetWidth,
-            $targetHeight,
-            $sourceWidth,
-            $sourceHeight
-        );
+    $resampled = imagecopyresampled(
+        $destination,
+        $source,
+        0,
+        0,
+        0,
+        0,
+        $targetWidth,
+        $targetHeight,
+        $sourceWidth,
+        $sourceHeight
+    );
 
     if(!$resampled){
         imagedestroy($destination);
         return false;
     }
 
-    imagealphablending(
-        $destination,
-        true
-    );
+    imagealphablending($destination, true);
 
     return $destination;
 }
@@ -794,31 +721,17 @@ function productImageWatermarkCoordinates(
     $boxHeight,
     $margin
 ){
-    $position =
-        productImageWatermarkPosition();
+    $position = productImageWatermarkPosition();
 
-    $left = max(
-        0,
-        $margin
-    );
-
+    $left = max(0, $margin);
     $right = max(
         0,
-        $imageWidth -
-        $boxWidth -
-        $margin
+        $imageWidth - $boxWidth - $margin
     );
-
-    $top = max(
-        0,
-        $margin
-    );
-
+    $top = max(0, $margin);
     $bottom = max(
         0,
-        $imageHeight -
-        $boxHeight -
-        $margin
+        $imageHeight - $boxHeight - $margin
     );
 
     if($position === "top-left"){
@@ -870,9 +783,109 @@ function productImageApplyWatermark(
         return;
     }
 
-    productImageApplyOfficialLogoWatermark(
-        $image
+    productImageApplyOfficialLogoWatermark($image);
+}
+
+function productImageTemporaryDirectory(){
+    $baseDirectory = rtrim(
+        (string)sys_get_temp_dir(),
+        DIRECTORY_SEPARATOR
     );
+
+    if($baseDirectory === ""){
+        return "";
+    }
+
+    $directory =
+        $baseDirectory .
+        DIRECTORY_SEPARATOR .
+        "reggaeton-el-real" .
+        DIRECTORY_SEPARATOR .
+        "product-images";
+
+    if(
+        !is_dir($directory) &&
+        !@mkdir(
+            $directory,
+            0700,
+            true
+        ) &&
+        !is_dir($directory)
+    ){
+        return "";
+    }
+
+    @chmod($directory, 0700);
+
+    return $directory;
+}
+
+function productImageRegisterTemporaryProcessedPath($path){
+    $path = trim((string)$path);
+
+    if($path === ""){
+        return;
+    }
+
+    if(!isset($GLOBALS["productImageTemporaryProcessedPaths"])){
+        $GLOBALS["productImageTemporaryProcessedPaths"] = [];
+    }
+
+    $GLOBALS["productImageTemporaryProcessedPaths"][$path] = true;
+
+    if(!empty($GLOBALS["productImageTemporaryCleanupRegistered"])){
+        return;
+    }
+
+    $GLOBALS["productImageTemporaryCleanupRegistered"] = true;
+
+    register_shutdown_function(function(){
+        $paths = isset($GLOBALS["productImageTemporaryProcessedPaths"])
+            ? array_keys($GLOBALS["productImageTemporaryProcessedPaths"])
+            : [];
+
+        if(count($paths) > 0){
+            productImageCleanupUploadedPaths($paths);
+        }
+    });
+}
+
+function productImageResolveTemporaryProcessedPath($path){
+    $path = trim((string)$path);
+
+    if($path === ""){
+        return "";
+    }
+
+    $temporaryDirectory = productImageTemporaryDirectory();
+
+    if($temporaryDirectory === ""){
+        return "";
+    }
+
+    $realDirectory = realpath($temporaryDirectory);
+    $realPath = realpath($path);
+
+    if(
+        $realDirectory === false ||
+        $realPath === false ||
+        !is_file($realPath)
+    ){
+        return "";
+    }
+
+    $prefix =
+        rtrim(
+            $realDirectory,
+            DIRECTORY_SEPARATOR
+        ) .
+        DIRECTORY_SEPARATOR;
+
+    if(strpos($realPath, $prefix) !== 0){
+        return "";
+    }
+
+    return $realPath;
 }
 
 function productImageBuildDestination($role){
@@ -884,41 +897,19 @@ function productImageBuildDestination($role){
             "ok" => false,
             "relative" => "",
             "full" => "",
-            "error" =>
-                "El tipo de imagen no es válido."
+            "error" => "El tipo de imagen no es válido."
         ];
     }
 
-    $relativeDirectory =
-        "pictures/products/" .
-        date("Y") .
-        "/" .
-        date("m");
+    $temporaryDirectory = productImageTemporaryDirectory();
 
-    $fullDirectory =
-        __DIR__ .
-        DIRECTORY_SEPARATOR .
-        str_replace(
-            "/",
-            DIRECTORY_SEPARATOR,
-            $relativeDirectory
-        );
-
-    if(
-        !is_dir($fullDirectory) &&
-        !@mkdir(
-            $fullDirectory,
-            0775,
-            true
-        ) &&
-        !is_dir($fullDirectory)
-    ){
+    if($temporaryDirectory === ""){
         return [
             "ok" => false,
             "relative" => "",
             "full" => "",
             "error" =>
-                "No se pudo crear la carpeta de imágenes procesadas."
+                "No se pudo preparar el almacenamiento temporal de imágenes."
         ];
     }
 
@@ -930,16 +921,15 @@ function productImageBuildDestination($role){
         ) .
         ".webp";
 
+    $fullPath =
+        $temporaryDirectory .
+        DIRECTORY_SEPARATOR .
+        $fileName;
+
     return [
         "ok" => true,
-        "relative" =>
-            $relativeDirectory .
-            "/" .
-            $fileName,
-        "full" =>
-            $fullDirectory .
-            DIRECTORY_SEPARATOR .
-            $fileName,
+        "relative" => $fullPath,
+        "full" => $fullPath,
         "error" => ""
     ];
 }
@@ -950,8 +940,7 @@ function productImageSaveUploadedFile(
 ){
     if(
         !isset($file["error"]) ||
-        $file["error"] ===
-            UPLOAD_ERR_NO_FILE
+        $file["error"] === UPLOAD_ERR_NO_FILE
     ){
         return [
             "ok" => true,
@@ -961,38 +950,30 @@ function productImageSaveUploadedFile(
         ];
     }
 
-    if(
-        $file["error"] !==
-        UPLOAD_ERR_OK
-    ){
+    if($file["error"] !== UPLOAD_ERR_OK){
         return [
             "ok" => false,
             "uploaded" => false,
             "path" => "",
-            "error" =>
-                "Error al cargar la imagen."
+            "error" => "Error al cargar la imagen."
         ];
     }
 
     if(
         !isset($file["tmp_name"]) ||
-        !is_uploaded_file(
-            $file["tmp_name"]
-        )
+        !is_uploaded_file($file["tmp_name"])
     ){
         return [
             "ok" => false,
             "uploaded" => false,
             "path" => "",
-            "error" =>
-                "El archivo cargado no es válido."
+            "error" => "El archivo cargado no es válido."
         ];
     }
 
     if(
         isset($file["size"]) &&
-        $file["size"] >
-            productImageMaxUploadBytes()
+        $file["size"] > productImageMaxUploadBytes()
     ){
         return [
             "ok" => false,
@@ -1010,8 +991,7 @@ function productImageSaveUploadedFile(
         ];
     }
 
-    $gdError =
-        productImageEnsureGdWebpSupport();
+    $gdError = productImageEnsureGdWebpSupport();
 
     if($gdError !== ""){
         return [
@@ -1022,25 +1002,20 @@ function productImageSaveUploadedFile(
         ];
     }
 
-    $imageType =
-        productImageDetectType(
-            $file["tmp_name"]
-        );
+    $imageType = productImageDetectType(
+        $file["tmp_name"]
+    );
 
     if($imageType === 0){
         return [
             "ok" => false,
             "uploaded" => false,
             "path" => "",
-            "error" =>
-                "Solo se permiten imágenes JPG, PNG o WebP."
+            "error" => "Solo se permiten imágenes JPG, PNG o WebP."
         ];
     }
 
-    $imageInfo =
-        @getimagesize(
-            $file["tmp_name"]
-        );
+    $imageInfo = @getimagesize($file["tmp_name"]);
 
     if(
         !$imageInfo ||
@@ -1051,28 +1026,18 @@ function productImageSaveUploadedFile(
             "ok" => false,
             "uploaded" => false,
             "path" => "",
-            "error" =>
-                "No se pudo leer el tamaño de la imagen."
+            "error" => "No se pudo leer el tamaño de la imagen."
         ];
     }
 
-    $sourceWidth =
-        (int)$imageInfo[0];
-
-    $sourceHeight =
-        (int)$imageInfo[1];
-
-    $maxPixels =
-        productImageMaxMegapixels() *
-        1000000;
+    $sourceWidth = (int)$imageInfo[0];
+    $sourceHeight = (int)$imageInfo[1];
+    $maxPixels = productImageMaxMegapixels() * 1000000;
 
     if(
         $sourceWidth <= 0 ||
         $sourceHeight <= 0 ||
-        (
-            $sourceWidth *
-            $sourceHeight
-        ) > $maxPixels
+        ($sourceWidth * $sourceHeight) > $maxPixels
     ){
         return [
             "ok" => false,
@@ -1085,34 +1050,27 @@ function productImageSaveUploadedFile(
         ];
     }
 
-    $source =
-        productImageCreateSource(
-            $file["tmp_name"],
-            $imageType
-        );
+    $source = productImageCreateSource(
+        $file["tmp_name"],
+        $imageType
+    );
 
     if($source === false){
         return [
             "ok" => false,
             "uploaded" => false,
             "path" => "",
-            "error" =>
-                "No se pudo decodificar la imagen."
+            "error" => "No se pudo decodificar la imagen."
         ];
     }
 
-    $source =
-        productImageApplyJpegOrientation(
-            $source,
-            $file["tmp_name"],
-            $imageType
-        );
+    $source = productImageApplyJpegOrientation(
+        $source,
+        $file["tmp_name"],
+        $imageType
+    );
 
-    $processed =
-        productImageResize(
-            $source
-        );
-
+    $processed = productImageResize($source);
     imagedestroy($source);
 
     if($processed === false){
@@ -1120,8 +1078,7 @@ function productImageSaveUploadedFile(
             "ok" => false,
             "uploaded" => false,
             "path" => "",
-            "error" =>
-                "No se pudo redimensionar la imagen."
+            "error" => "No se pudo redimensionar la imagen."
         ];
     }
 
@@ -1130,10 +1087,9 @@ function productImageSaveUploadedFile(
         (int)$role
     );
 
-    $destination =
-        productImageBuildDestination(
-            (int)$role
-        );
+    $destination = productImageBuildDestination(
+        (int)$role
+    );
 
     if(!$destination["ok"]){
         imagedestroy($processed);
@@ -1142,124 +1098,77 @@ function productImageSaveUploadedFile(
             "ok" => false,
             "uploaded" => false,
             "path" => "",
-            "error" =>
-                $destination["error"]
+            "error" => $destination["error"]
         ];
     }
 
-    $saved =
-        @imagewebp(
-            $processed,
-            $destination["full"],
-            productImageWebpQuality()
-        );
+    $saved = @imagewebp(
+        $processed,
+        $destination["full"],
+        productImageWebpQuality()
+    );
 
     imagedestroy($processed);
 
     if(
         !$saved ||
-        !is_file(
-            $destination["full"]
-        )
+        !is_file($destination["full"])
     ){
-        if(
-            is_file(
-                $destination["full"]
-            )
-        ){
-            @unlink(
-                $destination["full"]
-            );
+        if(is_file($destination["full"])){
+            @unlink($destination["full"]);
         }
 
         return [
             "ok" => false,
             "uploaded" => false,
             "path" => "",
-            "error" =>
-                "La imagen no pudo convertirse y guardarse como WebP."
+            "error" => "La imagen no pudo convertirse y guardarse como WebP."
         ];
     }
 
-    if(
-        filesize(
-            $destination["full"]
-        ) <= 0
-    ){
-        @unlink(
-            $destination["full"]
-        );
+    if(filesize($destination["full"]) <= 0){
+        @unlink($destination["full"]);
 
         return [
             "ok" => false,
             "uploaded" => false,
             "path" => "",
-            "error" =>
-                "El archivo WebP generado no es válido."
+            "error" => "El archivo WebP generado no es válido."
         ];
     }
+
+    productImageRegisterTemporaryProcessedPath(
+        $destination["full"]
+    );
 
     return [
         "ok" => true,
         "uploaded" => true,
-        "path" =>
-            $destination["relative"],
+        "path" => $destination["full"],
         "error" => ""
     ];
 }
 
-function productImageCleanupUploadedPaths(
-    $paths
-){
-    foreach($paths as $path){
-        $validated =
-            productImageValidateExistingPath(
-                $path
-            );
+function productImageCleanupUploadedPaths($paths){
+    foreach((array)$paths as $path){
+        $resolved = productImageResolveTemporaryProcessedPath($path);
 
-        if($validated === ""){
+        if($resolved === ""){
             continue;
         }
 
-        $relative =
-            substr(
-                $validated,
-                strlen("pictures/")
-            );
-
-        $fullPath =
-            __DIR__ .
-            DIRECTORY_SEPARATOR .
-            "pictures" .
-            DIRECTORY_SEPARATOR .
-            str_replace(
-                "/",
-                DIRECTORY_SEPARATOR,
-                $relative
-            );
-
-        if(is_file($fullPath)){
-            @unlink($fullPath);
-        }
+        @unlink($resolved);
     }
 }
 
-function productImageValidateSlots(
-    $slots
-){
+function productImageValidateSlots($slots){
     $errors = [];
     $imageCount = 0;
 
-    for(
-        $role = 1;
-        $role <= 5;
-        $role++
-    ){
+    for($role = 1; $role <= 5; $role++){
         if(
             isset($slots[$role]) &&
-            trim(
-                (string)$slots[$role]
-            ) !== ""
+            trim((string)$slots[$role]) !== ""
         ){
             $imageCount++;
         }
@@ -1267,22 +1176,17 @@ function productImageValidateSlots(
 
     if(
         !isset($slots[1]) ||
-        trim(
-            (string)$slots[1]
-        ) === ""
+        trim((string)$slots[1]) === ""
     ){
-        $errors[] =
-            "La Portada web (1) es obligatoria.";
+        $errors[] = "La Portada web (1) es obligatoria.";
     }
 
     if($imageCount < 2){
-        $errors[] =
-            "Cada CD debe tener por lo menos 2 imágenes.";
+        $errors[] = "Cada CD debe tener por lo menos 2 imágenes.";
     }
 
     if($imageCount > 5){
-        $errors[] =
-            "Cada CD puede tener como máximo 5 imágenes.";
+        $errors[] = "Cada CD puede tener como máximo 5 imágenes.";
     }
 
     return $errors;
@@ -1302,49 +1206,35 @@ function productImageBuildSlotsFromManagerRequest(){
 
     $roles =
         isset($_POST["product_image_roles"]) &&
-        is_array(
-            $_POST["product_image_roles"]
-        )
+        is_array($_POST["product_image_roles"])
             ? $_POST["product_image_roles"]
             : [];
 
     $existingPaths =
-        isset(
-            $_POST["product_image_existing"]
-        ) &&
-        is_array(
-            $_POST["product_image_existing"]
-        )
+        isset($_POST["product_image_existing"]) &&
+        is_array($_POST["product_image_existing"])
             ? $_POST["product_image_existing"]
             : [];
 
-    $files =
-        isset(
-            $_FILES["product_image_files"]
-        )
-            ? $_FILES["product_image_files"]
-            : null;
+    $files = isset($_FILES["product_image_files"])
+        ? $_FILES["product_image_files"]
+        : null;
 
     $usedRoles = [];
 
-    foreach(
-        $roles
-        as $index => $roleValue
-    ){
+    foreach($roles as $index => $roleValue){
         $role = (int)$roleValue;
 
         if(
             $role < 1 ||
             $role > 5
         ){
-            $errors[] =
-                "Se recibió un tipo de imagen inválido.";
+            $errors[] = "Se recibió un tipo de imagen inválido.";
             continue;
         }
 
         if(isset($usedRoles[$role])){
-            $labels =
-                productImageRoleLabels();
+            $labels = productImageRoleLabels();
 
             $errors[] =
                 "El tipo " .
@@ -1352,78 +1242,64 @@ function productImageBuildSlotsFromManagerRequest(){
                 " - " .
                 $labels[$role] .
                 " está repetido.";
-
             continue;
         }
 
         $usedRoles[$role] = true;
 
-        $existingPath =
-            isset(
+        $existingPath = isset($existingPaths[$index])
+            ? productImageValidateExistingPath(
                 $existingPaths[$index]
             )
-                ? productImageValidateExistingPath(
-                    $existingPaths[$index]
-                )
-                : "";
+            : "";
 
-        $finalPath =
-            $existingPath;
+        $finalPath = $existingPath;
 
         if($files !== null){
-            $file =
-                productImageGetUploadedFileAt(
-                    $files,
-                    $index
+            $file = productImageGetUploadedFileAt(
+                $files,
+                $index
+            );
+
+            if($file["error"] !== UPLOAD_ERR_NO_FILE){
+                $savedImage = productImageSaveUploadedFile(
+                    $file,
+                    $role
                 );
 
-            if(
-                $file["error"] !==
-                UPLOAD_ERR_NO_FILE
-            ){
-                $savedImage =
-                    productImageSaveUploadedFile(
-                        $file,
-                        $role
-                    );
-
                 if(!$savedImage["ok"]){
-                    $errors[] =
-                        $savedImage["error"];
+                    $errors[] = $savedImage["error"];
                     continue;
                 }
 
-                if(
-                    $savedImage["uploaded"]
-                ){
-                    $finalPath =
-                        $savedImage["path"];
-
-                    $uploadedPaths[] =
-                        $savedImage["path"];
+                if($savedImage["uploaded"]){
+                    $finalPath = $savedImage["path"];
+                    $uploadedPaths[] = $savedImage["path"];
                 }
             }
         }
 
         if($finalPath !== ""){
-            $slots[$role] =
-                $finalPath;
+            $slots[$role] = $finalPath;
         }
     }
 
     foreach(
-        productImageValidateSlots(
-            $slots
-        )
+        productImageValidateSlots($slots)
         as $validationError
     ){
-        $errors[] =
-            $validationError;
+        $errors[] = $validationError;
+    }
+
+    $ok = count($errors) === 0;
+
+    if(!$ok && count($uploadedPaths) > 0){
+        productImageCleanupUploadedPaths($uploadedPaths);
+        $uploadedPaths = [];
     }
 
     return [
-        "ok" =>
-            count($errors) === 0,
+        "ok" => $ok,
         "slots" => $slots,
         "errors" => $errors,
         "uploaded" => $uploadedPaths

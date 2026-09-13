@@ -440,6 +440,7 @@ if(!function_exists("imageStorageAzureUploadFile")){
                 CURLOPT_TIMEOUT => 60,
                 CURLOPT_HTTPHEADER => [
                     "x-ms-blob-type: BlockBlob",
+                    "x-ms-blob-cache-control: public, max-age=31536000, immutable",
                     "Content-Type: " . trim((string)$contentType),
                     "Content-Length: " . $size,
                     "Expect:"

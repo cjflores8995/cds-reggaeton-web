@@ -195,7 +195,7 @@ if(
 
 <script
     defer
-    src="admin-security.js?v=2"
+    src="admin-security.js?v=3"
 ></script>
 <script
     defer

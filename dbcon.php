@@ -24,10 +24,22 @@ adminUploadEnsurePicturesDirectory();
  */
 publicRequestSecurityBootstrap();
 
-$envFile = __DIR__ . "/env.php";
+/*
+ * Production secrets live outside the public web root. On Hostinger the
+ * sibling private_config directory is the deployment signal: if it exists,
+ * env.php must be readable there and we intentionally do not fall back to a
+ * public_html copy. Local Laragon keeps using the repository-local env.php.
+ */
+$privateEnvDirectory = dirname(__DIR__) . "/private_config";
 
-if(!file_exists($envFile)){
-    die("Configuration file env.php was not found.");
+if(is_dir($privateEnvDirectory)){
+    $envFile = $privateEnvDirectory . "/env.php";
+}else{
+    $envFile = __DIR__ . "/env.php";
+}
+
+if(!is_readable($envFile)){
+    die("Configuration file env.php was not found or is not readable.");
 }
 
 require_once $envFile;

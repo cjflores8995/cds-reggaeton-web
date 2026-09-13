@@ -1,6 +1,12 @@
+@media(max-width:700px){
+    .admin-page-content .admin-cd-grid{
+        grid-template-columns:repeat(2,minmax(0,1fr)) !important;
+    }
+}
+
 @media(max-width:440px){
-    .admin-cd-grid{
-        grid-template-columns:repeat(2,minmax(0,1fr));
+    .admin-page-content .admin-cd-grid{
+        grid-template-columns:repeat(2,minmax(0,1fr)) !important;
     }
 
     .admin-cd-card__body{

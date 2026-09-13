@@ -20,10 +20,12 @@ $allowedHosts = [
 
 /*
  * Product image storage.
- * Keep local while developing without Azure. Set azure when validating Blob
- * Storage locally or when App Service becomes the production host.
+ * Azure Blob is the normal product-media backend for this project. Processed
+ * WebP files use the operating-system temp directory only while PHP transforms
+ * them; they are not persisted under /pictures/products before being uploaded.
+ * The local driver remains available only as an explicit development fallback.
  */
-$imageStorageDriver = "local";
+$imageStorageDriver = "azure";
 $azureStorageAccount = "reggaetonelrealmedia";
 $azureStorageContainer = "product-web";
 $azureStorageEndpoint = "https://reggaetonelrealmedia.blob.core.windows.net/";

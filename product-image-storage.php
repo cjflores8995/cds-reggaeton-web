@@ -1,5 +1,6 @@
 <?php
 require_once(__DIR__ . "/image-storage.php");
+require_once(__DIR__ . "/productimages.php");
 
 function productImageStorageCanonicalReference($reference){
     $reference = trim((string)$reference);
@@ -30,17 +31,50 @@ function productImageStorageProductSegment($postid){
     return trim((string)$postid);
 }
 
+function productImageStorageTemporarySource($value){
+    if(!function_exists("productImageResolveTemporaryProcessedPath")){
+        return "";
+    }
+
+    return productImageResolveTemporaryProcessedPath($value);
+}
+
 function productImageStorageCleanupReferences($references){
     $results = [];
 
     foreach((array)$references as $reference){
-        $reference = productImageStorageCanonicalReference($reference);
+        $rawReference = trim((string)$reference);
 
-        if($reference === ""){
+        if($rawReference === ""){
             continue;
         }
 
-        $results[$reference] = imageStorageDelete($reference);
+        $temporarySource = productImageStorageTemporarySource(
+            $rawReference
+        );
+
+        if($temporarySource !== ""){
+            productImageCleanupUploadedPaths([
+                $temporarySource
+            ]);
+
+            $results[$rawReference] = [
+                "ok" => true,
+                "deleted" => true,
+                "error" => ""
+            ];
+            continue;
+        }
+
+        $canonical = productImageStorageCanonicalReference(
+            $rawReference
+        );
+
+        if($canonical === ""){
+            continue;
+        }
+
+        $results[$canonical] = imageStorageDelete($canonical);
     }
 
     return $results;
@@ -57,7 +91,10 @@ function productImageStorageDatabaseValues($slots){
 
         if($role === 1){
             if(strpos($reference, "pictures/") === 0){
-                $picture = substr($reference, strlen("pictures/"));
+                $picture = substr(
+                    $reference,
+                    strlen("pictures/")
+                );
             }else{
                 $picture = $reference;
             }
@@ -96,7 +133,9 @@ function productImageStorageSlotsFromDatabase($picture, $moreimages){
             continue;
         }
 
-        $reference = productImageStorageCanonicalReference($items[$index]);
+        $reference = productImageStorageCanonicalReference(
+            $items[$index]
+        );
 
         if($reference !== ""){
             $slots[$index + 2] = $reference;
@@ -119,10 +158,6 @@ function productImageStorageValidateExistingReference($reference){
         return strpos($key, "products/") === 0
             ? $canonical
             : "";
-    }
-
-    if(!function_exists("productImageValidateExistingPath")){
-        return "";
     }
 
     return productImageValidateExistingPath($canonical);
@@ -216,12 +251,22 @@ function productImageStorageBuildSlotsFromManagerRequest(){
         }
     }
 
-    foreach(productImageValidateSlots($slots) as $validationError){
+    foreach(
+        productImageValidateSlots($slots)
+        as $validationError
+    ){
         $errors[] = $validationError;
     }
 
+    $ok = count($errors) === 0;
+
+    if(!$ok && count($uploadedPaths) > 0){
+        productImageCleanupUploadedPaths($uploadedPaths);
+        $uploadedPaths = [];
+    }
+
     return [
-        "ok" => count($errors) === 0,
+        "ok" => $ok,
         "slots" => $slots,
         "errors" => $errors,
         "uploaded" => $uploadedPaths
@@ -260,6 +305,16 @@ function productImageStoragePromoteSlots(
     $postid,
     $newlyUploadedReferences = []
 ){
+    $temporarySources = [];
+
+    foreach((array)$newlyUploadedReferences as $reference){
+        $resolved = productImageStorageTemporarySource($reference);
+
+        if($resolved !== ""){
+            $temporarySources[$resolved] = true;
+        }
+    }
+
     $normalizedSlots = [
         1 => "",
         2 => "",
@@ -269,36 +324,36 @@ function productImageStoragePromoteSlots(
     ];
 
     foreach($normalizedSlots as $role => $_){
-        if(isset($slots[$role])){
-            $normalizedSlots[$role] =
-                productImageStorageCanonicalReference(
-                    $slots[$role]
-                );
+        if(!isset($slots[$role])){
+            continue;
         }
-    }
 
-    $newlyUploaded = [];
+        $rawReference = trim((string)$slots[$role]);
+        $temporarySource = productImageStorageTemporarySource(
+            $rawReference
+        );
 
-    foreach((array)$newlyUploadedReferences as $reference){
-        $canonical = productImageStorageCanonicalReference($reference);
-
-        if($canonical !== ""){
-            $newlyUploaded[$canonical] = true;
+        if(
+            $temporarySource !== "" &&
+            isset($temporarySources[$temporarySource])
+        ){
+            $normalizedSlots[$role] = $temporarySource;
+            continue;
         }
-    }
 
-    if(imageStorageDriver() !== "azure"){
-        return [
-            "ok" => true,
-            "slots" => $normalizedSlots,
-            "stored" => array_keys($newlyUploaded),
-            "error" => ""
-        ];
+        $normalizedSlots[$role] =
+            productImageStorageCanonicalReference(
+                $rawReference
+            );
     }
 
     $validation = imageStorageValidateConfiguration();
 
     if(!$validation["ok"]){
+        productImageCleanupUploadedPaths(
+            array_keys($temporarySources)
+        );
+
         return [
             "ok" => false,
             "slots" => $normalizedSlots,
@@ -307,66 +362,60 @@ function productImageStoragePromoteSlots(
         ];
     }
 
+    if(count($temporarySources) === 0){
+        return [
+            "ok" => true,
+            "slots" => $normalizedSlots,
+            "stored" => [],
+            "error" => ""
+        ];
+    }
+
     $productSegment = productImageStorageProductSegment($postid);
 
     if($productSegment === ""){
+        productImageCleanupUploadedPaths(
+            array_keys($temporarySources)
+        );
+
         return [
             "ok" => false,
             "slots" => $normalizedSlots,
             "stored" => [],
-            "error" => "No se pudo generar la ruta Azure del producto."
+            "error" => "No se pudo generar la ruta de almacenamiento del producto."
         ];
     }
 
     $promotedSlots = $normalizedSlots;
     $stored = [];
-    $localToDelete = [];
 
     for($role = 1; $role <= 5; $role++){
-        $reference = $normalizedSlots[$role];
+        $sourcePath = productImageStorageTemporarySource(
+            $normalizedSlots[$role]
+        );
 
-        if(
-            $reference === "" ||
-            strpos($reference, "blob:") === 0 ||
-            !isset($newlyUploaded[$reference])
-        ){
+        if($sourcePath === ""){
             continue;
         }
 
-        $localKey = imageStorageKeyFromReference($reference);
-        $localPath = imageStorageLocalPath($localKey);
-
-        if(
-            $localKey === "" ||
-            $localPath === "" ||
-            !is_file($localPath) ||
-            !is_readable($localPath)
-        ){
-            productImageStorageCleanupReferences($stored);
-
-            return [
-                "ok" => false,
-                "slots" => $normalizedSlots,
-                "stored" => [],
-                "error" => "No se encontró el WebP procesado antes de enviarlo a Azure."
-            ];
-        }
-
-        $fileName = basename($localKey);
-        $azureKey =
+        $fileName = basename($sourcePath);
+        $storageKey =
             "products/" .
             $productSegment .
             "/" .
             $fileName;
 
         $upload = imageStorageStoreFile(
-            $localPath,
-            $azureKey,
+            $sourcePath,
+            $storageKey,
             "image/webp"
         );
 
         if(!$upload["ok"]){
             productImageStorageCleanupReferences($stored);
+            productImageCleanupUploadedPaths(
+                array_keys($temporarySources)
+            );
 
             return [
                 "ok" => false,
@@ -378,12 +427,11 @@ function productImageStoragePromoteSlots(
 
         $promotedSlots[$role] = $upload["reference"];
         $stored[] = $upload["reference"];
-        $localToDelete[] = $reference;
     }
 
-    foreach($localToDelete as $reference){
-        imageStorageDelete($reference);
-    }
+    productImageCleanupUploadedPaths(
+        array_keys($temporarySources)
+    );
 
     return [
         "ok" => true,

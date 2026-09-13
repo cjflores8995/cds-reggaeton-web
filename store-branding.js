@@ -42,19 +42,22 @@
                 "justify-self:start;" +
                 "gap:0;" +
                 "min-width:0;" +
+                "line-height:0;" +
             "}" +
             ".brand--official .brand__official-logo{" +
                 "display:block;" +
-                "width:230px;" +
-                "height:58px;" +
                 "max-width:100%;" +
                 "object-fit:contain;" +
                 "object-position:left center;" +
             "}" +
+            ".brand--official .brand__official-logo--desktop{" +
+                "width:182px;" +
+                "height:42px;" +
+            "}" +
             ".brand--official .brand__official-logo--mobile{" +
                 "display:none;" +
-                "width:44px;" +
-                "height:44px;" +
+                "width:40px;" +
+                "height:40px;" +
                 "object-fit:contain;" +
             "}" +
             "@media(max-width:700px){" +

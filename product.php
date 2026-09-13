@@ -50,11 +50,7 @@ function legacyImageUrl(string $path, string $storeBaseUrl): string
         return '';
     }
 
-    if (str_starts_with($path, 'pictures/')) {
-        return $storeBaseUrl . ltrim($path, '/');
-    }
-
-    return $storeBaseUrl . 'pictures/' . ltrim($path, '/');
+    return seoAbsoluteImageUrl($path);
 }
 
 $storeBaseUrl = buildStoreBaseUrl();
@@ -230,7 +226,7 @@ if ($tableImagesExists && mysqli_num_rows($tableImagesExists) > 0) {
                 continue;
             }
 
-            $url = $storeBaseUrl . ltrim($path, '/');
+            $url = seoAbsoluteImageUrl($path);
             $duplicate = false;
 
             foreach ($imagesByRole as $existingImage) {
@@ -614,6 +610,7 @@ if ($relatedResult) {
     <script type="application/ld+json"><?php echo seoJsonLd($seoProductJsonLd); ?></script>
 
     <link rel="stylesheet" href="<?php echo e($storeBaseUrl); ?>store.css?v=2">
+    <link rel="stylesheet" href="<?php echo e($storeBaseUrl); ?>store-branding.css?v=1">
     <link rel="stylesheet" href="<?php echo e($storeBaseUrl); ?>store-footer.css?v=1">
     <link rel="stylesheet" href="<?php echo e($storeBaseUrl); ?>seo.css?v=1">
 
@@ -646,9 +643,19 @@ if ($relatedResult) {
 
     <header class="site-header">
         <div class="page-shell site-header__main">
-            <a class="brand" href="<?php echo e($storeBaseUrl); ?>" aria-label="Ir al inicio">
-                <span class="brand__mark">CD</span>
-                <span class="brand__text">REGGAETON EL REAL</span>
+            <a class="brand brand--official" href="<?php echo e($storeBaseUrl); ?>" aria-label="Reggaeton El Real · Ir al inicio">
+                <img
+                    class="brand__official-logo brand__official-logo--desktop"
+                    src="<?php echo e($storeBaseUrl); ?>images/branding/originals/reggaeton-el-real-logo-horizontal-black.png"
+                    alt="Reggaeton El Real"
+                    decoding="async"
+                >
+                <img
+                    class="brand__official-logo brand__official-logo--mobile"
+                    src="<?php echo e($storeBaseUrl); ?>images/branding/originals/reggaeton-el-real-isotipo.png"
+                    alt="Reggaeton El Real"
+                    decoding="async"
+                >
             </a>
 
             <nav class="main-nav" aria-label="Navegación principal">
@@ -835,13 +842,9 @@ if ($relatedResult) {
                             <?php
                                 $relatedPicture = trim((string)($related['picture'] ?? ''));
 
-                                if ($relatedPicture !== '') {
-                                    $relatedImage = str_starts_with($relatedPicture, 'pictures/')
-                                        ? $storeBaseUrl . ltrim($relatedPicture, '/')
-                                        : $storeBaseUrl . 'pictures/' . ltrim($relatedPicture, '/');
-                                } else {
-                                    $relatedImage = $storeBaseUrl . 'images/defaultimg.jpg';
-                                }
+                                $relatedImage = $relatedPicture !== ''
+                                    ? seoAbsoluteImageUrl($relatedPicture)
+                                    : $storeBaseUrl . 'images/defaultimg.jpg';
 
                                 $relatedArtist = trim((string)($related['artist'] ?? ''));
                                 $relatedAlbum = trim((string)($related['album'] ?? ''));

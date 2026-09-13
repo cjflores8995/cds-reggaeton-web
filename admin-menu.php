@@ -3,6 +3,8 @@ if(!isset($baseurl)){
     require_once __DIR__ . "/config.php";
 }
 
+require_once __DIR__ . "/image-storage.php";
+
 if(!function_exists("adminMenuActiveSection")){
     function adminMenuActiveSection(){
         $script = isset($_SERVER["SCRIPT_NAME"])
@@ -71,11 +73,31 @@ function adminMenuClass($section, $current){
 
 $adminCsrfToken = adminAuthCsrfToken();
 $adminActionsUrl = "admin-actions.php";
+$adminMediaPublicBase = "";
+
+$adminAzureMediaConfig = imageStorageAzureConfig();
+
+if(
+    trim((string)($adminAzureMediaConfig["endpoint"] ?? "")) !== "" &&
+    trim((string)($adminAzureMediaConfig["container"] ?? "")) !== ""
+){
+    $adminMediaPublicBase =
+        rtrim(
+            (string)$adminAzureMediaConfig["endpoint"],
+            "/"
+        ) .
+        "/" .
+        rawurlencode(
+            (string)$adminAzureMediaConfig["container"]
+        ) .
+        "/";
+}
 ?>
 <aside
     class="admin-page-sidebar"
     data-admin-csrf-token="<?php echo htmlspecialchars($adminCsrfToken, ENT_QUOTES, "UTF-8"); ?>"
     data-admin-actions-url="<?php echo htmlspecialchars($adminActionsUrl, ENT_QUOTES, "UTF-8"); ?>"
+    data-admin-media-base="<?php echo htmlspecialchars($adminMediaPublicBase, ENT_QUOTES, "UTF-8"); ?>"
 >
     <div class="admin-page-logo">
         <a href="<?php echo htmlspecialchars($baseurl . "admin.php", ENT_QUOTES, "UTF-8"); ?>">
@@ -173,6 +195,10 @@ $adminActionsUrl = "admin-actions.php";
 <script
     defer
     src="<?php echo htmlspecialchars($baseurl . "admin-branding.js?v=1", ENT_QUOTES, "UTF-8"); ?>"
+></script>
+<script
+    defer
+    src="<?php echo htmlspecialchars($baseurl . "admin-media-resolver.js?v=1", ENT_QUOTES, "UTF-8"); ?>"
 ></script>
 
 <?php if($adminActiveSection === "home"){ ?>

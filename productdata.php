@@ -2,6 +2,7 @@
 session_start();
 require_once("config.php");
 require_once("productimages.php");
+require_once("product-image-storage.php");
 require_once("product-tiktok.php");
 
 header("Content-Type: application/json; charset=utf-8");
@@ -147,7 +148,7 @@ if($id > 0){
         "album" => trim((string)($row["album"] ?? "")),
         "title" => trim((string)($row["title"] ?? "")),
         "tiktok_url" => trim((string)($row["tiktok_url"] ?? "")),
-        "slots" => productImageSlotsFromDatabase(
+        "slots" => productImageStorageSlotsFromDatabase(
             $row["picture"],
             $row["moreimages"]
         )

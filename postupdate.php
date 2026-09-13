@@ -4,6 +4,7 @@ session_start();
 require_once("config.php");
 require_once("uilang.php");
 require_once("productimages.php");
+require_once("product-image-storage.php");
 require_once("artistshelper.php");
 require_once("product-tiktok.php");
 
@@ -342,12 +343,13 @@ $oldpicture =
 $oldmoreimages =
     (string)$row["moreimages"];
 
-$newpicture =
-    $oldpicture;
+$oldSlots =
+    productImageStorageSlotsFromDatabase(
+        $oldpicture,
+        $oldmoreimages
+    );
 
-$moreimages =
-    $oldmoreimages;
-
+$workingSlots = $oldSlots;
 $uploadedPaths = [];
 
 if(
@@ -355,10 +357,10 @@ if(
     $_POST["product_image_manager"] === "1"
 ){
     $imageResult =
-        productImageBuildSlotsFromManagerRequest();
+        productImageStorageBuildSlotsFromManagerRequest();
 
     if(!$imageResult["ok"]){
-        productImageCleanupUploadedPaths(
+        productImageStorageCleanupReferences(
             $imageResult["uploaded"]
         );
 
@@ -372,26 +374,26 @@ if(
         );
     }
 
-    $newpicture =
-        productImagePictureValue(
-            $imageResult["slots"]
-        );
-
-    $moreimages =
-        productImageSerializeMoreImages(
-            $imageResult["slots"]
-        );
+    $workingSlots =
+        $imageResult["slots"];
 
     $uploadedPaths =
         $imageResult["uploaded"];
 }else{
     /*
      * Legacy fallback in case the image manager cannot initialize.
+     * Conserva referencias locales o Azure ya existentes.
      */
-    $moreimages =
+    $legacyMoreImages =
         isset($_POST["moreimagesinput"])
             ? (string)$_POST["moreimagesinput"]
             : $oldmoreimages;
+
+    $workingSlots =
+        productImageStorageSlotsFromDatabase(
+            $oldpicture,
+            $legacyMoreImages
+        );
 
     if(
         isset($_FILES["newpicture"]) &&
@@ -418,19 +420,63 @@ if(
         }
 
         if($savedImage["uploaded"]){
-            $newpicture =
-                substr(
-                    productImageNormalizePath(
-                        $savedImage["path"]
-                    ),
-                    strlen("pictures/")
-                );
+            $workingSlots[1] =
+                $savedImage["path"];
 
             $uploadedPaths[] =
                 $savedImage["path"];
         }
     }
 }
+
+$productStorageSegment =
+    trim(
+        (string)(
+            $row["postid"] ??
+            ""
+        )
+    );
+
+if($productStorageSegment === ""){
+    $productStorageSegment =
+        (string)$id;
+}
+
+$storageResult =
+    productImageStoragePromoteSlots(
+        $workingSlots,
+        $productStorageSegment,
+        $uploadedPaths
+    );
+
+if(!$storageResult["ok"]){
+    productImageStorageCleanupReferences(
+        $uploadedPaths
+    );
+
+    postUpdateRespond(
+        false,
+        $storageResult["error"],
+        $id
+    );
+}
+
+$finalSlots =
+    $storageResult["slots"];
+
+$databaseValues =
+    productImageStorageDatabaseValues(
+        $finalSlots
+    );
+
+$newpicture =
+    $databaseValues["picture"];
+
+$moreimages =
+    $databaseValues["moreimages"];
+
+$storedReferences =
+    $storageResult["stored"];
 
 $titleRaw =
     $artistName .
@@ -493,8 +539,8 @@ $updateResult = mysqli_query(
 );
 
 if(!$updateResult){
-    productImageCleanupUploadedPaths(
-        $uploadedPaths
+    productImageStorageCleanupReferences(
+        $storedReferences
     );
 
     postUpdateRespond(
@@ -505,14 +551,21 @@ if(!$updateResult){
 }
 
 /*
- * Devuelve las rutas finales para sincronizar el image manager
- * sin recargar ni navegar fuera de admin.php.
+ * Primero confirma la BD y solo después elimina medios reemplazados o
+ * retirados. Así nunca se rompe el producto por borrar el archivo anterior
+ * antes de que la nueva referencia quede persistida.
  */
-$finalSlots =
-    productImageSlotsFromDatabase(
-        $newpicture,
-        $moreimages
+$obsoleteReferences =
+    productImageStorageReferencesNotInSlots(
+        $oldSlots,
+        $finalSlots
     );
+
+if(count($obsoleteReferences) > 0){
+    productImageStorageCleanupReferences(
+        $obsoleteReferences
+    );
+}
 
 postUpdateRespond(
     true,

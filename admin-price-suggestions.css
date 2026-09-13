@@ -1,0 +1,81 @@
+.admin-price-suggestion-host {
+    position: relative;
+}
+
+.admin-price-suggestions {
+    position: absolute;
+    z-index: 120;
+    left: 0;
+    right: 0;
+    top: calc(100% - 4px);
+    overflow: hidden;
+    max-height: 320px;
+    overflow-y: auto;
+    background: #fff;
+    border: 1px solid #d9d9d9;
+    border-radius: 8px;
+    box-shadow: 0 12px 28px rgba(0, 0, 0, 0.12);
+}
+
+.admin-price-suggestion {
+    display: flex;
+    width: 100%;
+    flex-direction: column;
+    gap: 3px;
+    padding: 11px 13px;
+    text-align: left;
+    color: #111;
+    background: #fff;
+    border: 0;
+    border-bottom: 1px solid #ededed;
+    cursor: pointer;
+}
+
+.admin-price-suggestion:last-child {
+    border-bottom: 0;
+}
+
+.admin-price-suggestion:hover,
+.admin-price-suggestion:focus {
+    background: #f6f6f6;
+    outline: none;
+}
+
+.admin-price-suggestion-title {
+    font-size: 13px;
+    font-weight: 700;
+    line-height: 1.35;
+}
+
+.admin-price-suggestion-meta {
+    font-size: 12px;
+    color: #666;
+    line-height: 1.35;
+}
+
+.admin-price-reference-status {
+    min-height: 18px;
+    margin-top: -7px;
+    margin-bottom: 8px;
+    font-size: 12px;
+    line-height: 1.4;
+    color: #666;
+}
+
+.admin-price-reference-status.is-reference {
+    color: #2d5a3d;
+}
+
+.admin-price-reference-status.is-manual {
+    color: #6c5a2d;
+}
+
+.admin-price-reference-status.is-message {
+    color: #666;
+}
+
+@media (max-width: 700px) {
+    .admin-price-suggestions {
+        max-height: 260px;
+    }
+}

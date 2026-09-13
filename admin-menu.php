@@ -98,6 +98,12 @@ if(
     href="<?php echo htmlspecialchars($baseurl . "admin-mobile.css?v=2", ENT_QUOTES, "UTF-8"); ?>"
     media="(max-width: 700px)"
 >
+<?php if($adminActiveSection === "add-cd"){ ?>
+    <link
+        rel="stylesheet"
+        href="<?php echo htmlspecialchars($baseurl . "admin-price-suggestions.css?v=1", ENT_QUOTES, "UTF-8"); ?>"
+    >
+<?php } ?>
 <aside
     class="admin-page-sidebar"
     data-admin-csrf-token="<?php echo htmlspecialchars($adminCsrfToken, ENT_QUOTES, "UTF-8"); ?>"
@@ -238,5 +244,12 @@ if(
     <script
         defer
         src="<?php echo htmlspecialchars($baseurl . "admin-watermark-branding.js?v=2", ENT_QUOTES, "UTF-8"); ?>"
+    ></script>
+<?php } ?>
+
+<?php if($adminActiveSection === "add-cd"){ ?>
+    <script
+        defer
+        src="<?php echo htmlspecialchars($baseurl . "admin-price-suggestions.js?v=1", ENT_QUOTES, "UTF-8"); ?>"
     ></script>
 <?php } ?>

@@ -17,6 +17,7 @@ ini_set("log_errors", "1");
 ob_start();
 
 require_once __DIR__ . "/config.php";
+require_once __DIR__ . "/seo.php";
 
 header("Cache-Control: no-store, no-cache, must-revalidate, max-age=0");
 
@@ -112,23 +113,7 @@ function orderMoney($value){
 }
 
 function orderImagePath($picture){
-    $picture = trim(
-        str_replace(
-            "\\",
-            "/",
-            (string)$picture
-        )
-    );
-
-    if($picture === ""){
-        return "images/defaultimg.jpg";
-    }
-
-    if(strpos($picture, "pictures/") === 0){
-        return ltrim($picture, "/");
-    }
-
-    return "pictures/" . ltrim($picture, "/");
+    return seoAbsoluteImageUrl($picture);
 }
 
 function orderSafeSubstring($value, $maxLength){

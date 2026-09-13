@@ -2,35 +2,39 @@
     display: inline-flex;
     align-items: center;
     justify-self: start;
-    gap: 0;
     min-width: 0;
     line-height: 0;
 }
 
 .brand--official .brand__official-logo {
-    display: block;
+    display: block !important;
+    width: 182px !important;
+    height: auto !important;
     max-width: 100%;
+    max-height: 42px;
     object-fit: contain;
     object-position: left center;
 }
 
 .brand--official .brand__official-logo--desktop {
-    width: 182px !important;
-    height: 42px !important;
+    display: block !important;
 }
 
 .brand--official .brand__official-logo--mobile {
     display: none !important;
-    width: 40px !important;
-    height: 40px !important;
 }
 
 @media (max-width: 700px) {
+    .brand--official .brand__official-logo {
+        width: 148px !important;
+        max-height: 36px;
+    }
+
     .brand--official .brand__official-logo--desktop {
-        display: none !important;
+        display: block !important;
     }
 
     .brand--official .brand__official-logo--mobile {
-        display: block !important;
+        display: none !important;
     }
 }

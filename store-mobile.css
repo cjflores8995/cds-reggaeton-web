@@ -407,32 +407,34 @@ main,
 
     .product-grid,
     .product-grid--related {
-        grid-template-columns: 1fr;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
     }
 
     .product-card__body {
-        padding: 18px;
+        min-height: 184px;
+        padding: 13px;
     }
 
     .product-card__artist {
-        font-size: 9px;
+        font-size: 8px;
     }
 
     .product-card__title {
-        font-size: 20px;
+        font-size: 15px;
+        line-height: 1.18;
     }
 
     .product-card__meta {
-        font-size: 9px;
+        font-size: 8px;
     }
 
     .product-card__price {
-        font-size: 30px;
+        font-size: 24px;
     }
 
     .square-action {
-        width: 44px;
-        height: 44px;
+        width: 38px;
+        height: 38px;
     }
 
     .info-card {

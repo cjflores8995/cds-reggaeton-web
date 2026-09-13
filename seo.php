@@ -9,6 +9,8 @@
  * - Metadatos orientados a Ecuador sin keyword stuffing.
  */
 
+require_once __DIR__ . "/image-storage.php";
+
 if(!function_exists("seoEsc")){
     function seoEsc($value){
         return htmlspecialchars(
@@ -195,6 +197,14 @@ if(!function_exists("seoAbsoluteImageUrl")){
             )
         ){
             return $path;
+        }
+
+        if(strpos($path, "blob:") === 0){
+            $blobUrl = imageStoragePublicUrl($path);
+
+            return $blobUrl !== ""
+                ? $blobUrl
+                : seoUrl("images/defaultimg.jpg");
         }
 
         if(

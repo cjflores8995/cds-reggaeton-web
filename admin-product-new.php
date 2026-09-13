@@ -335,6 +335,11 @@ $imageRoles = [
         <?php } ?>
 
         <form method="post" enctype="multipart/form-data">
+            <input
+                type="hidden"
+                name="admin_csrf"
+                value="<?php echo htmlspecialchars(adminAuthCsrfToken(), ENT_QUOTES, "UTF-8"); ?>"
+            >
             <section class="admin-form-card">
                 <h2>Información del CD</h2>
 

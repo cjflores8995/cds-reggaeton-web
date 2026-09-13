@@ -4,6 +4,7 @@ session_start();
 require_once __DIR__ . "/config.php";
 require_once __DIR__ . "/artistshelper.php";
 require_once __DIR__ . "/productimages.php";
+require_once __DIR__ . "/product-image-storage.php";
 require_once __DIR__ . "/product-tiktok.php";
 
 if(
@@ -130,104 +131,120 @@ if($_SERVER["REQUEST_METHOD"] === "POST"){
     if(count($errors) === 0){
         $slots = $imageResult["slots"];
         $uploadedPaths = $imageResult["uploaded"];
+        $storedReferences = [];
 
         $postId = bin2hex(random_bytes(5));
 
-        $slug =
-            slugUniqueProduct(
-                $artistName,
-                $album,
-                $releaseYear
-            );
+        $storageResult = productImageStoragePromoteSlots(
+            $slots,
+            $postId,
+            $uploadedPaths
+        );
 
-        $title = $artistName . " - " . $album;
-        $currentTime = date("Y-m-d H:i:s");
-        $picture = productImagePictureValue($slots);
-        $moreImages = productImageSerializeMoreImages($slots);
-
-        $columns = [
-            "postid",
-            "catid",
-            "artistid",
-            "normalprice",
-            "discountprice",
-            "title",
-            "time",
-            "options",
-            "picture",
-            "moreimages",
-            "content"
-        ];
-
-        $values = [
-            adminNewQuote($connection, $postId),
-            "0",
-            (string)$artistId,
-            (string)$price,
-            "0",
-            adminNewQuote($connection, $title),
-            adminNewQuote($connection, $currentTime),
-            "''",
-            adminNewQuote($connection, $picture),
-            adminNewQuote($connection, $moreImages),
-            adminNewQuote($connection, $description)
-        ];
-
-        /*
-         * Estas columnas existen en la versión moderna de la tienda,
-         * pero el código sigue funcionando si una instalación antigua
-         * todavía no las tiene.
-         */
-        $optionalColumns = [
-            "artist" => $artistName,
-            "album" => $album,
-            "release_year" => $releaseYear,
-            "stock" => 1,
-            "cd_condition" => $cdCondition,
-            "case_condition" => $caseCondition,
-            "active" => $active,
-            "slug" => $slug,
-            "tiktok_url" => $tiktokUrl
-        ];
-
-        foreach($optionalColumns as $column => $value){
-            if(!adminNewHasColumn($connection, $tableposts, $column)){
-                continue;
-            }
-
-            $columns[] = $column;
-
-            if($value === null){
-                $values[] = "NULL";
-            }else if(is_int($value) || is_float($value)){
-                $values[] = (string)$value;
-            }else{
-                $values[] = adminNewQuote($connection, $value);
-            }
-        }
-
-        $sql =
-            "INSERT INTO $tableposts (" .
-            implode(",", $columns) .
-            ") VALUES (" .
-            implode(",", $values) .
-            ")";
-
-        $insertResult = mysqli_query($connection, $sql);
-
-        if(!$insertResult){
-            productImageCleanupUploadedPaths($uploadedPaths);
-            $errors[] = "No se pudo guardar el CD: " . mysqli_error($connection);
+        if(!$storageResult["ok"]){
+            productImageStorageCleanupReferences($uploadedPaths);
+            $errors[] = $storageResult["error"];
         }else{
-            $productId = (int)mysqli_insert_id($connection);
+            $slots = $storageResult["slots"];
+            $storedReferences = $storageResult["stored"];
 
-            header(
-                "Location: " .
-                $baseurl .
-                "admin-product-new.php?success=1&id=" .
-                $productId
-            );
-            exit;
+            $slug =
+                slugUniqueProduct(
+                    $artistName,
+                    $album,
+                    $releaseYear
+                );
+
+            $title = $artistName . " - " . $album;
+            $currentTime = date("Y-m-d H:i:s");
+            $databaseValues = productImageStorageDatabaseValues($slots);
+            $picture = $databaseValues["picture"];
+            $moreImages = $databaseValues["moreimages"];
+
+            $columns = [
+                "postid",
+                "catid",
+                "artistid",
+                "normalprice",
+                "discountprice",
+                "title",
+                "time",
+                "options",
+                "picture",
+                "moreimages",
+                "content"
+            ];
+
+            $values = [
+                adminNewQuote($connection, $postId),
+                "0",
+                (string)$artistId,
+                (string)$price,
+                "0",
+                adminNewQuote($connection, $title),
+                adminNewQuote($connection, $currentTime),
+                "''",
+                adminNewQuote($connection, $picture),
+                adminNewQuote($connection, $moreImages),
+                adminNewQuote($connection, $description)
+            ];
+
+            /*
+             * Estas columnas existen en la versión moderna de la tienda,
+             * pero el código sigue funcionando si una instalación antigua
+             * todavía no las tiene.
+             */
+            $optionalColumns = [
+                "artist" => $artistName,
+                "album" => $album,
+                "release_year" => $releaseYear,
+                "stock" => 1,
+                "cd_condition" => $cdCondition,
+                "case_condition" => $caseCondition,
+                "active" => $active,
+                "slug" => $slug,
+                "tiktok_url" => $tiktokUrl
+            ];
+
+            foreach($optionalColumns as $column => $value){
+                if(!adminNewHasColumn($connection, $tableposts, $column)){
+                    continue;
+                }
+
+                $columns[] = $column;
+
+                if($value === null){
+                    $values[] = "NULL";
+                }else if(is_int($value) || is_float($value)){
+                    $values[] = (string)$value;
+                }else{
+                    $values[] = adminNewQuote($connection, $value);
+                }
+            }
+
+            $sql =
+                "INSERT INTO $tableposts (" .
+                implode(",", $columns) .
+                ") VALUES (" .
+                implode(",", $values) .
+                ")";
+
+            $insertResult = mysqli_query($connection, $sql);
+
+            if(!$insertResult){
+                productImageStorageCleanupReferences($storedReferences);
+                $errors[] = "No se pudo guardar el CD: " . mysqli_error($connection);
+            }else{
+                $productId = (int)mysqli_insert_id($connection);
+
+                header(
+                    "Location: " .
+                    $baseurl .
+                    "admin-product-new.php?success=1&id=" .
+                    $productId
+                );
+                exit;
+            }
         }
     }else if($imageResult !== null && isset($imageResult["uploaded"])){
         productImageCleanupUploadedPaths($imageResult["uploaded"]);

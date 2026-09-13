@@ -447,7 +447,7 @@ $imageRoles = [
                                     value="<?php echo htmlspecialchars($condition, ENT_QUOTES, "UTF-8"); ?>"
                                     <?php echo $selectedCaseCondition === $condition ? "selected" : ""; ?>
                                 >
-                                    <?php echo htmlspecialchars($condition, ENT_QUOTES, "UTF-8"); ?>"
+                                    <?php echo htmlspecialchars($condition, ENT_QUOTES, "UTF-8"); ?>
                                 </option>
                             <?php } ?>
                         </select>

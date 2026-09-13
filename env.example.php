@@ -19,6 +19,22 @@ $allowedHosts = [
 ];
 
 /*
+ * Product image storage.
+ * Keep local while developing without Azure. Set azure when validating Blob
+ * Storage locally or when App Service becomes the production host.
+ */
+$imageStorageDriver = "local";
+$azureStorageAccount = "reggaetonelrealmedia";
+$azureStorageContainer = "product-web";
+$azureStorageEndpoint = "https://reggaetonelrealmedia.blob.core.windows.net/";
+
+/*
+ * Development-only SAS used by Laragon to create/write/delete blobs.
+ * Never commit the real token. Production will move to Managed Identity.
+ */
+$azureStorageSasToken = "REPLACE_WITH_CONTAINER_SAS_TOKEN";
+
+/*
  * Admin credentials must remain outside Git.
  * Generate the password hash locally with password_hash(..., PASSWORD_DEFAULT).
  */

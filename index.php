@@ -23,11 +23,7 @@ function productImageUrl(array $product, string $storeBaseUrl): string
     $picture = trim((string)($product['picture'] ?? ''));
 
     if ($picture !== '') {
-        if (str_starts_with($picture, 'pictures/')) {
-            return $storeBaseUrl . ltrim($picture, '/');
-        }
-
-        return $storeBaseUrl . 'pictures/' . ltrim($picture, '/');
+        return seoAbsoluteImageUrl($picture);
     }
 
     return $storeBaseUrl . 'images/defaultimg.jpg';
@@ -376,6 +372,7 @@ $seoHomeJsonLd = [
     <script type="application/ld+json"><?php echo seoJsonLd($seoHomeJsonLd); ?></script>
 
     <link rel="stylesheet" href="<?php echo e($storeBaseUrl); ?>store.css?v=2">
+    <link rel="stylesheet" href="<?php echo e($storeBaseUrl); ?>store-branding.css?v=1">
     <link rel="stylesheet" href="<?php echo e($storeBaseUrl); ?>store-footer.css?v=1">
     <link rel="stylesheet" href="<?php echo e($storeBaseUrl); ?>catalog-toolbar.css?v=1">
     <link rel="stylesheet" href="<?php echo e($storeBaseUrl); ?>catalog-carousel.css?v=2">
@@ -410,9 +407,19 @@ $seoHomeJsonLd = [
 
     <header class="site-header">
         <div class="page-shell site-header__main">
-            <a class="brand" href="<?php echo e($storeBaseUrl); ?>" aria-label="Ir al inicio">
-                <span class="brand__mark">CD</span>
-                <span class="brand__text">REGGAETON EL REAL</span>
+            <a class="brand brand--official" href="<?php echo e($storeBaseUrl); ?>" aria-label="Reggaeton El Real · Ir al inicio">
+                <img
+                    class="brand__official-logo brand__official-logo--desktop"
+                    src="<?php echo e($storeBaseUrl); ?>images/branding/originals/reggaeton-el-real-logo-horizontal-black.png"
+                    alt="Reggaeton El Real"
+                    decoding="async"
+                >
+                <img
+                    class="brand__official-logo brand__official-logo--mobile"
+                    src="<?php echo e($storeBaseUrl); ?>images/branding/originals/reggaeton-el-real-isotipo.png"
+                    alt="Reggaeton El Real"
+                    decoding="async"
+                >
             </a>
 
             <nav class="main-nav" aria-label="Navegación principal">

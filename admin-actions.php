@@ -1,5 +1,6 @@
 <?php
 require_once __DIR__ . "/config.php";
+require_once __DIR__ . "/product-image-storage.php";
 
 header("X-Robots-Tag: noindex, nofollow, noarchive", true);
 
@@ -68,33 +69,47 @@ function adminActionNormalizePicturePath($value){
     return "pictures/" . implode("/", $safeSegments);
 }
 
-function adminActionProductImagePathsFromRow($row){
-    $paths = [];
+function adminActionCanonicalMediaReference($value){
+    $value = trim((string)$value);
 
-    if(!is_array($row)){
-        return $paths;
+    if($value === ""){
+        return "";
     }
 
-    $picture = adminActionNormalizePicturePath(
+    if(preg_match('#^https?://#i', $value) === 1){
+        return "";
+    }
+
+    return productImageStorageCanonicalReference($value);
+}
+
+function adminActionProductImageReferencesFromRow($row){
+    $references = [];
+
+    if(!is_array($row)){
+        return $references;
+    }
+
+    $picture = adminActionCanonicalMediaReference(
         $row["picture"] ?? ""
     );
 
     if($picture !== ""){
-        $paths[$picture] = true;
+        $references[$picture] = true;
     }
 
     foreach(
         explode(",", (string)($row["moreimages"] ?? ""))
         as $moreImage
     ){
-        $path = adminActionNormalizePicturePath($moreImage);
+        $reference = adminActionCanonicalMediaReference($moreImage);
 
-        if($path !== ""){
-            $paths[$path] = true;
+        if($reference !== ""){
+            $references[$reference] = true;
         }
     }
 
-    return array_keys($paths);
+    return array_keys($references);
 }
 
 function adminActionProductImagesTableName(){
@@ -127,15 +142,15 @@ function adminActionTableExists($connection, $tableName){
         mysqli_num_rows($result) > 0;
 }
 
-function adminActionLegacyProductImagePaths(
+function adminActionLegacyProductImageReferences(
     $connection,
     $tableName,
     $productId
 ){
-    $paths = [];
+    $references = [];
 
     if($tableName === "" || $productId <= 0){
-        return $paths;
+        return $references;
     }
 
     $result = mysqli_query(
@@ -145,23 +160,23 @@ function adminActionLegacyProductImagePaths(
     );
 
     if(!$result){
-        return $paths;
+        return $references;
     }
 
     while($row = mysqli_fetch_assoc($result)){
-        $path = adminActionNormalizePicturePath(
+        $reference = adminActionCanonicalMediaReference(
             $row["image_path"] ?? ""
         );
 
-        if($path !== ""){
-            $paths[$path] = true;
+        if($reference !== ""){
+            $references[$reference] = true;
         }
     }
 
-    return array_keys($paths);
+    return array_keys($references);
 }
 
-function adminActionReferencedPicturePaths(
+function adminActionReferencedMediaReferences(
     $connection,
     $legacyImageTable,
     $legacyImageTableExists
@@ -177,8 +192,11 @@ function adminActionReferencedPicturePaths(
 
     if($postsResult){
         while($row = mysqli_fetch_assoc($postsResult)){
-            foreach(adminActionProductImagePathsFromRow($row) as $path){
-                $referenced[$path] = true;
+            foreach(
+                adminActionProductImageReferencesFromRow($row)
+                as $reference
+            ){
+                $referenced[$reference] = true;
             }
         }
     }
@@ -191,12 +209,12 @@ function adminActionReferencedPicturePaths(
 
         if($legacyResult){
             while($row = mysqli_fetch_assoc($legacyResult)){
-                $path = adminActionNormalizePicturePath(
+                $reference = adminActionCanonicalMediaReference(
                     $row["image_path"] ?? ""
                 );
 
-                if($path !== ""){
-                    $referenced[$path] = true;
+                if($reference !== ""){
+                    $referenced[$reference] = true;
                 }
             }
         }
@@ -285,10 +303,13 @@ function adminActionDeleteProduct($connection, $productId){
     }
 
     $product = mysqli_fetch_assoc($productResult);
-    $paths = [];
+    $references = [];
 
-    foreach(adminActionProductImagePathsFromRow($product) as $path){
-        $paths[$path] = true;
+    foreach(
+        adminActionProductImageReferencesFromRow($product)
+        as $reference
+    ){
+        $references[$reference] = true;
     }
 
     $legacyImageTable = adminActionProductImagesTableName();
@@ -299,13 +320,13 @@ function adminActionDeleteProduct($connection, $productId){
 
     if($legacyImageTableExists){
         foreach(
-            adminActionLegacyProductImagePaths(
+            adminActionLegacyProductImageReferences(
                 $connection,
                 $legacyImageTable,
                 $productId
-            ) as $path
+            ) as $reference
         ){
-            $paths[$path] = true;
+            $references[$reference] = true;
         }
     }
 
@@ -358,55 +379,55 @@ function adminActionDeleteProduct($connection, $productId){
         ];
     }
 
-    $referencedPaths = adminActionReferencedPicturePaths(
+    /*
+     * La BD se confirma antes de tocar el almacenamiento externo.
+     * Si una imagen todavía está referenciada por otro registro no se borra.
+     */
+    $referencedMedia = adminActionReferencedMediaReferences(
         $connection,
         $legacyImageTable,
         $legacyImageTableExists
     );
 
-    $deletedFiles = 0;
-    $failedFiles = 0;
+    $deletedMedia = 0;
+    $failedMedia = 0;
 
-    foreach(array_keys($paths) as $path){
-        if(isset($referencedPaths[$path])){
+    foreach(array_keys($references) as $reference){
+        if(isset($referencedMedia[$reference])){
             continue;
         }
 
-        $normalizedPath = adminActionNormalizePicturePath($path);
+        $canonicalReference = adminActionCanonicalMediaReference(
+            $reference
+        );
 
-        if($normalizedPath === ""){
+        if($canonicalReference === ""){
             continue;
         }
 
-        $beforePath =
-            __DIR__ .
-            DIRECTORY_SEPARATOR .
-            str_replace(
-                "/",
-                DIRECTORY_SEPARATOR,
-                $normalizedPath
-            );
+        $deleteResult = imageStorageDelete(
+            $canonicalReference
+        );
 
-        $existed = is_file($beforePath);
+        if(empty($deleteResult["ok"])){
+            $failedMedia++;
+            continue;
+        }
 
-        if(adminActionDeletePictureFile($normalizedPath)){
-            if($existed){
-                $deletedFiles++;
-            }
-        }else{
-            $failedFiles++;
+        if(!empty($deleteResult["deleted"])){
+            $deletedMedia++;
         }
     }
 
-    if($failedFiles > 0){
+    if($failedMedia > 0){
         return [
             "ok" => true,
             "message" =>
-                "CD eliminado. Se borraron " .
-                $deletedFiles .
+                "CD eliminado. Se eliminaron " .
+                $deletedMedia .
                 " imagen(es), pero " .
-                $failedFiles .
-                " archivo(s) no pudieron eliminarse del servidor."
+                $failedMedia .
+                " no pudieron eliminarse del almacenamiento."
         ];
     }
 
@@ -414,8 +435,8 @@ function adminActionDeleteProduct($connection, $productId){
         "ok" => true,
         "message" =>
             "CD eliminado correctamente" .
-            ($deletedFiles > 0
-                ? " junto con " . $deletedFiles . " imagen(es)."
+            ($deletedMedia > 0
+                ? " junto con " . $deletedMedia . " imagen(es)."
                 : ".")
     ];
 }

@@ -23,6 +23,11 @@
         }
 
         var key = source.substring(markerIndex + 5);
+
+        if(/^https?:\/\//i.test(key)){
+            return "";
+        }
+
         key = key.split("?")[0].split("#")[0];
         key = key.replace(/^\/+/, "");
 

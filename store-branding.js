@@ -28,84 +28,26 @@
         }
     }
 
-    function ensureBrandStyles(){
-        if(document.getElementById("storeOfficialBrandStyles")){
-            return;
-        }
-
-        var style = document.createElement("style");
-        style.id = "storeOfficialBrandStyles";
-        style.textContent =
-            ".brand.brand--official{" +
-                "display:inline-flex;" +
-                "align-items:center;" +
-                "justify-self:start;" +
-                "gap:0;" +
-                "min-width:0;" +
-                "line-height:0;" +
-            "}" +
-            ".brand--official .brand__official-logo{" +
-                "display:block;" +
-                "max-width:100%;" +
-                "object-fit:contain;" +
-                "object-position:left center;" +
-            "}" +
-            ".brand--official .brand__official-logo--desktop{" +
-                "width:182px;" +
-                "height:42px;" +
-            "}" +
-            ".brand--official .brand__official-logo--mobile{" +
-                "display:none;" +
-                "width:40px;" +
-                "height:40px;" +
-                "object-fit:contain;" +
-            "}" +
-            "@media(max-width:700px){" +
-                ".brand--official .brand__official-logo--desktop{" +
-                    "display:none;" +
-                "}" +
-                ".brand--official .brand__official-logo--mobile{" +
-                    "display:block;" +
-                "}" +
-            "}";
-
-        document.head.appendChild(style);
-    }
-
-    function upgradeBrandLinks(baseUrl){
-        var desktopLogo =
+    function normalizeBrandLinks(baseUrl){
+        var logoUrl =
             baseUrl +
-            "images/branding/originals/reggaeton-el-real-logo-horizontal-black.png";
-
-        var mobileLogo =
-            baseUrl +
-            "images/branding/originals/reggaeton-el-real-isotipo.png";
+            "images/branding/originals/reggaeton-el-real-watermark.png";
 
         document.querySelectorAll("a.brand").forEach(function(link){
-            if(link.classList.contains("brand--official")){
-                return;
-            }
-
             link.textContent = "";
             link.classList.add("brand--official");
-            link.setAttribute("aria-label", "Reggaeton El Real · Ir al inicio");
+            link.setAttribute(
+                "aria-label",
+                "Reggaeton El Real · Ir al inicio"
+            );
 
-            var desktop = document.createElement("img");
-            desktop.className =
-                "brand__official-logo brand__official-logo--desktop";
-            desktop.src = desktopLogo;
-            desktop.alt = "Reggaeton El Real";
-            desktop.decoding = "async";
+            var logo = document.createElement("img");
+            logo.className = "brand__official-logo";
+            logo.src = logoUrl;
+            logo.alt = "Reggaeton El Real";
+            logo.decoding = "async";
 
-            var mobile = document.createElement("img");
-            mobile.className =
-                "brand__official-logo brand__official-logo--mobile";
-            mobile.src = mobileLogo;
-            mobile.alt = "Reggaeton El Real";
-            mobile.decoding = "async";
-
-            link.appendChild(desktop);
-            link.appendChild(mobile);
+            link.appendChild(logo);
         });
     }
 
@@ -123,6 +65,5 @@
     ensureLink("shortcut icon", appIcon);
     ensureLink("apple-touch-icon", appIcon, "180x180");
 
-    ensureBrandStyles();
-    upgradeBrandLinks(baseUrl);
+    normalizeBrandLinks(baseUrl);
 })();

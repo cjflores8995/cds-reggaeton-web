@@ -38,6 +38,116 @@
         field.value = token;
     }
 
+    function sanitizeUploadFileName(fileName, index){
+        var name = String(fileName || "");
+        var lastDot = name.lastIndexOf(".");
+        var baseName = lastDot > 0
+            ? name.substring(0, lastDot)
+            : name;
+        var extension = lastDot > 0 && lastDot < name.length - 1
+            ? name.substring(lastDot + 1)
+            : "";
+
+        if(typeof baseName.normalize === "function"){
+            baseName = baseName
+                .normalize("NFD")
+                .replace(/[\u0300-\u036f]/g, "");
+        }
+
+        if(typeof extension.normalize === "function"){
+            extension = extension
+                .normalize("NFD")
+                .replace(/[\u0300-\u036f]/g, "");
+        }
+
+        baseName = baseName
+            .replace(/[^A-Za-z0-9_-]+/g, "-")
+            .replace(/^-+|-+$/g, "")
+            .substring(0, 80);
+
+        extension = extension
+            .replace(/[^A-Za-z0-9]+/g, "")
+            .toLowerCase()
+            .substring(0, 10);
+
+        if(baseName === ""){
+            baseName = "upload-" + String((index || 0) + 1);
+        }
+
+        return extension !== ""
+            ? baseName + "." + extension
+            : baseName;
+    }
+
+    function sanitizeFileInput(input){
+        if(
+            !input ||
+            String(input.type || "").toLowerCase() !== "file" ||
+            !input.files ||
+            input.files.length === 0
+        ){
+            return true;
+        }
+
+        var files = Array.prototype.slice.call(input.files);
+        var safeNames = files.map(function(file, index){
+            return sanitizeUploadFileName(file.name, index);
+        });
+        var requiresRename = files.some(function(file, index){
+            return file.name !== safeNames[index];
+        });
+
+        if(!requiresRename){
+            return true;
+        }
+
+        if(
+            typeof window.File !== "function" ||
+            typeof window.DataTransfer !== "function"
+        ){
+            return false;
+        }
+
+        try{
+            var transfer = new DataTransfer();
+
+            files.forEach(function(file, index){
+                transfer.items.add(
+                    new File(
+                        [file],
+                        safeNames[index],
+                        {
+                            type: file.type,
+                            lastModified: file.lastModified
+                        }
+                    )
+                );
+            });
+
+            input.files = transfer.files;
+
+            return input.files.length === files.length;
+        }catch(error){
+            return false;
+        }
+    }
+
+    function sanitizeFormFileInputs(form){
+        if(!form || !form.querySelectorAll){
+            return true;
+        }
+
+        var inputs = form.querySelectorAll("input[type='file']");
+
+        for(var i = 0; i < inputs.length; i++){
+            if(!sanitizeFileInput(inputs[i])){
+                return false;
+            }
+        }
+
+        return true;
+    }
+
     function appendHidden(form, name, value){
         var input = document.createElement("input");
         input.type = "hidden";
@@ -175,9 +285,41 @@
         hardenProductDeleteLinks();
 
         document.addEventListener(
+            "change",
+            function(event){
+                var input = event.target;
+
+                if(
+                    !input ||
+                    String(input.type || "").toLowerCase() !== "file"
+                ){
+                    return;
+                }
+
+                if(!sanitizeFileInput(input)){
+                    input.value = "";
+                    window.alert(
+                        "El nombre del archivo contiene caracteres no compatibles con el servidor. " +
+                        "Renombra el archivo usando solo letras, números, guiones o guiones bajos e inténtalo de nuevo."
+                    );
+                }
+            },
+            true
+        );
+
+        document.addEventListener(
             "submit",
             function(event){
                 ensureCsrfField(event.target, context.token);
+
+                if(!sanitizeFormFileInputs(event.target)){
+                    event.preventDefault();
+                    event.stopImmediatePropagation();
+                    window.alert(
+                        "No se pudo preparar el nombre seguro de uno de los archivos. " +
+                        "Renómbralo usando solo letras, números, guiones o guiones bajos e inténtalo de nuevo."
+                    );
+                }
             },
             true
         );

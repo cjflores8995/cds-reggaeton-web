@@ -31,8 +31,11 @@ $azureStorageContainer = "product-web";
 $azureStorageEndpoint = "https://reggaetonelrealmedia.blob.core.windows.net/";
 
 /*
- * Development-only SAS used by Laragon to create/write/delete blobs.
- * Never commit the real token. Production will move to Managed Identity.
+ * Azure Blob SAS credential. Never commit the real token.
+ * Local Laragon may keep it in the ignored repository-local env.php.
+ * Hostinger production loads env.php from ../private_config, outside
+ * public_html. Use a container-scoped, least-privilege SAS and rotate it when
+ * required.
  */
 $azureStorageSasToken = "REPLACE_WITH_CONTAINER_SAS_TOKEN";
 

@@ -2,6 +2,7 @@
 require_once("config.php");
 require_once("uilang.php");
 require_once("productimages.php");
+require_once("product-image-storage.php");
 require_once("artistshelper.php");
 
 if(isset($_POST["newposttitle"])){
@@ -72,7 +73,7 @@ if(isset($_POST["newposttitle"])){
 
     $newpicture = "";
     $moreimages = "";
-    $uploadedPaths = [];
+    $storedReferences = [];
 
     if(
         isset($_POST["product_image_manager"]) &&
@@ -81,7 +82,9 @@ if(isset($_POST["newposttitle"])){
         $imageResult = productImageBuildSlotsFromManagerRequest();
 
         if(!$imageResult["ok"]){
-            productImageCleanupUploadedPaths($imageResult["uploaded"]);
+            productImageStorageCleanupReferences(
+                $imageResult["uploaded"]
+            );
 
             foreach($imageResult["errors"] as $error){
                 echo "<div class='alert'>" . htmlspecialchars($error) . "</div>";
@@ -91,9 +94,31 @@ if(isset($_POST["newposttitle"])){
             exit;
         }
 
-        $newpicture = productImagePictureValue($imageResult["slots"]);
-        $moreimages = productImageSerializeMoreImages($imageResult["slots"]);
-        $uploadedPaths = $imageResult["uploaded"];
+        $storageResult = productImageStoragePromoteSlots(
+            $imageResult["slots"],
+            $postid,
+            $imageResult["uploaded"]
+        );
+
+        if(!$storageResult["ok"]){
+            productImageStorageCleanupReferences(
+                $imageResult["uploaded"]
+            );
+
+            echo "<div class='alert'>" .
+                htmlspecialchars($storageResult["error"]) .
+                "</div>";
+            echo "<script>$(\"#upploadprogresstitle\").hide()</script>";
+            exit;
+        }
+
+        $databaseValues = productImageStorageDatabaseValues(
+            $storageResult["slots"]
+        );
+
+        $newpicture = $databaseValues["picture"];
+        $moreimages = $databaseValues["moreimages"];
+        $storedReferences = $storageResult["stored"];
     }else{
         //Legacy fallback in case JavaScript is unavailable.
         $moreimages = isset($_POST["moreimagesinput"])
@@ -113,8 +138,37 @@ if(isset($_POST["newposttitle"])){
             }
 
             if($savedImage["uploaded"]){
-                $newpicture = basename($savedImage["path"]);
-                $uploadedPaths[] = $savedImage["path"];
+                $slots = [
+                    1 => $savedImage["path"],
+                    2 => "",
+                    3 => "",
+                    4 => "",
+                    5 => ""
+                ];
+
+                $storageResult = productImageStoragePromoteSlots(
+                    $slots,
+                    $postid,
+                    [$savedImage["path"]]
+                );
+
+                if(!$storageResult["ok"]){
+                    productImageStorageCleanupReferences(
+                        [$savedImage["path"]]
+                    );
+
+                    echo "<div class='alert'>" .
+                        htmlspecialchars($storageResult["error"]) .
+                        "</div>";
+                    exit;
+                }
+
+                $databaseValues = productImageStorageDatabaseValues(
+                    $storageResult["slots"]
+                );
+
+                $newpicture = $databaseValues["picture"];
+                $storedReferences = $storageResult["stored"];
             }
         }
     }
@@ -130,7 +184,7 @@ if(isset($_POST["newposttitle"])){
     $insertResult = mysqli_query($connection, $sql);
 
     if(!$insertResult){
-        productImageCleanupUploadedPaths($uploadedPaths);
+        productImageStorageCleanupReferences($storedReferences);
         echo "<div class='alert'>No se pudo guardar el CD.</div>";
         exit;
     }

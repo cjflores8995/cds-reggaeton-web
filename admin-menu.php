@@ -93,6 +93,11 @@ if(
         "/";
 }
 ?>
+<link
+    rel="stylesheet"
+    href="<?php echo htmlspecialchars($baseurl . "admin-mobile.css?v=2", ENT_QUOTES, "UTF-8"); ?>"
+    media="(max-width: 700px)"
+>
 <aside
     class="admin-page-sidebar"
     data-admin-csrf-token="<?php echo htmlspecialchars($adminCsrfToken, ENT_QUOTES, "UTF-8"); ?>"

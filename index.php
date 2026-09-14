@@ -180,13 +180,9 @@ $seoDescription = seoDescription(
     ', con fotos reales, una sola copia por título y envíos nacionales.'
 );
 
-$seoOgImage =
-    count($products) > 0
-        ? productImageUrl(
-            $products[0],
-            $storeBaseUrl
-        )
-        : seoUrl('images/logo.png');
+$seoOgImage = seoUrl(
+    'images/branding/social/reggaeton-el-real-social-share.png'
+);
 
 $seoItemList = [];
 
@@ -348,8 +344,13 @@ $seoHomeJsonLd = [
         content="<?php echo e($seoOgImage); ?>"
     >
     <meta
+        property="og:image:secure_url"
+        content="<?php echo e($seoOgImage); ?>"
+    >
+    <meta property="og:image:type" content="image/png">
+    <meta
         property="og:image:alt"
-        content="CDs físicos de reggaetón disponibles en Ecuador"
+        content="Reggaeton El Real · CDs físicos de reggaetón en Ecuador"
     >
 
     <meta
@@ -367,6 +368,10 @@ $seoHomeJsonLd = [
     <meta
         name="twitter:image"
         content="<?php echo e($seoOgImage); ?>"
+    >
+    <meta
+        name="twitter:image:alt"
+        content="Reggaeton El Real · CDs físicos de reggaetón en Ecuador"
     >
 
     <script type="application/ld+json"><?php echo seoJsonLd($seoHomeJsonLd); ?></script>

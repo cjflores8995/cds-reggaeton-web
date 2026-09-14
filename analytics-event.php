@@ -18,6 +18,34 @@ if($contentLength > 16384){
     exit;
 }
 
+/*
+ * Este endpoint es la puerta de entrada pública para eventos. Definimos aquí
+ * la lista canónica antes de cargar analytics-helper.php para que el nuevo
+ * evento de producto quede disponible sin alterar otros consumidores legacy.
+ */
+if(!function_exists("analyticsAllowedEvents")){
+    function analyticsAllowedEvents(){
+        return [
+            "analytics_test",
+            "store_view",
+            "product_view",
+            "gallery_image_view",
+            "search",
+            "artist_filter",
+            "sort_changed",
+            "add_to_cart",
+            "remove_from_cart",
+            "cart_open",
+            "checkout_started",
+            "checkout_validation_failed",
+            "checkout_whatsapp",
+            "social_click",
+            "tiktok_click",
+            "not_found"
+        ];
+    }
+}
+
 require_once __DIR__ . "/config.php";
 require_once __DIR__ . "/analytics-helper.php";
 require_once __DIR__ . "/analytics-phase2-helper.php";

@@ -1,0 +1,310 @@
+.sales-studio-page{
+    max-width:1440px;
+}
+
+.sales-studio-toolbar{
+    align-items:flex-end;
+    gap:24px;
+}
+
+.sales-studio-eyebrow{
+    margin-bottom:8px;
+    color:#777;
+    font-size:11px;
+    font-weight:800;
+    letter-spacing:.16em;
+}
+
+.sales-studio-hero{
+    display:grid;
+    grid-template-columns:minmax(0,1.45fr) minmax(280px,.75fr);
+    gap:1px;
+    margin:26px 0 18px;
+    border:1px solid #e4e4e4;
+    background:#e4e4e4;
+}
+
+.sales-studio-hero__content,
+.sales-studio-hero__status{
+    background:#fff;
+}
+
+.sales-studio-hero__content{
+    padding:42px;
+}
+
+.sales-studio-badge,
+.sales-studio-card__label{
+    display:inline-flex;
+    align-items:center;
+    min-height:24px;
+    margin-bottom:18px;
+    padding:0 9px;
+    border:1px solid #d9d9d9;
+    background:#f7f7f7;
+    color:#555;
+    font-size:10px;
+    font-weight:800;
+    letter-spacing:.14em;
+}
+
+.sales-studio-hero h2{
+    margin:0;
+    color:#111;
+    font-size:34px;
+    line-height:1.08;
+}
+
+.sales-studio-hero p,
+.sales-studio-card p,
+.sales-studio-foundation p{
+    color:#656565;
+    line-height:1.65;
+}
+
+.sales-studio-hero__content > p{
+    max-width:690px;
+    margin:18px 0 26px;
+    font-size:15px;
+}
+
+.sales-studio-template-preview{
+    display:flex;
+    flex-wrap:wrap;
+    gap:8px;
+}
+
+.sales-studio-template-preview span{
+    padding:8px 11px;
+    border:1px solid #dedede;
+    background:#fafafa;
+    color:#222;
+    font-size:12px;
+    font-weight:700;
+}
+
+.sales-studio-hero__status{
+    display:flex;
+    flex-direction:column;
+    justify-content:center;
+    padding:20px 30px;
+}
+
+.sales-studio-status-row{
+    display:grid;
+    grid-template-columns:30px minmax(0,1fr);
+    gap:12px;
+    padding:18px 0;
+    border-bottom:1px solid #ededed;
+}
+
+.sales-studio-status-row:last-child{
+    border-bottom:0;
+}
+
+.sales-studio-status-row i{
+    padding-top:2px;
+    color:#111;
+    font-size:18px;
+    text-align:center;
+}
+
+.sales-studio-status-row strong,
+.sales-studio-status-row span{
+    display:block;
+}
+
+.sales-studio-status-row strong{
+    margin-bottom:4px;
+    color:#111;
+    font-size:13px;
+}
+
+.sales-studio-status-row span{
+    color:#777;
+    font-size:12px;
+    line-height:1.45;
+}
+
+.sales-studio-grid{
+    display:grid;
+    grid-template-columns:repeat(2,minmax(0,1fr));
+    gap:18px;
+}
+
+.sales-studio-card{
+    display:grid;
+    grid-template-columns:54px minmax(0,1fr);
+    gap:18px;
+    align-items:start;
+    min-height:255px;
+    padding:30px;
+    border:1px solid #e2e2e2;
+    background:#fff;
+}
+
+.sales-studio-card--primary{
+    border-color:#cfcfcf;
+}
+
+.sales-studio-card__icon{
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    width:54px;
+    height:54px;
+    border:1px solid #d8d8d8;
+    background:#f7f7f7;
+    color:#111;
+    font-size:21px;
+}
+
+.sales-studio-card__label{
+    margin-bottom:12px;
+}
+
+.sales-studio-card h2{
+    margin:0 0 8px;
+    color:#111;
+    font-size:22px;
+}
+
+.sales-studio-card p{
+    margin:0;
+    font-size:13px;
+}
+
+.sales-studio-card .admin-modern-button,
+.sales-studio-coming-soon{
+    grid-column:2;
+    justify-self:start;
+    margin-top:auto;
+}
+
+.sales-studio-card .admin-modern-button[disabled]{
+    cursor:default;
+    opacity:.48;
+}
+
+.sales-studio-coming-soon{
+    color:#888;
+    font-size:11px;
+    font-weight:700;
+    letter-spacing:.08em;
+    text-transform:uppercase;
+}
+
+.sales-studio-foundation{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:28px;
+    margin-top:18px;
+    padding:24px 28px;
+    border:1px solid #e2e2e2;
+    background:#fafafa;
+}
+
+.sales-studio-foundation > div{
+    display:flex;
+    align-items:flex-start;
+    gap:18px;
+}
+
+.sales-studio-foundation > div > span{
+    color:#aaa;
+    font-size:13px;
+    font-weight:800;
+}
+
+.sales-studio-foundation h2{
+    margin:0 0 4px;
+    color:#111;
+    font-size:17px;
+}
+
+.sales-studio-foundation p{
+    max-width:760px;
+    margin:0;
+    font-size:12px;
+}
+
+.sales-studio-foundation > strong{
+    flex:0 0 auto;
+    color:#444;
+    font-size:10px;
+    letter-spacing:.12em;
+}
+
+@media(max-width:980px){
+    .sales-studio-hero{
+        grid-template-columns:1fr;
+    }
+
+    .sales-studio-grid{
+        grid-template-columns:1fr;
+    }
+}
+
+@media(max-width:700px){
+    .sales-studio-page{
+        width:100%;
+    }
+
+    .sales-studio-toolbar{
+        align-items:stretch;
+    }
+
+    .sales-studio-toolbar .admin-modern-button{
+        width:100%;
+        text-align:center;
+    }
+
+    .sales-studio-hero{
+        margin-top:18px;
+    }
+
+    .sales-studio-hero__content{
+        padding:26px 20px;
+    }
+
+    .sales-studio-hero__status{
+        padding:10px 20px;
+    }
+
+    .sales-studio-hero h2{
+        font-size:28px;
+    }
+
+    .sales-studio-template-preview{
+        display:grid;
+        grid-template-columns:1fr;
+    }
+
+    .sales-studio-template-preview span{
+        text-align:center;
+    }
+
+    .sales-studio-card{
+        grid-template-columns:44px minmax(0,1fr);
+        gap:14px;
+        min-height:0;
+        padding:22px 18px;
+    }
+
+    .sales-studio-card__icon{
+        width:44px;
+        height:44px;
+        font-size:18px;
+    }
+
+    .sales-studio-foundation,
+    .sales-studio-foundation > div{
+        align-items:flex-start;
+    }
+
+    .sales-studio-foundation{
+        flex-direction:column;
+        padding:20px;
+    }
+}

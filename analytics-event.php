@@ -20,8 +20,8 @@ if($contentLength > 16384){
 
 /*
  * Este endpoint es la puerta de entrada pública para eventos. Definimos aquí
- * la lista canónica antes de cargar analytics-helper.php para que el nuevo
- * evento de producto quede disponible sin alterar otros consumidores legacy.
+ * la lista aceptada antes de cargar analytics-helper.php para incorporar el
+ * clic del video de producto sin cambiar el contrato de consumidores legacy.
  */
 if(!function_exists("analyticsAllowedEvents")){
     function analyticsAllowedEvents(){
@@ -53,6 +53,52 @@ require_once __DIR__ . "/analytics-phase3-helper.php";
 require_once __DIR__ . "/analytics-phase7-helper.php";
 require_once __DIR__ . "/analytics-privacy.php";
 
+if(!function_exists("analyticsPrepareTikTokEvent")){
+    function analyticsPrepareTikTokEvent($connection, $event){
+        if(
+            !is_array($event) ||
+            (string)($event["event_type"] ?? "") !== "tiktok_click"
+        ){
+            return $event;
+        }
+
+        $snapshot = analyticsPhase2ProductSnapshot(
+            $connection,
+            $event["product_id"] ?? null
+        );
+
+        if(!$snapshot){
+            return null;
+        }
+
+        $pagePath = (string)($event["page_path"] ?? "");
+        $pageOnly = (string)(parse_url($pagePath, PHP_URL_PATH) ?? "");
+        $expectedSuffix = "/cd/" . $snapshot["slug"];
+
+        if(
+            $snapshot["slug"] === "" ||
+            !str_ends_with(
+                strtolower(rtrim($pageOnly, "/")),
+                strtolower($expectedSuffix)
+            )
+        ){
+            return null;
+        }
+
+        $data = analyticsPhase2DecodeEventData($event);
+        $data["source"] = "product_page";
+        $data["product"] = $snapshot;
+        $event["product_id"] = $snapshot["id"];
+        $event["artist_id"] = $snapshot["artist_id"] > 0
+            ? $snapshot["artist_id"]
+            : null;
+        $event["event_value"] = "tiktok";
+        $event["event_data_json"] = analyticsPhase2EncodeEventData($data);
+
+        return $event;
+    }
+}
+
 if(!analyticsSameOriginAllowed()){
     http_response_code(403);
     echo json_encode(["ok" => false, "message" => "Origin not allowed."]);
@@ -78,6 +124,7 @@ if($rawBody === false || strlen($rawBody) > 16384){
 $payload = json_decode($rawBody, true);
 $event = analyticsNormalizeEventPayload($payload);
 $event = analyticsPhase2PrepareEvent($connection, $event);
+$event = analyticsPrepareTikTokEvent($connection, $event);
 $event = analyticsPhase3PrepareEvent($connection, $event);
 $event = analyticsPrivacySanitizeEvent($event);
 

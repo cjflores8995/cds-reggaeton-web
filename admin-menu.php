@@ -231,6 +231,10 @@ if(
     ></script>
     <script
         defer
+        src="<?php echo htmlspecialchars($baseurl . "admin-tiktok-status.js?v=1", ENT_QUOTES, "UTF-8"); ?>"
+    ></script>
+    <script
+        defer
         src="<?php echo htmlspecialchars($baseurl . "admin-product-links.js?v=1", ENT_QUOTES, "UTF-8"); ?>"
     ></script>
     <script

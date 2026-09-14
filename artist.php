@@ -139,7 +139,18 @@ if($artistId > 0){
          WHERE active = 1
            AND stock = 1
            AND artistid = ?
-         ORDER BY id DESC"
+         ORDER BY
+           CASE
+             WHEN COALESCE(CAST(release_year AS UNSIGNED), 0) = 0
+               THEN 1
+             ELSE 0
+           END ASC,
+           CAST(release_year AS UNSIGNED) ASC,
+           COALESCE(
+             NULLIF(TRIM(album), ''),
+             NULLIF(TRIM(title), '')
+           ) ASC,
+           id DESC"
     );
 
     if($statement){

@@ -507,3 +507,25 @@
         initializePhase3();
     }
 })();
+
+(function(){
+    "use strict";
+
+    if(document.querySelector("script[data-sales-studio-phase4-js]")){
+        return;
+    }
+
+    var current = document.currentScript;
+    var base = current && current.src
+        ? current.src
+        : document.baseURI;
+    var script = document.createElement("script");
+
+    script.src = new URL(
+        "admin-sales-studio-phase4.js?v=1",
+        base
+    ).href;
+    script.async = false;
+    script.setAttribute("data-sales-studio-phase4-js", "1");
+    document.head.appendChild(script);
+})();

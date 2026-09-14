@@ -139,16 +139,20 @@ if($driver !== "azure"){
     salesStudioImageFail(415, "El almacenamiento de la imagen no es compatible.");
 }
 
-$validation = imageStorageValidateConfiguration();
-
-if(!$validation["ok"]){
-    salesStudioImageFail(503, "El almacenamiento de imágenes no está disponible.");
+if(!function_exists("curl_init")){
+    salesStudioImageFail(503, "El servidor no puede recuperar imágenes remotas.");
 }
 
 $url = imageStorageAzureBlobUrl($key, true);
+$urlParts = parse_url($url);
 
-if($url === ""){
-    salesStudioImageFail(404, "No se pudo resolver la imagen.");
+if(
+    $url === "" ||
+    !is_array($urlParts) ||
+    strtolower((string)($urlParts["scheme"] ?? "")) !== "https" ||
+    trim((string)($urlParts["host"] ?? "")) === ""
+){
+    salesStudioImageFail(503, "No se pudo resolver de forma segura la imagen remota.");
 }
 
 $curl = curl_init();

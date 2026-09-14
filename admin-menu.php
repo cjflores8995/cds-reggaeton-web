@@ -23,6 +23,10 @@ if(!function_exists("adminMenuActiveSection")){
             return "inventory-sales";
         }
 
+        if($script === "admin-sales-studio.php"){
+            return "sales-studio";
+        }
+
         if($script === "image-settings.php"){
             return "image-settings";
         }
@@ -138,6 +142,14 @@ if(
         >
             <i class="fa fa-usd"></i>
             <span>Inventario y ventas</span>
+        </a>
+
+        <a
+            href="<?php echo htmlspecialchars($baseurl . "admin-sales-studio.php", ENT_QUOTES, "UTF-8"); ?>"
+            <?php echo adminMenuClass("sales-studio", $adminActiveSection); ?>
+        >
+            <i class="fa fa-bullhorn"></i>
+            <span>Sales Studio</span>
         </a>
 
         <a

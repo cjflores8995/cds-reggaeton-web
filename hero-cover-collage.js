@@ -4,9 +4,13 @@
     var DESKTOP_COUNT = 5;
     var MOBILE_COUNT = 3;
     var MOBILE_QUERY = "(max-width: 760px)";
+    var ROTATION_MS = 10 * 60 * 1000;
     var host = null;
+    var candidates = [];
     var selectedCovers = [];
     var mediaQuery = null;
+    var rotationKey = null;
+    var rotationTimer = null;
 
     function queryAll(selector, root) {
         return Array.prototype.slice.call(
@@ -14,11 +18,28 @@
         );
     }
 
-    function shuffle(items) {
+    function rotationBucket(now) {
+        return Math.floor(now / ROTATION_MS);
+    }
+
+    function seededRandom(seed) {
+        var state = seed >>> 0;
+
+        return function () {
+            state += 0x6D2B79F5;
+            var value = state;
+            value = Math.imul(value ^ (value >>> 15), value | 1);
+            value ^= value + Math.imul(value ^ (value >>> 7), value | 61);
+            return ((value ^ (value >>> 14)) >>> 0) / 4294967296;
+        };
+    }
+
+    function shuffle(items, seed) {
         var list = items.slice();
+        var random = seededRandom(seed);
 
         for (var index = list.length - 1; index > 0; index -= 1) {
-            var randomIndex = Math.floor(Math.random() * (index + 1));
+            var randomIndex = Math.floor(random() * (index + 1));
             var temporary = list[index];
             list[index] = list[randomIndex];
             list[randomIndex] = temporary;
@@ -41,7 +62,7 @@
 
     function collectCandidates() {
         var seenImages = new Set();
-        var candidates = [];
+        var items = [];
 
         queryAll(".product-card[data-product-id]").forEach(function (card) {
             var image = card.querySelector(".product-card__image");
@@ -61,18 +82,18 @@
             }
 
             seenImages.add(source);
-            candidates.push({
+            items.push({
                 image: source,
                 artist: String(card.dataset.artist || "").trim(),
                 productId: String(card.dataset.productId || "").trim()
             });
         });
 
-        return candidates;
+        return items;
     }
 
-    function chooseCovers(candidates) {
-        var shuffled = shuffle(candidates);
+    function chooseCovers(items, seed) {
+        var shuffled = shuffle(items, seed);
         var chosen = [];
         var chosenProducts = new Set();
         var usedArtists = new Set();
@@ -165,6 +186,33 @@
         host.classList.add("hero-cover-host");
     }
 
+    function selectForCurrentWindow() {
+        var nextKey = rotationBucket(Date.now());
+
+        if (nextKey === rotationKey && selectedCovers.length > 0) {
+            return;
+        }
+
+        rotationKey = nextKey;
+        selectedCovers = chooseCovers(candidates, nextKey);
+        render();
+    }
+
+    function scheduleNextRotation() {
+        if (rotationTimer !== null) {
+            window.clearTimeout(rotationTimer);
+        }
+
+        var now = Date.now();
+        var nextBoundary = (rotationBucket(now) + 1) * ROTATION_MS;
+        var delay = Math.max(250, nextBoundary - now + 50);
+
+        rotationTimer = window.setTimeout(function () {
+            selectForCurrentWindow();
+            scheduleNextRotation();
+        }, delay);
+    }
+
     function initialize() {
         host = document.querySelector(".hero .hero__content");
 
@@ -172,15 +220,9 @@
             return;
         }
 
-        var candidates = collectCandidates();
+        candidates = collectCandidates();
 
         if (candidates.length === 0) {
-            return;
-        }
-
-        selectedCovers = chooseCovers(candidates);
-
-        if (selectedCovers.length === 0) {
             return;
         }
 
@@ -189,7 +231,8 @@
             ? window.matchMedia(MOBILE_QUERY)
             : { matches: window.innerWidth <= 760 };
 
-        render();
+        selectForCurrentWindow();
+        scheduleNextRotation();
 
         if (mediaQuery && typeof mediaQuery.addEventListener === "function") {
             mediaQuery.addEventListener("change", render);

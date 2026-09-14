@@ -51,6 +51,22 @@
         });
     }
 
+    function loadAdminCatalogView(baseUrl){
+        if(!document.querySelector("#productGrid")){
+            return;
+        }
+
+        if(document.querySelector("script[data-store-admin-view]")){
+            return;
+        }
+
+        var script = document.createElement("script");
+        script.src = baseUrl + "store-admin-view.js?v=1";
+        script.defer = true;
+        script.dataset.storeAdminView = "1";
+        document.head.appendChild(script);
+    }
+
     var baseUrl = scriptBaseUrl();
 
     if(baseUrl === ""){
@@ -66,4 +82,5 @@
     ensureLink("apple-touch-icon", appIcon, "180x180");
 
     normalizeBrandLinks(baseUrl);
+    loadAdminCatalogView(baseUrl);
 })();

@@ -275,7 +275,7 @@ if(isset($storeBaseUrl) && trim((string)$storeBaseUrl) !== ""){
     ></script>
     <script
         defer
-        src="<?php echo storeFooterEsc($footerAssetBaseUrl); ?>product-tiktok-ui.js?v=2"
+        src="<?php echo storeFooterEsc($footerAssetBaseUrl); ?>product-tiktok-ui.js?v=3"
     ></script>
     <script
         defer

@@ -455,24 +455,21 @@
                     window.setTimeout(scheduleRender, 0);
                 });
             }
+        });
 
-            var observer = new MutationObserver(function(mutations){
-                var changed = mutations.some(function(mutation){
-                    return (
-                        mutation.type === "attributes" &&
-                        mutation.attributeName === "class"
-                    );
-                });
+        root.addEventListener("click", function(event){
+            if(event.target.closest("[data-sales-studio-product]")){
+                window.setTimeout(scheduleRender, 0);
+            }
+        });
 
-                if(changed){
-                    scheduleRender();
-                }
-            });
-
-            observer.observe(card, {
-                attributes: true,
-                attributeFilter: ["class"]
-            });
+        document.addEventListener("click", function(event){
+            if(
+                event.target.closest("[data-sales-studio-drawer-product__remove]") ||
+                event.target.closest(".sales-studio-drawer-product__remove")
+            ){
+                window.setTimeout(scheduleRender, 0);
+            }
         });
 
         Array.prototype.slice.call(

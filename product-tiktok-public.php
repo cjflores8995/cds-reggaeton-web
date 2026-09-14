@@ -11,6 +11,52 @@ productTikTokEnsureColumn(
     $tableposts
 );
 
+if((int)($_GET["catalog"] ?? 0) === 1){
+    $productIds = [];
+
+    $catalogResult = mysqli_query(
+        $connection,
+        "SELECT id, tiktok_url " .
+        "FROM $tableposts " .
+        "WHERE active = 1 " .
+        "AND stock = 1 " .
+        "ORDER BY id DESC"
+    );
+
+    if(!$catalogResult){
+        http_response_code(500);
+        echo json_encode([
+            "ok" => false,
+            "product_ids" => []
+        ]);
+        exit;
+    }
+
+    while($row = mysqli_fetch_assoc($catalogResult)){
+        $normalized = productTikTokNormalize(
+            $row["tiktok_url"] ??
+            ""
+        );
+
+        if(
+            $normalized["ok"] &&
+            $normalized["url"] !== ""
+        ){
+            $productIds[] = (int)$row["id"];
+        }
+    }
+
+    echo json_encode(
+        [
+            "ok" => true,
+            "product_ids" => $productIds
+        ],
+        JSON_UNESCAPED_UNICODE |
+        JSON_UNESCAPED_SLASHES
+    );
+    exit;
+}
+
 $slug = trim(
     (string)(
         $_GET["slug"] ??

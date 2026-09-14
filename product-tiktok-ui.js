@@ -85,10 +85,10 @@
             ".product-tiktok-link__title{color:#fff;font:800 11px/1.2 Arial,sans-serif;letter-spacing:.08em;text-transform:uppercase;}",
             ".product-tiktok-link__subtitle{color:rgba(255,255,255,.88);font:600 10px/1.25 Arial,sans-serif;letter-spacing:.01em;text-transform:none;}",
             ".product-tiktok-link__arrow{flex:0 0 auto;color:#fff;font:800 18px/1 Arial,sans-serif;}",
-            ".product-card__tiktok-available{display:inline-flex!important;align-items:center;gap:4px;color:#111;white-space:nowrap;pointer-events:none;}",
-            ".product-card__tiktok-available svg{display:block;flex:0 0 auto;width:10px;height:10px;fill:currentColor;filter:drop-shadow(.6px 0 0 #25F4EE) drop-shadow(-.6px 0 0 #FE2C55);}",
-            ".product-card__tiktok-label{display:inline!important;letter-spacing:.08em;}",
-            "@media(max-width:760px){.product-tiktok-link{width:100%;min-height:66px;padding:11px 13px 11px 15px;}.product-tiktok-link__title{font-size:10px;}.product-tiktok-link__subtitle{font-size:9px;}.product-card__tiktok-available{gap:3px;}.product-card__tiktok-available svg{width:9px;height:9px;}}",
+            ".product-card__tiktok-available{display:inline-flex!important;align-items:center;gap:5px;color:#111;white-space:nowrap;pointer-events:none;}",
+            ".product-card__tiktok-available svg{display:block;overflow:visible;flex:0 0 auto;width:12px;height:12px;fill:#111;filter:drop-shadow(1.35px 0 0 #25F4EE) drop-shadow(-1.35px 0 0 #FE2C55);}",
+            ".product-card__tiktok-label{display:inline!important;color:#111;font-weight:800;letter-spacing:.08em;}",
+            "@media(max-width:760px){.product-tiktok-link{width:100%;min-height:66px;padding:11px 13px 11px 15px;}.product-tiktok-link__title{font-size:10px;}.product-tiktok-link__subtitle{font-size:9px;}.product-card__tiktok-available{gap:4px;}.product-card__tiktok-available svg{width:11px;height:11px;}}",
             "@media(prefers-reduced-motion:reduce){.product-tiktok-link{transition:none;}.product-tiktok-link:hover{transform:none;}}"
         ].join("");
 

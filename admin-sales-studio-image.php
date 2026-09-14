@@ -50,6 +50,74 @@ function salesStudioImageSend($body, $contentType){
     exit;
 }
 
+function salesStudioImageFetchRemote($url){
+    $url = trim((string)$url);
+    $parts = parse_url($url);
+
+    if(
+        $url === "" ||
+        !is_array($parts) ||
+        strtolower((string)($parts["scheme"] ?? "")) !== "https" ||
+        trim((string)($parts["host"] ?? "")) === ""
+    ){
+        return [
+            "ok" => false,
+            "status" => 0,
+            "body" => "",
+            "content_type" => "",
+            "error" => "invalid_url"
+        ];
+    }
+
+    $curl = curl_init();
+    $options = [
+        CURLOPT_URL => $url,
+        CURLOPT_RETURNTRANSFER => true,
+        CURLOPT_FOLLOWLOCATION => false,
+        CURLOPT_CONNECTTIMEOUT => 5,
+        CURLOPT_TIMEOUT => 20,
+        CURLOPT_HTTPHEADER => [
+            "Accept: image/*",
+            "Expect:"
+        ],
+        CURLOPT_USERAGENT => "ReggaetonElReal-SalesStudio/1.0"
+    ];
+
+    if(defined("CURL_IPRESOLVE_V4")){
+        $options[CURLOPT_IPRESOLVE] = CURL_IPRESOLVE_V4;
+    }
+
+    if(defined("CURL_HTTP_VERSION_1_1")){
+        $options[CURLOPT_HTTP_VERSION] = CURL_HTTP_VERSION_1_1;
+    }
+
+    curl_setopt_array($curl, $options);
+
+    $body = curl_exec($curl);
+    $curlError = curl_error($curl);
+    $statusCode = (int)curl_getinfo($curl, CURLINFO_HTTP_CODE);
+    $contentType = (string)curl_getinfo($curl, CURLINFO_CONTENT_TYPE);
+    curl_close($curl);
+
+    if($body === false || $statusCode !== 200){
+        return [
+            "ok" => false,
+            "status" => $statusCode,
+            "body" => "",
+            "content_type" => $contentType,
+            "error" => $curlError !== "" ? $curlError : "http_" . $statusCode
+        ];
+    }
+
+    return [
+        "ok" => true,
+        "status" => 200,
+        "body" => $body,
+        "content_type" => $contentType,
+        "error" => ""
+    ];
+}
+
 if(
     !isset($_SESSION["adminusername"]) ||
     !isset($_SESSION["adminpassword"]) ||
@@ -143,48 +211,24 @@ if(!function_exists("curl_init")){
     salesStudioImageFail(503, "El servidor no puede recuperar imágenes remotas.");
 }
 
-$url = imageStorageAzureBlobUrl($key, true);
-$urlParts = parse_url($url);
+$publicUrl = imageStorageAzureBlobUrl($key, false);
+$signedUrl = imageStorageAzureBlobUrl($key, true);
 
-if(
-    $url === "" ||
-    !is_array($urlParts) ||
-    strtolower((string)($urlParts["scheme"] ?? "")) !== "https" ||
-    trim((string)($urlParts["host"] ?? "")) === ""
-){
-    salesStudioImageFail(503, "No se pudo resolver de forma segura la imagen remota.");
+$remote = salesStudioImageFetchRemote($publicUrl);
+
+if(!$remote["ok"] && $signedUrl !== "" && $signedUrl !== $publicUrl){
+    $remote = salesStudioImageFetchRemote($signedUrl);
 }
 
-$curl = curl_init();
-curl_setopt_array(
-    $curl,
-    [
-        CURLOPT_URL => $url,
-        CURLOPT_RETURNTRANSFER => true,
-        CURLOPT_FOLLOWLOCATION => false,
-        CURLOPT_CONNECTTIMEOUT => 5,
-        CURLOPT_TIMEOUT => 20,
-        CURLOPT_HTTPHEADER => [
-            "Accept: image/*",
-            "Expect:"
-        ]
-    ]
-);
-
-$body = curl_exec($curl);
-$curlError = curl_error($curl);
-$statusCode = (int)curl_getinfo($curl, CURLINFO_HTTP_CODE);
-$contentType = (string)curl_getinfo($curl, CURLINFO_CONTENT_TYPE);
-curl_close($curl);
-
-if($body === false || $statusCode !== 200){
+if(!$remote["ok"]){
     salesStudioImageFail(
         502,
-        $curlError !== ""
-            ? "No se pudo recuperar la imagen del almacenamiento."
-            : "El almacenamiento respondió con un estado inesperado."
+        "No se pudo recuperar la imagen del almacenamiento."
     );
 }
+
+$body = $remote["body"];
+$contentType = (string)$remote["content_type"];
 
 if(strlen($body) > 20 * 1024 * 1024){
     salesStudioImageFail(413, "La imagen supera el tamaño permitido para exportación.");

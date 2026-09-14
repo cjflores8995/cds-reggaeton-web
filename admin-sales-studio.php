@@ -81,7 +81,9 @@ function adminSalesStudioPhotoState($moreimages){
             "class" => "is-ready",
             "icon" => "fa-check",
             "text" => "Delantera + posterior",
-            "ready" => true
+            "ready" => true,
+            "has_front" => true,
+            "has_back" => true
         ];
     }
 
@@ -90,7 +92,9 @@ function adminSalesStudioPhotoState($moreimages){
             "class" => "is-warning",
             "icon" => "fa-exclamation-circle",
             "text" => "Faltan delantera y posterior",
-            "ready" => false
+            "ready" => false,
+            "has_front" => false,
+            "has_back" => false
         ];
     }
 
@@ -99,7 +103,9 @@ function adminSalesStudioPhotoState($moreimages){
             "class" => "is-warning",
             "icon" => "fa-exclamation-circle",
             "text" => "Falta portada delantera",
-            "ready" => false
+            "ready" => false,
+            "has_front" => false,
+            "has_back" => true
         ];
     }
 
@@ -107,7 +113,9 @@ function adminSalesStudioPhotoState($moreimages){
         "class" => "is-warning",
         "icon" => "fa-exclamation-circle",
         "text" => "Falta portada posterior",
-        "ready" => false
+        "ready" => false,
+        "has_front" => true,
+        "has_back" => false
     ];
 }
 
@@ -180,6 +188,7 @@ if(count($artistOptions) > 0){
     <link rel="stylesheet" type="text/css" href="<?php echo adminSalesStudioEsc($baseurl); ?>assets/css/font-awesome.css">
     <link rel="stylesheet" type="text/css" href="<?php echo adminSalesStudioEsc($baseurl); ?>admin-modern.css?v=16">
     <link rel="stylesheet" type="text/css" href="<?php echo adminSalesStudioEsc($baseurl); ?>admin-sales-studio.css?v=3">
+    <link rel="stylesheet" type="text/css" href="<?php echo adminSalesStudioEsc($baseurl); ?>admin-sales-studio-phase3.css?v=1">
 </head>
 <body>
 <div class="admin-page-shell">
@@ -191,10 +200,10 @@ if(count($artistOptions) > 0){
     <main class="admin-page-content sales-studio-page">
         <div class="admin-toolbar sales-studio-toolbar">
             <div>
-                <div class="sales-studio-eyebrow">VENTAS · FASE 2.2/2</div>
+                <div class="sales-studio-eyebrow">VENTAS · FASE 3/11</div>
                 <h1>Sales Studio</h1>
                 <div class="admin-muted">
-                    Selecciona y organiza los CDs que quieres preparar para Facebook Marketplace.
+                    Selecciona CDs y valida que cada publicación esté lista para Facebook Marketplace.
                 </div>
             </div>
 
@@ -370,6 +379,8 @@ if(count($artistOptions) > 0){
                             $isActive = (int)($post["active"] ?? 1) === 1;
                             $isAvailable = (int)($post["stock"] ?? 1) === 1;
                             $selectable = $isActive && $isAvailable;
+                            $cdCondition = trim((string)($post["cd_condition"] ?? ""));
+                            $caseCondition = trim((string)($post["case_condition"] ?? ""));
                             $photoState = adminSalesStudioPhotoState(
                                 $post["moreimages"] ?? ""
                             );
@@ -403,6 +414,12 @@ if(count($artistOptions) > 0){
                                 data-price="<?php echo adminSalesStudioEsc(number_format($price, 2, ".", "")); ?>"
                                 data-status="<?php echo adminSalesStudioEsc($availabilityData); ?>"
                                 data-photo-ready="<?php echo !empty($photoState["ready"]) ? "1" : "0"; ?>"
+                                data-has-front="<?php echo !empty($photoState["has_front"]) ? "1" : "0"; ?>"
+                                data-has-back="<?php echo !empty($photoState["has_back"]) ? "1" : "0"; ?>"
+                                data-cd-condition="<?php echo adminSalesStudioEsc($cdCondition); ?>"
+                                data-case-condition="<?php echo adminSalesStudioEsc($caseCondition); ?>"
+                                data-active="<?php echo $isActive ? "1" : "0"; ?>"
+                                data-stock="<?php echo $isAvailable ? "1" : "0"; ?>"
                                 data-selectable="<?php echo $selectable ? "1" : "0"; ?>"
                             >
                                 <div class="sales-studio-product-card__image">
@@ -460,14 +477,70 @@ if(count($artistOptions) > 0){
                     </div>
                 <?php } ?>
             </section>
+
+            <section
+                class="sales-studio-preflight"
+                data-sales-studio-preflight
+                aria-labelledby="sales-studio-preflight-title"
+                hidden
+            >
+                <div class="sales-studio-preflight__heading">
+                    <div>
+                        <span class="sales-studio-step-number">03</span>
+                        <div>
+                            <h2 id="sales-studio-preflight-title">Preparación para Marketplace</h2>
+                            <p>Sales Studio revisa automáticamente que cada CD tenga los datos mínimos necesarios antes de continuar.</p>
+                        </div>
+                    </div>
+                    <span class="sales-studio-preflight__state" data-sales-studio-preflight-state>
+                        Pendiente
+                    </span>
+                </div>
+
+                <div class="sales-studio-preflight__summary">
+                    <div>
+                        <span>Seleccionados</span>
+                        <strong data-sales-studio-preflight-selected>0</strong>
+                    </div>
+                    <div>
+                        <span>Listos</span>
+                        <strong data-sales-studio-preflight-ready>0</strong>
+                    </div>
+                    <div>
+                        <span>Con problemas</span>
+                        <strong data-sales-studio-preflight-problems>0</strong>
+                    </div>
+                    <div>
+                        <span>Imágenes</span>
+                        <strong><b data-sales-studio-preflight-images>1</b>/10</strong>
+                    </div>
+                </div>
+
+                <div class="sales-studio-preflight__message" data-sales-studio-preflight-message></div>
+                <div class="sales-studio-preflight__list" data-sales-studio-preflight-list></div>
+
+                <div class="sales-studio-preflight__actions">
+                    <button
+                        type="button"
+                        class="admin-modern-button"
+                        data-sales-studio-preflight-continue
+                        disabled
+                    >
+                        Continuar
+                    </button>
+                    <span data-sales-studio-preflight-next-note>
+                        Selecciona al menos un CD para ejecutar la validación.
+                    </span>
+                </div>
+            </section>
         <?php } ?>
 
         <section class="sales-studio-phase-note">
-            <span>2.2</span>
+            <span>03</span>
             <div>
-                <strong>Selector interactivo de Marketplace</strong>
+                <strong>Preflight de Marketplace</strong>
                 <p>
-                    La selección ocurre solo en el navegador. Sales Studio sigue sin modificar stock, precios, imágenes ni ningún dato del catálogo.
+                    Sales Studio valida disponibilidad, portada delantera, portada posterior, precio, año, estado del disco y estado de la caja. Sigue siendo una operación de solo lectura.
                 </p>
             </div>
             <strong>SOLO LECTURA</strong>
@@ -483,6 +556,7 @@ if(count($artistOptions) > 0){
     <div>
         <strong><span data-sales-studio-selected-count>0</span>/9 CDs</strong>
         <span><span data-sales-studio-image-count>1</span>/10 imágenes</span>
+        <span class="sales-studio-selection-bar__preflight" data-sales-studio-selection-preflight></span>
     </div>
     <button
         type="button"
@@ -530,6 +604,12 @@ if(count($artistOptions) > 0){
 
     <div class="sales-studio-drawer__list" data-sales-studio-drawer-list></div>
 
+    <div
+        class="sales-studio-drawer-preflight"
+        data-sales-studio-drawer-preflight
+        hidden
+    ></div>
+
     <div class="sales-studio-drawer__footer">
         <button
             type="button"
@@ -539,7 +619,15 @@ if(count($artistOptions) > 0){
         >
             Limpiar
         </button>
-        <span>La siguiente fase validará los datos antes de generar contenido.</span>
+        <button
+            type="button"
+            class="admin-modern-button"
+            data-sales-studio-drawer-continue
+            disabled
+        >
+            Continuar
+        </button>
+        <span>El preflight debe quedar completo antes de continuar.</span>
     </div>
 </section>
 
@@ -553,6 +641,10 @@ if(count($artistOptions) > 0){
 <script
     defer
     src="<?php echo adminSalesStudioEsc($baseurl . "admin-sales-studio.js?v=2"); ?>"
+></script>
+<script
+    defer
+    src="<?php echo adminSalesStudioEsc($baseurl . "admin-sales-studio-phase3.js?v=1"); ?>"
 ></script>
 </body>
 </html>

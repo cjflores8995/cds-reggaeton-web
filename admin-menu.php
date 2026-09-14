@@ -285,3 +285,10 @@ if(
         src="<?php echo htmlspecialchars($baseurl . "admin-price-suggestions.js?v=1", ENT_QUOTES, "UTF-8"); ?>"
     ></script>
 <?php } ?>
+
+<?php if($adminActiveSection === "sales-studio"){ ?>
+    <script
+        defer
+        src="<?php echo htmlspecialchars($baseurl . "admin-sales-studio-templates.js?v=1", ENT_QUOTES, "UTF-8"); ?>"
+    ></script>
+<?php } ?>

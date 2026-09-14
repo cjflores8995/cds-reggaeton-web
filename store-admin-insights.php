@@ -81,6 +81,45 @@ $period = strtolower(trim((string)($_GET["period"] ?? "30d")));
 $range = storeAdminInsightsRange($period);
 $environment = analyticsMetricsEnvironment(analyticsCurrentEnvironment());
 $products = analyticsMetricsProducts($connection, $environment, $range);
+$tiktokSessions = [];
+$tables = analyticsTables();
+$trafficSql = analyticsMetricsTrafficSql($environment);
+$tiktokSql =
+    "SELECT e.product_id, COUNT(DISTINCT e.session_id) AS tiktok_sessions " .
+    "FROM " . $tables["events"] . " e " .
+    "INNER JOIN " . $tables["sessions"] . " s ON s.id = e.session_id " .
+    "WHERE s.environment = ? AND " . $trafficSql . " " .
+    "AND e.event_type = 'tiktok_click' " .
+    "AND e.product_id IS NOT NULL " .
+    "AND e.created_at >= ? AND e.created_at < ? " .
+    "GROUP BY e.product_id";
+$tiktokStatement = mysqli_prepare($connection, $tiktokSql);
+
+if($tiktokStatement){
+    mysqli_stmt_bind_param(
+        $tiktokStatement,
+        "sss",
+        $environment,
+        $range["start_utc"],
+        $range["end_utc"]
+    );
+    mysqli_stmt_execute($tiktokStatement);
+    $tiktokResult = mysqli_stmt_get_result($tiktokStatement);
+
+    while($tiktokResult && ($tiktokRow = mysqli_fetch_assoc($tiktokResult))){
+        $tiktokProductId = (int)($tiktokRow["product_id"] ?? 0);
+
+        if($tiktokProductId > 0){
+            $tiktokSessions[$tiktokProductId] = max(
+                0,
+                (int)($tiktokRow["tiktok_sessions"] ?? 0)
+            );
+        }
+    }
+
+    mysqli_stmt_close($tiktokStatement);
+}
+
 $metrics = [];
 
 foreach($products as $product){
@@ -95,6 +134,7 @@ foreach($products as $product){
         "views" => max(0, (int)($product["views"] ?? 0)),
         "visitors" => max(0, (int)($product["visitors"] ?? 0)),
         "cart_sessions" => max(0, (int)($product["add_sessions"] ?? 0)),
+        "tiktok_sessions" => max(0, (int)($tiktokSessions[$productId] ?? 0)),
         "whatsapp_sessions" => max(0, (int)($product["whatsapp_sessions"] ?? 0)),
         "conversion" => max(0, (float)($product["conversion"] ?? 0))
     ];

@@ -61,7 +61,7 @@
         }
 
         var script = document.createElement("script");
-        script.src = baseUrl + "store-admin-view.js?v=1";
+        script.src = baseUrl + "store-admin-view.js?v=2";
         script.defer = true;
         script.dataset.storeAdminView = "1";
         document.head.appendChild(script);

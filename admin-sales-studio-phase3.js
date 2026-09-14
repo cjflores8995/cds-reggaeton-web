@@ -522,7 +522,7 @@
     var script = document.createElement("script");
 
     script.src = new URL(
-        "admin-sales-studio-phase4.js?v=1",
+        "admin-sales-studio-phase4.js?v=2",
         base
     ).href;
     script.async = false;

@@ -1,6 +1,5 @@
 <?php
 require_once __DIR__ . "/config.php";
-require_once __DIR__ . "/admin-sales-studio-helper.php";
 
 header("X-Robots-Tag: noindex, nofollow, noarchive", true);
 header("Cache-Control: no-store, no-cache, must-revalidate, max-age=0");
@@ -20,18 +19,59 @@ function adminSalesStudioMoney($value){
     return "$" . number_format((float)$value, 2, ".", ",");
 }
 
-$products = adminSalesStudioProducts(
-    $connection,
-    $tableposts,
-    $tableartists,
-    $baseurl
-);
-
+$products = [];
 $availableCount = 0;
+$salesStudioCatalogError = false;
 
-foreach($products as $product){
-    if((int)$product["stock"] === 1){
-        $availableCount++;
+try{
+    require_once __DIR__ . "/admin-sales-studio-helper.php";
+
+    if(!function_exists("adminSalesStudioProducts")){
+        throw new RuntimeException(
+            "Sales Studio catalog helper is unavailable."
+        );
+    }
+
+    $products = adminSalesStudioProducts(
+        $connection,
+        $tableposts,
+        $tableartists,
+        $baseurl
+    );
+
+    if(!is_array($products)){
+        $products = [];
+        throw new RuntimeException(
+            "Sales Studio catalog returned an invalid result."
+        );
+    }
+
+    foreach($products as $product){
+        if((int)($product["stock"] ?? 0) === 1){
+            $availableCount++;
+        }
+    }
+
+    if(
+        function_exists("adminSalesStudioCatalogLoadFailed") &&
+        adminSalesStudioCatalogLoadFailed()
+    ){
+        $salesStudioCatalogError = true;
+    }
+}catch(Throwable $exception){
+    $products = [];
+    $availableCount = 0;
+    $salesStudioCatalogError = true;
+
+    if(function_exists("adminTechnicalErrorLogThrowable")){
+        adminTechnicalErrorLogThrowable($exception);
+    }else{
+        error_log(
+            "[sales-studio] " .
+            get_class($exception) .
+            ": " .
+            $exception->getMessage()
+        );
     }
 }
 ?>
@@ -85,6 +125,15 @@ foreach($products as $product){
                 <strong><b data-sales-studio-image-count>1</b>/10</strong>
             </div>
         </section>
+
+        <?php if($salesStudioCatalogError){ ?>
+            <div class="sales-studio-limit-message" style="display:flex;" role="alert">
+                <i class="fa fa-exclamation-circle" aria-hidden="true"></i>
+                <span>
+                    Sales Studio abrió correctamente, pero no pudo cargar el catálogo. El error técnico fue registrado para diagnóstico.
+                </span>
+            </div>
+        <?php } ?>
 
         <section
             class="sales-studio-selector"
@@ -161,7 +210,9 @@ foreach($products as $product){
 
             <?php if(count($products) === 0){ ?>
                 <div class="admin-empty">
-                    No hay CDs activos en el catálogo.
+                    <?php echo $salesStudioCatalogError
+                        ? "El catálogo no está disponible temporalmente en Sales Studio."
+                        : "No hay CDs activos en el catálogo."; ?>
                 </div>
             <?php }else{ ?>
                 <div class="sales-studio-product-list">

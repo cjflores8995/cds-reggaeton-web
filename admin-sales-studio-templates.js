@@ -1,7 +1,7 @@
 (function(){
     "use strict";
 
-    var STORAGE_KEY = "reggaeton-sales-studio-individual-template-v1";
+    var STORAGE_KEY = "reggaeton-sales-studio-individual-template-v2";
     var scriptBase = document.currentScript && document.currentScript.src
         ? document.currentScript.src
         : document.baseURI;
@@ -12,39 +12,31 @@
             id: "hero",
             name: "Hero Producto",
             tag: "RECOMENDADA",
-            description: "Portada delantera dominante, posterior secundaria y precio con alta jerarquía."
+            description: "Portada delantera protagonista, reverso secundario, precio fuerte y máxima prioridad al producto."
         },
         {
             id: "double",
             name: "Doble Portada",
             tag: "DETALLE",
-            description: "Frente y reverso con peso visual equivalente para mostrar claramente el ejemplar real."
-        },
-        {
-            id: "impact",
-            name: "Impacto Marketplace",
-            tag: "IMPACTO",
-            description: "Composición de mayor contraste pensada para detener el scroll en Marketplace."
-        },
-        {
-            id: "minimal",
-            name: "Minimal",
-            tag: "LIMPIA",
-            description: "Fotografías grandes, mucho aire y el mínimo texto imprescindible."
+            description: "Frente y reverso grandes, equilibrados y casi al margen para mostrar el ejemplar real."
         }
     ];
 
     function loadStylesheet(){
-        if(document.querySelector("link[data-sales-studio-templates-css]")){
+        var existing = document.querySelector("link[data-sales-studio-templates-css]");
+        var href = new URL(
+            "admin-sales-studio-templates.css?v=2",
+            scriptBase
+        ).href;
+
+        if(existing){
+            existing.href = href;
             return;
         }
 
         var link = document.createElement("link");
         link.rel = "stylesheet";
-        link.href = new URL(
-            "admin-sales-studio-templates.css?v=1",
-            scriptBase
-        ).href;
+        link.href = href;
         link.setAttribute("data-sales-studio-templates-css", "1");
         document.head.appendChild(link);
     }
@@ -52,6 +44,7 @@
     function storedTemplate(){
         try{
             var value = window.sessionStorage.getItem(STORAGE_KEY) || "";
+
             return templates.some(function(template){
                 return template.id === value;
             }) ? value : "hero";
@@ -77,12 +70,12 @@
         );
 
         if(eyebrow){
-            eyebrow.textContent = "VENTAS · FASE 4.3";
+            eyebrow.textContent = "VENTAS · FASE 4.4";
         }
 
         if(description){
             description.textContent =
-                "Selecciona, valida y elige la composición visual de cada CD para Facebook Marketplace.";
+                "Selecciona, valida y elige una de las dos composiciones definitivas para cada CD de Marketplace.";
         }
 
         if(classicEyebrow){
@@ -90,7 +83,7 @@
         }
 
         if(stepNumber){
-            stepNumber.textContent = "04.3";
+            stepNumber.textContent = "04.4";
         }
 
         if(note){
@@ -100,17 +93,17 @@
             var state = note.querySelector(":scope > strong");
 
             if(index){
-                index.textContent = "04.3";
+                index.textContent = "04.4";
             }
             if(title){
-                title.textContent = "Plantillas individuales seleccionables";
+                title.textContent = "Plantillas individuales definitivas";
             }
             if(text){
                 text.textContent =
-                    "Elige entre Hero Producto, Doble Portada, Impacto Marketplace y Minimal. La portada general cuando existan varios CDs se construirá en la fase de Lote.";
+                    "Hero Producto y Doble Portada son las dos composiciones activas. Las futuras plantillas podrán añadirse sin cambiar el flujo actual.";
             }
             if(state){
-                state.textContent = "4 PLANTILLAS";
+                state.textContent = "2 PLANTILLAS";
             }
         }
     }
@@ -134,7 +127,7 @@
                 '<span>ESTILO DE IMAGEN</span>',
                 '<h3 id="sales-studio-template-picker-title">Elige la plantilla individual</h3>',
             '</div>',
-            '<p>La selección cambia solo la composición visual; los datos y fotografías reales siguen siendo los mismos.</p>'
+            '<p>Las dos opciones utilizan las fotografías reales del CD y los mismos datos validados en el preflight.</p>'
         ].join("");
 
         var options = document.createElement("div");
@@ -171,7 +164,7 @@
         note.className = "sales-studio-template-picker__note";
         note.innerHTML = [
             '<i class="fa fa-info-circle" aria-hidden="true"></i>',
-            '<span>Con varios CDs, esta plantilla se aplicará a cada imagen individual. La imagen principal del lote se añadirá en la Fase 6.</span>'
+            '<span>Si seleccionas varios CDs, esta plantilla se aplicará a cada imagen individual. La portada principal del lote llegará en la Fase 6.</span>'
         ].join("");
 
         picker.appendChild(heading);
@@ -179,6 +172,7 @@
         picker.appendChild(note);
 
         var navigation = section.querySelector("[data-sales-studio-classic-nav]");
+
         if(navigation){
             navigation.insertAdjacentElement("beforebegin", picker);
         }else{
@@ -186,6 +180,35 @@
         }
 
         return picker;
+    }
+
+    function ensureDecorations(artboard){
+        var header = artboard.querySelector(".sales-studio-classic-artboard__header");
+        var footer = artboard.querySelector(".sales-studio-classic-artboard__footer");
+
+        if(header && !header.querySelector("[data-sales-studio-hero-meta]")){
+            var heroMeta = document.createElement("div");
+            heroMeta.className = "sales-studio-template-hero-meta";
+            heroMeta.setAttribute("data-sales-studio-hero-meta", "1");
+            heroMeta.innerHTML = [
+                '<span>CD ORIGINAL</span>',
+                '<span>REGGAETÓN</span>',
+                '<span>CLÁSICO</span>'
+            ].join("");
+            header.appendChild(heroMeta);
+        }
+
+        if(footer && !footer.querySelector("[data-sales-studio-hero-features]")){
+            var features = document.createElement("div");
+            features.className = "sales-studio-template-features";
+            features.setAttribute("data-sales-studio-hero-features", "1");
+            features.innerHTML = [
+                '<span><i class="fa fa-dot-circle-o" aria-hidden="true"></i>CD ORIGINAL</span>',
+                '<span><i class="fa fa-truck" aria-hidden="true"></i>ENVÍOS DISPONIBLES</span>',
+                '<span><i class="fa fa-shield" aria-hidden="true"></i>COMPRA CON CONFIANZA</span>'
+            ].join("");
+            footer.appendChild(features);
+        }
     }
 
     function initialize(){
@@ -203,6 +226,7 @@
         initialized = true;
         loadStylesheet();
         updatePhaseLabels();
+        ensureDecorations(artboard);
 
         var picker = createPicker(section);
         var buttons = Array.prototype.slice.call(
@@ -232,9 +256,9 @@
             var template = templateById(id);
             activeTemplate = template.id;
 
-            templates.forEach(function(item){
+            ["hero", "double", "impact", "minimal"].forEach(function(item){
                 artboard.classList.remove(
-                    "sales-studio-template--" + item.id
+                    "sales-studio-template--" + item
                 );
             });
 

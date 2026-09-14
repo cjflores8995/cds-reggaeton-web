@@ -142,29 +142,107 @@ function adminSalesStudioEffectivePrice($row){
     return max(0, $normalPrice);
 }
 
-function adminSalesStudioProducts($connection, $tableposts, $tableartists, $baseurl){
-    $products = [];
+function adminSalesStudioCatalogLoadFailed(){
+    return !empty($GLOBALS["adminSalesStudioCatalogLoadFailed"]);
+}
 
-    $sql =
-        "SELECT " .
-        "p.id, p.title, p.artist, p.album, p.release_year, " .
-        "p.normalprice, p.discountprice, p.picture, p.moreimages, " .
-        "p.stock, p.cd_condition, p.case_condition, p.active, " .
-        "a.name AS artist_reference " .
-        "FROM $tableposts p " .
-        "LEFT JOIN $tableartists a ON a.id = p.artistid " .
-        "WHERE p.active = 1 " .
-        "ORDER BY p.stock DESC, " .
-        "COALESCE(NULLIF(p.artist, ''), a.name, p.title) ASC, " .
-        "COALESCE(NULLIF(p.album, ''), p.title) ASC";
+function adminSalesStudioMarkCatalogLoadFailed($reason){
+    $GLOBALS["adminSalesStudioCatalogLoadFailed"] = true;
 
-    $result = mysqli_query($connection, $sql);
+    if(!function_exists("adminSystemLogWrite")){
+        return;
+    }
+
+    try{
+        adminSystemLogWrite([
+            "actor_type" => "admin",
+            "actor" => $_SESSION["admin_username"] ?? null,
+            "category" => "system",
+            "action" => "sales_studio_catalog_load_failed",
+            "outcome" => "failure",
+            "severity" => "error",
+            "detail" => "Sales Studio could not load the catalog.",
+            "context_data" => [
+                "reason" => (string)$reason,
+                "script" => "admin-sales-studio.php"
+            ]
+        ]);
+    }catch(Throwable $exception){
+        // Logging must never break Sales Studio.
+    }
+}
+
+function adminSalesStudioArtistMap($connection, $tableartists){
+    $artists = [];
+
+    try{
+        $result = mysqli_query(
+            $connection,
+            "SELECT id, name FROM $tableartists"
+        );
+    }catch(Throwable $exception){
+        return $artists;
+    }
 
     if(!$result){
-        return $products;
+        return $artists;
     }
 
     while($row = mysqli_fetch_assoc($result)){
+        $id = (int)($row["id"] ?? 0);
+
+        if($id <= 0){
+            continue;
+        }
+
+        $artists[$id] = trim((string)($row["name"] ?? ""));
+    }
+
+    mysqli_free_result($result);
+    return $artists;
+}
+
+function adminSalesStudioProducts($connection, $tableposts, $tableartists, $baseurl){
+    $products = [];
+    $GLOBALS["adminSalesStudioCatalogLoadFailed"] = false;
+
+    /*
+     * Keep the catalog read deliberately tolerant of schema differences.
+     * Production installations may contain legacy rows/columns, so Sales Studio
+     * reads the existing post record as-is and normalizes optional fields in PHP.
+     */
+    try{
+        $result = mysqli_query(
+            $connection,
+            "SELECT * FROM $tableposts ORDER BY id DESC"
+        );
+    }catch(Throwable $exception){
+        adminSalesStudioMarkCatalogLoadFailed("posts_query");
+        return $products;
+    }
+
+    if(!$result){
+        adminSalesStudioMarkCatalogLoadFailed("posts_query");
+        return $products;
+    }
+
+    $artistMap = adminSalesStudioArtistMap(
+        $connection,
+        $tableartists
+    );
+
+    while($row = mysqli_fetch_assoc($result)){
+        if(
+            array_key_exists("active", $row) &&
+            (int)$row["active"] !== 1
+        ){
+            continue;
+        }
+
+        $artistId = (int)($row["artistid"] ?? 0);
+        $row["artist_reference"] =
+            $artistMap[$artistId] ?? "";
+
         $artistName = adminSalesStudioArtistName($row);
         $albumName = adminSalesStudioAlbumName(
             $row,
@@ -184,7 +262,9 @@ function adminSalesStudioProducts($connection, $tableposts, $tableartists, $base
             "album" => $albumName,
             "year" => (int)($row["release_year"] ?? 0),
             "price" => adminSalesStudioEffectivePrice($row),
-            "stock" => (int)($row["stock"] ?? 0),
+            "stock" => array_key_exists("stock", $row)
+                ? (int)$row["stock"]
+                : 1,
             "cd_condition" => trim(
                 (string)($row["cd_condition"] ?? "")
             ),
@@ -199,6 +279,35 @@ function adminSalesStudioProducts($connection, $tableposts, $tableartists, $base
             "has_back" => $slots[4] !== ""
         ];
     }
+
+    mysqli_free_result($result);
+
+    usort(
+        $products,
+        function($left, $right){
+            $stockComparison =
+                (int)$right["stock"] <=>
+                (int)$left["stock"];
+
+            if($stockComparison !== 0){
+                return $stockComparison;
+            }
+
+            $artistComparison = strcasecmp(
+                (string)$left["artist"],
+                (string)$right["artist"]
+            );
+
+            if($artistComparison !== 0){
+                return $artistComparison;
+            }
+
+            return strcasecmp(
+                (string)$left["album"],
+                (string)$right["album"]
+            );
+        }
+    );
 
     return $products;
 }

@@ -5,6 +5,23 @@
         return (root || document).querySelector(selector);
     }
 
+    function queryAll(selector, root) {
+        return Array.prototype.slice.call(
+            (root || document).querySelectorAll(selector)
+        );
+    }
+
+    function parseInteger(value) {
+        var parsed = Number.parseInt(
+            String(value || "0"),
+            10
+        );
+
+        return Number.isFinite(parsed)
+            ? parsed
+            : 0;
+    }
+
     function productSlug() {
         var match = String(window.location.pathname || "")
             .match(/\/cd\/([^/?#]+)\/?$/i);
@@ -29,8 +46,7 @@
             return 0;
         }
 
-        var parsed = Number.parseInt(String(button.dataset.id || "0"), 10);
-        return Number.isFinite(parsed) ? parsed : 0;
+        return parseInteger(button.dataset.id);
     }
 
     function trackTikTokClick() {
@@ -69,11 +85,22 @@
             ".product-tiktok-link__title{color:#fff;font:800 11px/1.2 Arial,sans-serif;letter-spacing:.08em;text-transform:uppercase;}",
             ".product-tiktok-link__subtitle{color:rgba(255,255,255,.88);font:600 10px/1.25 Arial,sans-serif;letter-spacing:.01em;text-transform:none;}",
             ".product-tiktok-link__arrow{flex:0 0 auto;color:#fff;font:800 18px/1 Arial,sans-serif;}",
-            "@media(max-width:760px){.product-tiktok-link{width:100%;min-height:66px;padding:11px 13px 11px 15px;}.product-tiktok-link__title{font-size:10px;}.product-tiktok-link__subtitle{font-size:9px;}}",
+            ".product-card__tiktok-available{display:inline-flex!important;align-items:center;gap:4px;color:#111;white-space:nowrap;pointer-events:none;}",
+            ".product-card__tiktok-available svg{display:block;flex:0 0 auto;width:10px;height:10px;fill:currentColor;filter:drop-shadow(.6px 0 0 #25F4EE) drop-shadow(-.6px 0 0 #FE2C55);}",
+            ".product-card__tiktok-label{display:inline!important;letter-spacing:.08em;}",
+            "@media(max-width:760px){.product-tiktok-link{width:100%;min-height:66px;padding:11px 13px 11px 15px;}.product-tiktok-link__title{font-size:10px;}.product-tiktok-link__subtitle{font-size:9px;}.product-card__tiktok-available{gap:3px;}.product-card__tiktok-available svg{width:9px;height:9px;}}",
             "@media(prefers-reduced-motion:reduce){.product-tiktok-link{transition:none;}.product-tiktok-link:hover{transform:none;}}"
         ].join("");
 
         document.head.appendChild(style);
+    }
+
+    function tikTokIconMarkup() {
+        return [
+            '<svg viewBox="0 0 32 32" aria-hidden="true" focusable="false">',
+            '<path d="M18.7 3.8h4.1c.4 3.1 2.1 5 5.2 5.6v4.2c-1.9-.1-3.7-.7-5.2-1.7v8.4c0 5.1-4.1 9.2-9.2 9.2a9.2 9.2 0 0 1 0-18.4c.5 0 1 .1 1.5.1v4.3a4.9 4.9 0 1 0 3.6 4.8V3.8z"></path>',
+            '</svg>'
+        ].join("");
     }
 
     function renderTikTokLink(url) {
@@ -150,23 +177,68 @@
         );
     }
 
-    function initialize() {
-        var slug = productSlug();
-        var config = window.StoreConfig || {};
-        var baseUrl = String(config.baseUrl || "");
-
-        if (
-            slug === "" ||
-            baseUrl === "" ||
-            !query(".product-detail__info")
-        ) {
+    function renderCatalogIndicators(productIds) {
+        if (!Array.isArray(productIds) || productIds.length === 0) {
             return;
         }
 
-        fetch(
-            baseUrl +
-            "product-tiktok-public.php?slug=" +
-            encodeURIComponent(slug),
+        var available = Object.create(null);
+
+        productIds.forEach(function (id) {
+            var productIdValue = parseInteger(id);
+
+            if (productIdValue > 0) {
+                available[productIdValue] = true;
+            }
+        });
+
+        injectStyles();
+
+        queryAll("#productGrid .product-card[data-product-id]")
+            .forEach(function (card) {
+                var cardId = parseInteger(
+                    card.getAttribute("data-product-id")
+                );
+
+                if (
+                    cardId <= 0 ||
+                    !available[cardId] ||
+                    query(".product-card__tiktok-available", card)
+                ) {
+                    return;
+                }
+
+                var meta = query(
+                    ".product-card__meta",
+                    card
+                );
+
+                if (!meta) {
+                    return;
+                }
+
+                var indicator = document.createElement("span");
+                indicator.className =
+                    "product-card__tiktok-available";
+                indicator.setAttribute(
+                    "title",
+                    "Video real disponible en TikTok"
+                );
+                indicator.setAttribute(
+                    "aria-label",
+                    "Video real disponible en TikTok"
+                );
+                indicator.innerHTML =
+                    tikTokIconMarkup() +
+                    '<span class="product-card__tiktok-label">VIDEO</span>';
+
+                meta.appendChild(indicator);
+            });
+    }
+
+    function fetchJson(url) {
+        return fetch(
+            url,
             {
                 method: "GET",
                 credentials: "same-origin",
@@ -182,7 +254,51 @@
                 }
 
                 return response.json();
+            });
+    }
+
+    function initializeCatalog(baseUrl) {
+        if (!query("#productGrid")) {
+            return;
+        }
+
+        fetchJson(
+            baseUrl +
+            "product-tiktok-public.php?catalog=1"
+        )
+            .then(function (payload) {
+                if (
+                    !payload ||
+                    payload.ok !== true ||
+                    !Array.isArray(payload.product_ids)
+                ) {
+                    return;
+                }
+
+                renderCatalogIndicators(
+                    payload.product_ids
+                );
             })
+            .catch(function () {
+                /* El catálogo sigue funcionando aunque falle el indicador. */
+            });
+    }
+
+    function initializeProductDetail(baseUrl) {
+        var slug = productSlug();
+
+        if (
+            slug === "" ||
+            !query(".product-detail__info")
+        ) {
+            return;
+        }
+
+        fetchJson(
+            baseUrl +
+            "product-tiktok-public.php?slug=" +
+            encodeURIComponent(slug)
+        )
             .then(function (payload) {
                 if (
                     !payload ||
@@ -199,6 +315,18 @@
             .catch(function () {
                 /* La ficha sigue funcionando aunque no cargue el enlace. */
             });
+    }
+
+    function initialize() {
+        var config = window.StoreConfig || {};
+        var baseUrl = String(config.baseUrl || "");
+
+        if (baseUrl === "") {
+            return;
+        }
+
+        initializeCatalog(baseUrl);
+        initializeProductDetail(baseUrl);
     }
 
     if (document.readyState === "loading") {

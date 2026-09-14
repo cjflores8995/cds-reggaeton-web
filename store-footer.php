@@ -243,7 +243,7 @@ if(isset($storeBaseUrl) && trim((string)$storeBaseUrl) !== ""){
 <?php if($footerAssetBaseUrl !== ""){ ?>
     <script
         defer
-        src="<?php echo storeFooterEsc($footerAssetBaseUrl); ?>store-branding.js?v=3"
+        src="<?php echo storeFooterEsc($footerAssetBaseUrl); ?>store-branding.js?v=4"
     ></script>
     <script
         defer

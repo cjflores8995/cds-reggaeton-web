@@ -5,7 +5,7 @@ RewriteEngine On
 # Security Fase 3/6/7 + Admin/System Logs - deny direct web access to
 # runtime/source files and common backup artifacts. Server-side require/include
 # continues to work.
-RewriteRule ^(?:env(?:\.[^/]+)?\.php|dbcon\.php|config\.php|admin-auth\.php|admin-system-log\.php|admin-cd-audit\.php|admin-image-audit\.php|admin-artist-settings-audit\.php|admin-technical-error-log\.php|admin-upload-security\.php|admin-price-catalog-helper\.php|public-request-security\.php|security-bootstrap\.php|functions\.php|uilang\.php|thumbnailgenerator\.php|artistshelper\.php|slughelper\.php|productimages\.php|seo\.php)$ - [F,L,NC]
+RewriteRule ^(?:env(?:\.[^/]+)?\.php|dbcon\.php|config\.php|admin-auth\.php|admin-system-log\.php|admin-cd-audit\.php|admin-image-audit\.php|admin-artist-settings-audit\.php|admin-technical-error-log\.php|admin-upload-security\.php|admin-price-catalog-helper\.php|admin-sales-helper\.php|public-request-security\.php|security-bootstrap\.php|functions\.php|uilang\.php|thumbnailgenerator\.php|artistshelper\.php|slughelper\.php|productimages\.php|seo\.php)$ - [F,L,NC]
 RewriteRule ^(?:database|\.git)(?:/|$) - [F,L,NC]
 RewriteRule (^|/)\.(?!well-known(?:/|$)) - [F,L]
 RewriteRule \.(?:sql|log|bak|backup|old|orig|save|swp|zip|tar|gz|7z)$ - [F,L,NC]

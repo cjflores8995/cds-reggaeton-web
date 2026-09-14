@@ -1,0 +1,246 @@
+.sales-policy-note{
+    margin:0 0 18px;
+    padding:14px 16px;
+    border:1px solid #e6e6e6;
+    background:#fafafa;
+    font-size:13px;
+    line-height:1.6;
+}
+
+.sales-periods{
+    display:flex;
+    flex-wrap:wrap;
+    gap:8px;
+    margin:0 0 18px;
+}
+
+.sales-periods a{
+    display:inline-flex;
+    align-items:center;
+    min-height:36px;
+    padding:0 12px;
+    border:1px solid #dedede;
+    color:#555;
+    background:#fff;
+    font-size:11px;
+    font-weight:700;
+    text-decoration:none;
+}
+
+.sales-periods a.is-active{
+    border-color:#111;
+    color:#fff;
+    background:#111;
+}
+
+.sales-summary{
+    display:grid;
+    grid-template-columns:repeat(4,minmax(0,1fr));
+    border-top:1px solid #e5e5e5;
+    border-left:1px solid #e5e5e5;
+    margin-bottom:14px;
+}
+
+.sales-summary article{
+    min-height:145px;
+    padding:22px;
+    border-right:1px solid #e5e5e5;
+    border-bottom:1px solid #e5e5e5;
+    background:#fff;
+}
+
+.sales-summary span,
+.sales-summary small{
+    display:block;
+    color:#777;
+    font-size:10px;
+    font-weight:700;
+    letter-spacing:.06em;
+    text-transform:uppercase;
+}
+
+.sales-summary strong{
+    display:block;
+    margin:12px 0 10px;
+    color:#111;
+    font-size:27px;
+    line-height:1.15;
+}
+
+.sales-secondary-metrics{
+    display:flex;
+    flex-wrap:wrap;
+    gap:18px;
+    margin:0 0 28px;
+    color:#666;
+    font-size:12px;
+}
+
+.sales-secondary-metrics strong{
+    color:#111;
+}
+
+.sales-focus{
+    border-top:3px solid #111;
+}
+
+.sales-focus-product{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:20px;
+    margin:18px 0;
+    padding:16px;
+    border:1px solid #e5e5e5;
+    background:#fafafa;
+}
+
+.sales-focus-product span,
+.sales-focus-listed{
+    color:#777;
+    font-size:11px;
+}
+
+.sales-focus-product strong{
+    display:block;
+    margin-top:4px;
+    color:#111;
+    font-size:16px;
+}
+
+.sales-focus-listed{
+    text-align:right;
+}
+
+.sales-register-form{
+    max-width:460px;
+}
+
+.sales-register-form input{
+    margin-bottom:12px;
+}
+
+.sales-section{
+    margin-top:32px;
+}
+
+.sales-section-heading{
+    display:flex;
+    align-items:flex-end;
+    justify-content:space-between;
+    gap:16px;
+    margin-bottom:14px;
+    padding-bottom:12px;
+    border-bottom:1px solid #ddd;
+}
+
+.sales-section-heading>div{
+    display:flex;
+    align-items:center;
+    gap:12px;
+}
+
+.sales-section-heading span{
+    color:#999;
+    font-size:10px;
+    font-weight:800;
+}
+
+.sales-section-heading h2{
+    margin:0;
+    font-size:18px;
+}
+
+.sales-section-heading>strong{
+    color:#777;
+    font-size:11px;
+}
+
+.sales-table-wrap{
+    overflow:auto;
+    border:1px solid #e5e5e5;
+    background:#fff;
+}
+
+.sales-table{
+    width:100%;
+    min-width:780px;
+    border-collapse:collapse;
+}
+
+.sales-table th,
+.sales-table td{
+    padding:13px 14px;
+    border-bottom:1px solid #ededed;
+    text-align:left;
+    vertical-align:middle;
+    font-size:12px;
+}
+
+.sales-table th{
+    color:#777;
+    background:#fafafa;
+    font-size:9px;
+    font-weight:800;
+    letter-spacing:.06em;
+    text-transform:uppercase;
+}
+
+.sales-table tbody tr:last-child td{
+    border-bottom:0;
+}
+
+.sales-table tr.is-reverted td{
+    color:#999;
+    background:#fcfcfc;
+}
+
+.sales-link{
+    color:#111;
+    font-size:11px;
+    font-weight:800;
+    text-decoration:underline;
+    text-underline-offset:3px;
+}
+
+.sales-status{
+    display:inline-flex;
+    padding:5px 8px;
+    border:1px solid #ddd;
+    font-size:9px;
+    font-weight:800;
+    letter-spacing:.05em;
+    text-transform:uppercase;
+}
+
+.sales-status.is-completed{
+    border-color:#111;
+    color:#111;
+}
+
+.sales-status.is-reverted{
+    color:#888;
+    background:#f4f4f4;
+}
+
+@media(max-width:900px){
+    .sales-summary{
+        grid-template-columns:repeat(2,minmax(0,1fr));
+    }
+}
+
+@media(max-width:700px){
+    .sales-summary{
+        grid-template-columns:1fr;
+    }
+
+    .sales-focus-product,
+    .sales-section-heading{
+        align-items:flex-start;
+        flex-direction:column;
+    }
+
+    .sales-focus-listed{
+        text-align:left;
+    }
+}

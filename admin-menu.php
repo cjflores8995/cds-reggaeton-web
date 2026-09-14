@@ -19,6 +19,10 @@ if(!function_exists("adminMenuActiveSection")){
             return "add-cd";
         }
 
+        if($script === "admin-inventory-sales.php"){
+            return "inventory-sales";
+        }
+
         if($script === "image-settings.php"){
             return "image-settings";
         }
@@ -126,6 +130,14 @@ if(
         >
             <i class="fa fa-home"></i>
             <span>Inicio</span>
+        </a>
+
+        <a
+            href="<?php echo htmlspecialchars($baseurl . "admin-inventory-sales.php", ENT_QUOTES, "UTF-8"); ?>"
+            <?php echo adminMenuClass("inventory-sales", $adminActiveSection); ?>
+        >
+            <i class="fa fa-usd"></i>
+            <span>Inventario y ventas</span>
         </a>
 
         <a

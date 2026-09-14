@@ -104,6 +104,7 @@
             views: 0,
             visitors: 0,
             cart_sessions: 0,
+            tiktok_sessions: 0,
             whatsapp_sessions: 0,
             conversion: 0
         };
@@ -182,12 +183,12 @@
         grid.appendChild(insightCell("Vistas", String(item.views)));
         grid.appendChild(insightCell("Visitantes", String(item.visitors)));
         grid.appendChild(insightCell("Carritos", String(item.cart_sessions)));
+        grid.appendChild(insightCell("TikTok", String(item.tiktok_sessions)));
         grid.appendChild(insightCell("WhatsApp", String(item.whatsapp_sessions)));
         grid.appendChild(
             insightCell(
-                "Conversión a WhatsApp",
-                Number(item.conversion || 0).toFixed(1) + "%",
-                true
+                "Conv. WhatsApp",
+                Number(item.conversion || 0).toFixed(1) + "%"
             )
         );
 

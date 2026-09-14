@@ -3,6 +3,7 @@
 
     var SIZE = 1080;
     var JPEG_QUALITY = 0.92;
+    var SELECTION_KEY = "reggaeton-sales-studio-marketplace-selection-v2";
     var initialized = false;
     var scriptBase = document.currentScript && document.currentScript.src
         ? document.currentScript.src
@@ -30,56 +31,106 @@
         if(note){
             var index = note.querySelector(":scope > span");
             var title = note.querySelector(":scope > div > strong");
-            var text = note.querySelector(":scope > div > p");
+            var textNode = note.querySelector(":scope > div > p");
             var state = note.querySelector(":scope > strong");
             if(index){ index.textContent = "07.1"; }
             if(title){ title.textContent = "Exportación determinística"; }
-            if(text){
-                text.textContent = "Genera PNG/JPG de 1080 × 1080 dibujando nuevamente la composición con Canvas. No es una captura de pantalla. La Fase 7.2 exportará la publicación completa.";
+            if(textNode){
+                textNode.textContent = "Genera PNG/JPG de 1080 × 1080 dibujando nuevamente la composición con Canvas. Las imágenes se leen mediante un acceso administrativo same-origin para evitar bloqueos CORS.";
             }
             if(state){ state.textContent = "PNG / JPG"; }
         }
     }
 
-    function mediaBase(){
-        var node = document.querySelector(".admin-page-sidebar[data-admin-media-base]");
-        return node ? String(node.getAttribute("data-admin-media-base") || "").replace(/\/+$/, "") : "";
-    }
+    function selectedIds(){
+        var root = document.querySelector("[data-sales-studio]");
+        var cards = root
+            ? Array.prototype.slice.call(root.querySelectorAll("[data-sales-studio-product]"))
+            : [];
+        var selectedById = Object.create(null);
 
-    function encodeKey(key){
-        return String(key || "").replace(/^\/+/, "").split("/").filter(Boolean).map(function(part){
-            try{ return encodeURIComponent(decodeURIComponent(part)); }
-            catch(error){ return encodeURIComponent(part); }
-        }).join("/");
-    }
+        cards.forEach(function(card){
+            var input = card.querySelector("input[type='checkbox']");
+            var selected = card.classList.contains("is-selected") || !!(input && input.checked);
+            var id = parseInt(card.getAttribute("data-product-id") || "0", 10);
+            if(selected && id > 0){ selectedById[id] = true; }
+        });
 
-    function resolveSource(source){
-        source = String(source || "").trim();
-        if(source.indexOf("blob:") === 0){
-            var base = mediaBase();
-            var key = encodeKey(source.substring(5));
-            if(base && key){ return base + "/" + key; }
+        try{
+            var raw = window.sessionStorage.getItem(SELECTION_KEY);
+            var parsed = raw ? JSON.parse(raw) : [];
+            if(Array.isArray(parsed)){
+                var stored = parsed
+                    .map(function(value){ return parseInt(value, 10); })
+                    .filter(function(value, index, values){
+                        return value > 0 && selectedById[value] === true && values.indexOf(value) === index;
+                    });
+                if(stored.length > 0){ return stored; }
+            }
+        }catch(error){
         }
-        return source;
+
+        return cards
+            .filter(function(card){
+                var input = card.querySelector("input[type='checkbox']");
+                return card.classList.contains("is-selected") || !!(input && input.checked);
+            })
+            .map(function(card){ return parseInt(card.getAttribute("data-product-id") || "0", 10); })
+            .filter(function(value){ return value > 0; });
+    }
+
+    function imageEndpoint(productId, role){
+        return new URL(
+            "admin-sales-studio-image.php?id=" +
+            encodeURIComponent(String(productId)) +
+            "&role=" +
+            encodeURIComponent(String(role)),
+            document.baseURI
+        ).href;
     }
 
     function loadImage(source){
-        source = resolveSource(source);
+        source = String(source || "").trim();
         if(!source){ return Promise.reject(new Error("Imagen vacía")); }
-        return fetch(source, {method:"GET", credentials:"same-origin", cache:"no-store", mode:"cors"})
-            .then(function(response){
-                if(!response.ok){ throw new Error("HTTP " + response.status); }
-                return response.blob();
-            })
-            .then(function(blob){
-                return new Promise(function(resolve, reject){
-                    var url = URL.createObjectURL(blob);
-                    var image = new Image();
-                    image.onload = function(){ URL.revokeObjectURL(url); resolve(image); };
-                    image.onerror = function(){ URL.revokeObjectURL(url); reject(new Error("Imagen inválida")); };
-                    image.src = url;
+
+        return fetch(source, {
+            method: "GET",
+            credentials: "same-origin",
+            cache: "no-store"
+        }).then(function(response){
+            if(!response.ok){
+                throw new Error("Imagen HTTP " + response.status);
+            }
+            return response.blob();
+        }).then(function(blob){
+            if(!blob || blob.size <= 0 || String(blob.type || "").indexOf("image/") !== 0){
+                throw new Error("Respuesta de imagen inválida");
+            }
+            return new Promise(function(resolve, reject){
+                var url = URL.createObjectURL(blob);
+                var image = new Image();
+                image.onload = function(){
+                    URL.revokeObjectURL(url);
+                    resolve(image);
+                };
+                image.onerror = function(){
+                    URL.revokeObjectURL(url);
+                    reject(new Error("Imagen inválida"));
+                };
+                image.src = url;
+            });
+        });
+    }
+
+    function loadImagesSequentially(sources){
+        var results = [];
+        return sources.reduce(function(chain, source){
+            return chain.then(function(){
+                return loadImage(source).then(function(image){
+                    results.push(image);
                 });
             });
+        }, Promise.resolve()).then(function(){ return results; });
     }
 
     function canvas(){
@@ -101,17 +152,17 @@
         ctx.drawImage(image, x + (w - dw) / 2, y + (h - dh) / 2, dw, dh);
     }
 
-    function fontSize(ctx, text, maxWidth, start, min, weight, family){
+    function fontSize(ctx, value, maxWidth, start, min, weight, family){
         var size = start;
         while(size > min){
             ctx.font = (weight || "700") + " " + size + "px " + (family || "Arial, sans-serif");
-            if(ctx.measureText(String(text || "")).width <= maxWidth){ break; }
+            if(ctx.measureText(String(value || "")).width <= maxWidth){ break; }
             size -= 2;
         }
         return size;
     }
 
-    function text(ctx, value, x, y, maxWidth, start, min, weight, family, align, color){
+    function drawText(ctx, value, x, y, maxWidth, start, min, weight, family, align, color){
         var size = fontSize(ctx, value, maxWidth, start, min, weight, family);
         ctx.save();
         ctx.fillStyle = color || "#111";
@@ -161,26 +212,35 @@
         var section = document.querySelector("[data-sales-studio-classic]");
         var board = document.querySelector("[data-sales-studio-classic-artboard]");
         if(!section || section.hidden || !section.classList.contains("is-ready") || !board){ return null; }
-        function val(selector, attribute){
+
+        var ids = selectedIds();
+        var currentNode = section.querySelector("[data-sales-studio-classic-current]");
+        var current = parseInt(currentNode ? currentNode.textContent || "1" : "1", 10);
+        var productId = ids[Math.max(0, current - 1)] || 0;
+        if(productId <= 0){ return null; }
+
+        function val(selector){
             var node = board.querySelector(selector);
-            return node ? String(attribute ? node.getAttribute(attribute) || "" : node.textContent || "").trim() : "";
+            return node ? String(node.textContent || "").trim() : "";
         }
+
         return {
+            id: productId,
             template: board.getAttribute("data-active-template") || "hero",
             artist: val("[data-sales-studio-classic-artist]"),
             album: val("[data-sales-studio-classic-album]"),
             year: val("[data-sales-studio-classic-year]"),
             condition: val("[data-sales-studio-classic-condition]"),
             price: val("[data-sales-studio-classic-price]"),
-            front: val("[data-sales-studio-classic-front]", "src"),
-            back: val("[data-sales-studio-classic-back]", "src")
+            front: imageEndpoint(productId, 2),
+            back: imageEndpoint(productId, 4)
         };
     }
 
     function headerLeft(ctx, data){
-        text(ctx, data.artist.toUpperCase(), 70, 80, 840, 34, 22, "800", "Arial, sans-serif", "left", "#111");
-        text(ctx, data.album, 70, 155, 930, 74, 36, "900", "Arial, sans-serif", "left", "#050505");
-        text(ctx, data.year, 70, 202, 220, 30, 22, "800", "Arial, sans-serif", "left", "#777");
+        drawText(ctx, data.artist.toUpperCase(), 70, 80, 840, 34, 22, "800", "Arial, sans-serif", "left", "#111");
+        drawText(ctx, data.album, 70, 155, 930, 74, 36, "900", "Arial, sans-serif", "left", "#050505");
+        drawText(ctx, data.year, 70, 202, 220, 30, 22, "800", "Arial, sans-serif", "left", "#777");
     }
 
     function renderHero(ctx, data, front, back){
@@ -188,19 +248,19 @@
         headerLeft(ctx, data);
         contain(ctx, front, 55, 225, 690, 585);
         contain(ctx, back, 690, 430, 335, 300);
-        text(ctx, data.price, 60, 925, 530, 118, 72, "900", "Arial, sans-serif", "left", "#050505");
+        drawText(ctx, data.price, 60, 925, 530, 118, 72, "900", "Arial, sans-serif", "left", "#050505");
         pill(ctx, data.condition, 790, 900, 430);
-        text(ctx, "reggaetonelreal.com", SIZE / 2, 1030, 500, 22, 18, "600", "Arial, sans-serif", "center", "#777");
+        drawText(ctx, "reggaetonelreal.com", SIZE / 2, 1030, 500, 22, 18, "600", "Arial, sans-serif", "center", "#777");
     }
 
     function renderDouble(ctx, data, front, back){
         background(ctx, "#fff");
-        text(ctx, data.artist.toUpperCase(), SIZE / 2, 72, 900, 34, 22, "800", "Arial, sans-serif", "center", "#111");
-        text(ctx, data.album, SIZE / 2, 145, 1000, 72, 36, "900", "Arial, sans-serif", "center", "#050505");
-        text(ctx, data.year, SIZE / 2, 192, 280, 30, 22, "800", "Arial, sans-serif", "center", "#777");
+        drawText(ctx, data.artist.toUpperCase(), SIZE / 2, 72, 900, 34, 22, "800", "Arial, sans-serif", "center", "#111");
+        drawText(ctx, data.album, SIZE / 2, 145, 1000, 72, 36, "900", "Arial, sans-serif", "center", "#050505");
+        drawText(ctx, data.year, SIZE / 2, 192, 280, 30, 22, "800", "Arial, sans-serif", "center", "#777");
         contain(ctx, front, 24, 225, 510, 560);
         contain(ctx, back, 546, 225, 510, 560);
-        text(ctx, data.price, 45, 960, 500, 118, 72, "900", "Arial, sans-serif", "left", "#050505");
+        drawText(ctx, data.price, 45, 960, 500, 118, 72, "900", "Arial, sans-serif", "left", "#050505");
         pill(ctx, data.condition, 805, 925, 430);
     }
 
@@ -211,20 +271,20 @@
         gradient.addColorStop(1, "#fff");
         ctx.fillStyle = gradient;
         ctx.fillRect(0, 0, SIZE, SIZE);
-        text(ctx, data.artist.toUpperCase(), SIZE / 2, 92, 850, 34, 22, "700", "Georgia, serif", "center", "#111");
-        text(ctx, data.album, SIZE / 2, 176, 950, 88, 44, "700", "Georgia, serif", "center", "#050505");
-        text(ctx, data.year, SIZE / 2, 228, 280, 30, 22, "500", "Georgia, serif", "center", "#555");
+        drawText(ctx, data.artist.toUpperCase(), SIZE / 2, 92, 850, 34, 22, "700", "Georgia, serif", "center", "#111");
+        drawText(ctx, data.album, SIZE / 2, 176, 950, 88, 44, "700", "Georgia, serif", "center", "#050505");
+        drawText(ctx, data.year, SIZE / 2, 228, 280, 30, 22, "500", "Georgia, serif", "center", "#555");
         ctx.fillStyle = "#e7e7e4";
         ctx.fillRect(95, 720, 650, 52);
         ctx.fillRect(660, 710, 330, 42);
         contain(ctx, front, 115, 255, 650, 535);
         contain(ctx, back, 650, 390, 350, 390);
-        text(ctx, data.price, SIZE / 2, 865, 780, 122, 72, "700", "Georgia, serif", "center", "#050505");
+        drawText(ctx, data.price, SIZE / 2, 865, 780, 122, 72, "700", "Georgia, serif", "center", "#050505");
         pill(ctx, data.condition, SIZE / 2, 970, 430);
     }
 
     function individualCanvas(data){
-        return Promise.all([loadImage(data.front), loadImage(data.back)]).then(function(images){
+        return loadImagesSequentially([data.front, data.back]).then(function(images){
             var item = canvas();
             var ctx = item.getContext("2d");
             if(!ctx){ throw new Error("Canvas no disponible"); }
@@ -243,14 +303,14 @@
         var section = document.querySelector("[data-sales-studio-lot]");
         var board = document.querySelector("[data-sales-studio-lot-artboard]");
         if(!section || section.hidden || !section.classList.contains("is-ready") || !board){ return null; }
+        var ids = selectedIds();
+        if(ids.length < 2){ return null; }
         var count = board.querySelector("[data-sales-studio-lot-count]");
         var price = board.querySelector("[data-sales-studio-lot-price]");
         return {
             count: count ? count.textContent.trim() : "",
             price: price ? price.textContent.trim() : "$0.00",
-            images: Array.prototype.slice.call(board.querySelectorAll(".sales-studio-lot-product img"))
-                .map(function(image){ return image.getAttribute("src") || ""; })
-                .filter(Boolean)
+            images: ids.map(function(id){ return imageEndpoint(id, 2); })
         };
     }
 
@@ -262,7 +322,7 @@
     }
 
     function lotCanvas(data){
-        return Promise.all(data.images.map(loadImage)).then(function(images){
+        return loadImagesSequentially(data.images).then(function(images){
             var item = canvas();
             var ctx = item.getContext("2d");
             if(!ctx){ throw new Error("Canvas no disponible"); }
@@ -272,9 +332,9 @@
             gradient.addColorStop(1, "#fff");
             ctx.fillStyle = gradient;
             ctx.fillRect(0, 0, SIZE, SIZE);
-            text(ctx, "COLECCIÓN DE", SIZE / 2, 78, 700, 30, 22, "600", "Georgia, serif", "center", "#111");
-            text(ctx, "REGGAETÓN", SIZE / 2, 172, 980, 94, 56, "700", "Georgia, serif", "center", "#050505");
-            text(ctx, data.count, SIZE / 2, 220, 620, 30, 20, "600", "Georgia, serif", "center", "#333");
+            drawText(ctx, "COLECCIÓN DE", SIZE / 2, 78, 700, 30, 22, "600", "Georgia, serif", "center", "#111");
+            drawText(ctx, "REGGAETÓN", SIZE / 2, 172, 980, 94, 56, "700", "Georgia, serif", "center", "#050505");
+            drawText(ctx, data.count, SIZE / 2, 220, 620, 30, 20, "600", "Georgia, serif", "center", "#333");
             var grid = gridFor(images.length);
             var width = 970;
             var height = grid.bottom - grid.top;
@@ -286,9 +346,9 @@
                 var col = index % grid.columns;
                 contain(ctx, image, startX + col * (cellW + grid.gap), grid.top + row * (cellH + grid.gap), cellW, cellH);
             });
-            text(ctx, "Desde", SIZE / 2, 880, 250, 34, 24, "600", "Georgia, serif", "center", "#111");
-            text(ctx, data.price, SIZE / 2, 975, 720, 116, 72, "700", "Georgia, serif", "center", "#050505");
-            text(ctx, "reggaetonelreal.com", SIZE / 2, 1035, 500, 22, 18, "500", "Arial, sans-serif", "center", "#333");
+            drawText(ctx, "Desde", SIZE / 2, 880, 250, 34, 24, "600", "Georgia, serif", "center", "#111");
+            drawText(ctx, data.price, SIZE / 2, 975, 720, 116, 72, "700", "Georgia, serif", "center", "#050505");
+            drawText(ctx, "reggaetonelreal.com", SIZE / 2, 1035, 500, 22, 18, "500", "Arial, sans-serif", "center", "#333");
             return item;
         });
     }
@@ -330,7 +390,7 @@
             '<div class="sales-studio-export__info">',
                 '<span>EXPORTAR · 1080 × 1080</span>',
                 '<strong>' + (type === "lot" ? "Portada del lote" : "Imagen individual actual") + '</strong>',
-                '<small>Generación Canvas determinística, no captura de pantalla.</small>',
+                '<small>Canvas determinístico con imágenes leídas de forma segura desde el mismo dominio.</small>',
             '</div>',
             '<div class="sales-studio-export__actions">',
                 '<button type="button" data-export-format="png">Descargar PNG</button>',
@@ -360,20 +420,24 @@
             if(!button){ return; }
             var format = button.getAttribute("data-export-format") === "jpg" ? "jpg" : "png";
             var data = type === "lot" ? lotData() : individualData();
-            if(!data){ state(node, "La vista previa todavía no está lista para exportar.", false, true); return; }
+            if(!data){
+                state(node, "La vista previa todavía no está lista para exportar.", false, true);
+                return;
+            }
             state(node, "Generando imagen…", true, false);
             var render = type === "lot" ? lotCanvas(data) : individualCanvas(data);
             render.then(function(item){
                 return blobFromCanvas(item, format).then(function(blob){
-                    var base = type === "lot" ? "01-coleccion-reggaeton" : filenamePart(data.artist) + "-" + filenamePart(data.album);
+                    var base = type === "lot"
+                        ? "01-coleccion-reggaeton"
+                        : filenamePart(data.artist) + "-" + filenamePart(data.album);
                     download(blob, base + "-1080x1080." + format);
                     state(node, "Archivo generado correctamente.", false, false);
                 });
             }).catch(function(error){
+                var detail = error && error.message ? String(error.message) : "";
                 var message = "No fue posible generar la imagen.";
-                if(error && /fetch|cors|failed/i.test(String(error.message || error))){
-                    message += " La imagen remota no permitió la lectura necesaria para Canvas.";
-                }
+                if(detail){ message += " " + detail + "."; }
                 state(node, message, false, true);
             });
         });

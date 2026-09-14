@@ -396,19 +396,54 @@
                         return artistCompare;
                     }
 
-                    return normalizeText(
-                        a.dataset.album ||
-                        a.dataset.title
-                    ).localeCompare(
+                    /*
+                     * Dentro de cada artista mostramos la discografía en
+                     * orden cronológico. Los CDs sin año quedan al final.
+                     */
+                    var yearA =
+                        parseInteger(
+                            a.dataset.year
+                        );
+
+                    var yearB =
+                        parseInteger(
+                            b.dataset.year
+                        );
+
+                    var hasYearA = yearA > 0;
+                    var hasYearB = yearB > 0;
+
+                    if (hasYearA !== hasYearB) {
+                        return hasYearA ? -1 : 1;
+                    }
+
+                    if (
+                        hasYearA &&
+                        yearA !== yearB
+                    ) {
+                        return yearA - yearB;
+                    }
+
+                    var albumCompare =
                         normalizeText(
-                            b.dataset.album ||
-                            b.dataset.title
-                        ),
-                        "es",
-                        {
-                            sensitivity: "base"
-                        }
-                    );
+                            a.dataset.album ||
+                            a.dataset.title
+                        ).localeCompare(
+                            normalizeText(
+                                b.dataset.album ||
+                                b.dataset.title
+                            ),
+                            "es",
+                            {
+                                sensitivity: "base"
+                            }
+                        );
+
+                    if (albumCompare !== 0) {
+                        return albumCompare;
+                    }
+
+                    return newestCompare(a, b);
                 }
 
                 if (mode === "year_desc") {

@@ -393,7 +393,7 @@ $seoHomeJsonLd = [
             );
         ?>;
     </script>
-    <script defer src="<?php echo e($storeBaseUrl); ?>store.js?v=7"></script>
+    <script defer src="<?php echo e($storeBaseUrl); ?>store.js?v=8"></script>
 </head>
 <body>
     <div class="promo-strip">

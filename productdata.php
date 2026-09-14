@@ -59,7 +59,7 @@ if((int)($_GET["catalog"] ?? 0) === 1){
         "SELECT " .
             "p.id, p.slug, p.artist, p.album, p.title, p.release_year, " .
             "p.normalprice, p.stock, p.active, p.picture, p.moreimages, " .
-            "a.name AS artist_name " .
+            "p.tiktok_url, a.name AS artist_name " .
         "FROM $tableposts p " .
         "LEFT JOIN $tableartists a ON a.id = p.artistid " .
         "ORDER BY p.id DESC"
@@ -93,6 +93,7 @@ if((int)($_GET["catalog"] ?? 0) === 1){
             "price" => (float)($row["normalprice"] ?? 0),
             "stock" => (int)($row["stock"] ?? 0),
             "active" => (int)($row["active"] ?? 0),
+            "tiktok_url" => trim((string)($row["tiktok_url"] ?? "")),
             "image_count" => productDataImageCount(
                 $row["picture"] ?? "",
                 $row["moreimages"] ?? ""

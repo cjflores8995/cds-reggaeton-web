@@ -247,6 +247,10 @@ if(isset($storeBaseUrl) && trim((string)$storeBaseUrl) !== ""){
     ></script>
     <script
         defer
+        src="<?php echo storeFooterEsc($footerAssetBaseUrl); ?>catalog-scroll-return.js?v=1"
+    ></script>
+    <script
+        defer
         src="<?php echo storeFooterEsc($footerAssetBaseUrl); ?>store-branding.js?v=5"
     ></script>
     <script

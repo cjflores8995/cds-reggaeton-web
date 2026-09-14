@@ -1,0 +1,104 @@
+.sales-studio-export{
+    display:grid;
+    grid-template-columns:minmax(0,1fr) auto;
+    gap:16px 20px;
+    align-items:center;
+    margin:18px 0 0;
+    padding:18px;
+    border:1px solid #dedede;
+    background:#fafafa;
+}
+
+.sales-studio-export__info span{
+    display:block;
+    margin-bottom:4px;
+    color:#777;
+    font-size:9px;
+    font-weight:900;
+    letter-spacing:.14em;
+}
+
+.sales-studio-export__info strong{
+    display:block;
+    color:#111;
+    font-size:16px;
+}
+
+.sales-studio-export__info small{
+    display:block;
+    margin-top:5px;
+    color:#777;
+    font-size:10px;
+    line-height:1.45;
+}
+
+.sales-studio-export__actions{
+    display:flex;
+    gap:8px;
+    align-items:center;
+}
+
+.sales-studio-export__actions button{
+    min-height:44px;
+    padding:0 15px;
+    border:1px solid #111;
+    background:#fff;
+    color:#111;
+    font:inherit;
+    font-size:11px;
+    font-weight:900;
+    letter-spacing:.04em;
+    cursor:pointer;
+}
+
+.sales-studio-export__actions button:first-child{
+    background:#111;
+    color:#fff;
+}
+
+.sales-studio-export__actions button:disabled{
+    opacity:.5;
+    cursor:wait;
+}
+
+.sales-studio-export__status{
+    grid-column:1 / -1;
+    min-height:18px;
+    color:#555;
+    font-size:10px;
+    line-height:1.4;
+}
+
+.sales-studio-export.is-busy .sales-studio-export__status{
+    font-weight:800;
+}
+
+.sales-studio-export.has-error .sales-studio-export__status{
+    color:#8b1a1a;
+    font-weight:800;
+}
+
+@media(max-width:700px){
+    .sales-studio-export{
+        grid-template-columns:1fr;
+        gap:12px;
+        margin-top:14px;
+        padding:14px;
+    }
+
+    .sales-studio-export__actions{
+        display:grid;
+        grid-template-columns:1fr 1fr;
+        width:100%;
+    }
+
+    .sales-studio-export__actions button{
+        width:100%;
+        min-height:48px;
+        padding:0 10px;
+    }
+
+    .sales-studio-export__status{
+        grid-column:1;
+    }
+}

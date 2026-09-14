@@ -289,6 +289,6 @@ if(
 <?php if($adminActiveSection === "sales-studio"){ ?>
     <script
         defer
-        src="<?php echo htmlspecialchars($baseurl . "admin-sales-studio-templates.js?v=2", ENT_QUOTES, "UTF-8"); ?>"
+        src="<?php echo htmlspecialchars($baseurl . "admin-sales-studio-templates.js?v=3", ENT_QUOTES, "UTF-8"); ?>"
     ></script>
 <?php } ?>

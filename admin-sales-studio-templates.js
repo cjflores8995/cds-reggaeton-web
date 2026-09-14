@@ -19,15 +19,18 @@
             name: "Doble Portada",
             tag: "DETALLE",
             description: "Frente y reverso grandes, equilibrados y casi al margen para mostrar el ejemplar real."
+        },
+        {
+            id: "collector",
+            name: "Coleccionista",
+            tag: "COLECCIÓN",
+            description: "Composición editorial elegante con profundidad, portada protagonista y acabado de pieza de colección."
         }
     ];
 
-    function loadStylesheet(){
-        var existing = document.querySelector("link[data-sales-studio-templates-css]");
-        var href = new URL(
-            "admin-sales-studio-templates.css?v=2",
-            scriptBase
-        ).href;
+    function ensureStylesheet(attribute, filename){
+        var existing = document.querySelector("link[" + attribute + "]");
+        var href = new URL(filename, scriptBase).href;
 
         if(existing){
             existing.href = href;
@@ -37,8 +40,19 @@
         var link = document.createElement("link");
         link.rel = "stylesheet";
         link.href = href;
-        link.setAttribute("data-sales-studio-templates-css", "1");
+        link.setAttribute(attribute, "1");
         document.head.appendChild(link);
+    }
+
+    function loadStylesheet(){
+        ensureStylesheet(
+            "data-sales-studio-templates-css",
+            "admin-sales-studio-templates.css?v=2"
+        );
+        ensureStylesheet(
+            "data-sales-studio-collector-css",
+            "admin-sales-studio-collector.css?v=1"
+        );
     }
 
     function storedTemplate(){
@@ -70,12 +84,12 @@
         );
 
         if(eyebrow){
-            eyebrow.textContent = "VENTAS · FASE 4.4";
+            eyebrow.textContent = "VENTAS · FASE 5";
         }
 
         if(description){
             description.textContent =
-                "Selecciona, valida y elige una de las dos composiciones definitivas para cada CD de Marketplace.";
+                "Selecciona, valida y elige entre Hero Producto, Doble Portada o Coleccionista para cada CD de Marketplace.";
         }
 
         if(classicEyebrow){
@@ -83,7 +97,7 @@
         }
 
         if(stepNumber){
-            stepNumber.textContent = "04.4";
+            stepNumber.textContent = "05";
         }
 
         if(note){
@@ -93,17 +107,17 @@
             var state = note.querySelector(":scope > strong");
 
             if(index){
-                index.textContent = "04.4";
+                index.textContent = "05";
             }
             if(title){
-                title.textContent = "Plantillas individuales definitivas";
+                title.textContent = "Plantillas individuales";
             }
             if(text){
                 text.textContent =
-                    "Hero Producto y Doble Portada son las dos composiciones activas. Las futuras plantillas podrán añadirse sin cambiar el flujo actual.";
+                    "Hero Producto, Doble Portada y Coleccionista están disponibles. La portada principal para varios CDs llegará en la Fase 6.";
             }
             if(state){
-                state.textContent = "2 PLANTILLAS";
+                state.textContent = "3 PLANTILLAS";
             }
         }
     }
@@ -127,7 +141,7 @@
                 '<span>ESTILO DE IMAGEN</span>',
                 '<h3 id="sales-studio-template-picker-title">Elige la plantilla individual</h3>',
             '</div>',
-            '<p>Las dos opciones utilizan las fotografías reales del CD y los mismos datos validados en el preflight.</p>'
+            '<p>Las tres opciones utilizan las fotografías reales del CD y los mismos datos validados en el preflight.</p>'
         ].join("");
 
         var options = document.createElement("div");
@@ -256,7 +270,7 @@
             var template = templateById(id);
             activeTemplate = template.id;
 
-            ["hero", "double", "impact", "minimal"].forEach(function(item){
+            ["hero", "double", "collector", "impact", "minimal"].forEach(function(item){
                 artboard.classList.remove(
                     "sales-studio-template--" + item
                 );

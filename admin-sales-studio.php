@@ -15,6 +15,18 @@ function adminSalesStudioEsc($value){
     return htmlspecialchars((string)$value, ENT_QUOTES, "UTF-8");
 }
 
+function adminSalesStudioArtistName($post){
+    $artistName = trim((string)($post["artist_name"] ?? ""));
+
+    if($artistName === ""){
+        $artistName = trim((string)($post["artist"] ?? ""));
+    }
+
+    return $artistName !== ""
+        ? $artistName
+        : "Sin artista";
+}
+
 function adminSalesStudioAlbumName($post, $artistName){
     $album = trim((string)($post["album"] ?? ""));
 
@@ -68,7 +80,8 @@ function adminSalesStudioPhotoState($moreimages){
         return [
             "class" => "is-ready",
             "icon" => "fa-check",
-            "text" => "Delantera + posterior"
+            "text" => "Delantera + posterior",
+            "ready" => true
         ];
     }
 
@@ -76,7 +89,8 @@ function adminSalesStudioPhotoState($moreimages){
         return [
             "class" => "is-warning",
             "icon" => "fa-exclamation-circle",
-            "text" => "Faltan delantera y posterior"
+            "text" => "Faltan delantera y posterior",
+            "ready" => false
         ];
     }
 
@@ -84,14 +98,16 @@ function adminSalesStudioPhotoState($moreimages){
         return [
             "class" => "is-warning",
             "icon" => "fa-exclamation-circle",
-            "text" => "Falta portada delantera"
+            "text" => "Falta portada delantera",
+            "ready" => false
         ];
     }
 
     return [
         "class" => "is-warning",
         "icon" => "fa-exclamation-circle",
-        "text" => "Falta portada posterior"
+        "text" => "Falta portada posterior",
+        "ready" => false
     ];
 }
 
@@ -130,10 +146,16 @@ try{
 $availableCount = 0;
 $soldCount = 0;
 $hiddenCount = 0;
+$artistOptions = [];
 
 foreach($catalogPosts as $post){
     $isActive = (int)($post["active"] ?? 1) === 1;
     $isAvailable = (int)($post["stock"] ?? 1) === 1;
+    $artistName = adminSalesStudioArtistName($post);
+
+    if($artistName !== "Sin artista"){
+        $artistOptions[$artistName] = $artistName;
+    }
 
     if(!$isActive){
         $hiddenCount++;
@@ -142,6 +164,10 @@ foreach($catalogPosts as $post){
     }else{
         $soldCount++;
     }
+}
+
+if(count($artistOptions) > 0){
+    natcasesort($artistOptions);
 }
 ?>
 <!DOCTYPE html>
@@ -153,7 +179,7 @@ foreach($catalogPosts as $post){
     <link rel="shortcut icon" href="<?php echo adminSalesStudioEsc($baseurl); ?>favicon.ico">
     <link rel="stylesheet" type="text/css" href="<?php echo adminSalesStudioEsc($baseurl); ?>assets/css/font-awesome.css">
     <link rel="stylesheet" type="text/css" href="<?php echo adminSalesStudioEsc($baseurl); ?>admin-modern.css?v=16">
-    <link rel="stylesheet" type="text/css" href="<?php echo adminSalesStudioEsc($baseurl); ?>admin-sales-studio.css?v=2">
+    <link rel="stylesheet" type="text/css" href="<?php echo adminSalesStudioEsc($baseurl); ?>admin-sales-studio.css?v=3">
 </head>
 <body>
 <div class="admin-page-shell">
@@ -165,10 +191,10 @@ foreach($catalogPosts as $post){
     <main class="admin-page-content sales-studio-page">
         <div class="admin-toolbar sales-studio-toolbar">
             <div>
-                <div class="sales-studio-eyebrow">VENTAS · FASE 2.1/2</div>
+                <div class="sales-studio-eyebrow">VENTAS · FASE 2.2/2</div>
                 <h1>Sales Studio</h1>
                 <div class="admin-muted">
-                    Catálogo de trabajo para preparar publicaciones de Facebook Marketplace.
+                    Selecciona y organiza los CDs que quieres preparar para Facebook Marketplace.
                 </div>
             </div>
 
@@ -187,11 +213,11 @@ foreach($catalogPosts as $post){
             <div class="sales-studio-marketplace-summary__content">
                 <span>FACEBOOK MARKETPLACE</span>
                 <strong>Máximo 9 CDs por publicación</strong>
-                <small>Se reservará 1 imagen para la portada general y hasta 9 para los CDs.</small>
+                <small>1 imagen de portada + hasta 9 imágenes individuales = 10 imágenes.</small>
             </div>
             <div class="sales-studio-marketplace-summary__budget">
                 <span>IMÁGENES</span>
-                <strong>1/10</strong>
+                <strong><b data-sales-studio-image-count>1</b>/10</strong>
             </div>
         </section>
 
@@ -204,15 +230,28 @@ foreach($catalogPosts as $post){
                 </div>
             </div>
         <?php }else{ ?>
-            <section class="sales-studio-catalog" aria-labelledby="sales-studio-catalog-title">
+            <section
+                class="sales-studio-catalog"
+                aria-labelledby="sales-studio-catalog-title"
+                data-sales-studio
+            >
                 <div class="sales-studio-catalog__heading">
                     <div>
                         <span class="sales-studio-step-number">02</span>
                         <div>
-                            <h2 id="sales-studio-catalog-title">Catálogo</h2>
-                            <p>Esta subfase solo muestra información. La selección se habilitará en Fase 2.2.</p>
+                            <h2 id="sales-studio-catalog-title">Selecciona CDs</h2>
+                            <p>Busca, filtra y selecciona hasta 9 CDs. Los vendidos y ocultos solo se pueden consultar.</p>
                         </div>
                     </div>
+
+                    <button
+                        type="button"
+                        class="sales-studio-text-button"
+                        data-sales-studio-clear
+                        disabled
+                    >
+                        Limpiar selección
+                    </button>
                 </div>
 
                 <div class="sales-studio-catalog-summary" aria-label="Resumen del catálogo">
@@ -235,23 +274,92 @@ foreach($catalogPosts as $post){
                         No hay CDs registrados en el catálogo.
                     </div>
                 <?php }else{ ?>
-                    <div class="sales-studio-product-list">
+                    <div class="sales-studio-tools">
+                        <label class="sales-studio-search">
+                            <i class="fa fa-search" aria-hidden="true"></i>
+                            <span class="sr-only">Buscar CD</span>
+                            <input
+                                type="search"
+                                placeholder="Buscar artista, álbum o año"
+                                autocomplete="off"
+                                enterkeyhint="search"
+                                data-sales-studio-search
+                            >
+                        </label>
+
+                        <div class="sales-studio-availability-tabs" aria-label="Estado del catálogo">
+                            <button
+                                type="button"
+                                class="is-active"
+                                data-sales-studio-status="available"
+                                aria-pressed="true"
+                            >
+                                Disponibles
+                            </button>
+                            <button
+                                type="button"
+                                data-sales-studio-status="all"
+                                aria-pressed="false"
+                            >
+                                Todos
+                            </button>
+                        </div>
+
+                        <div class="sales-studio-filter-grid">
+                            <label>
+                                <span>Artista</span>
+                                <select data-sales-studio-artist>
+                                    <option value="">Todos los artistas</option>
+                                    <?php foreach($artistOptions as $artistOption){ ?>
+                                        <option value="<?php echo adminSalesStudioEsc($artistOption); ?>">
+                                            <?php echo adminSalesStudioEsc($artistOption); ?>
+                                        </option>
+                                    <?php } ?>
+                                </select>
+                            </label>
+
+                            <label>
+                                <span>Fotos Marketplace</span>
+                                <select data-sales-studio-photos>
+                                    <option value="all">Todas</option>
+                                    <option value="ready">Listos: delantera + posterior</option>
+                                    <option value="missing">Con fotos pendientes</option>
+                                </select>
+                            </label>
+
+                            <label>
+                                <span>Ordenar</span>
+                                <select data-sales-studio-sort>
+                                    <option value="artist-asc">Artista A–Z</option>
+                                    <option value="artist-desc">Artista Z–A</option>
+                                    <option value="newest">Más recientes</option>
+                                    <option value="year-desc">Año nuevo → antiguo</option>
+                                    <option value="year-asc">Año antiguo → nuevo</option>
+                                    <option value="price-asc">Precio menor → mayor</option>
+                                    <option value="price-desc">Precio mayor → menor</option>
+                                </select>
+                            </label>
+                        </div>
+
+                        <div class="sales-studio-results-meta">
+                            <span><b data-sales-studio-visible-count><?php echo (int)$availableCount; ?></b> resultados</span>
+                            <span><b data-sales-studio-selected-count>0</b>/9 seleccionados</span>
+                        </div>
+
+                        <div
+                            class="sales-studio-limit-message"
+                            data-sales-studio-limit-message
+                            hidden
+                        >
+                            <i class="fa fa-check-circle" aria-hidden="true"></i>
+                            <span>Límite alcanzado: 9 CDs y 10/10 imágenes reservadas.</span>
+                        </div>
+                    </div>
+
+                    <div class="sales-studio-product-list" data-sales-studio-list>
                         <?php foreach($catalogPosts as $post){ ?>
                             <?php
-                            $artistName = trim(
-                                (string)($post["artist_name"] ?? "")
-                            );
-
-                            if($artistName === ""){
-                                $artistName = trim(
-                                    (string)($post["artist"] ?? "")
-                                );
-                            }
-
-                            if($artistName === ""){
-                                $artistName = "Sin artista";
-                            }
-
+                            $artistName = adminSalesStudioArtistName($post);
                             $albumName = adminSalesStudioAlbumName(
                                 $post,
                                 $artistName
@@ -261,6 +369,7 @@ foreach($catalogPosts as $post){
                             $price = max(0, (float)($post["normalprice"] ?? 0));
                             $isActive = (int)($post["active"] ?? 1) === 1;
                             $isAvailable = (int)($post["stock"] ?? 1) === 1;
+                            $selectable = $isActive && $isAvailable;
                             $photoState = adminSalesStudioPhotoState(
                                 $post["moreimages"] ?? ""
                             );
@@ -272,15 +381,30 @@ foreach($catalogPosts as $post){
                             if(!$isActive){
                                 $availabilityClass = "is-hidden";
                                 $availabilityText = "Oculto";
+                                $availabilityData = "hidden";
                             }else if($isAvailable){
                                 $availabilityClass = "is-available";
                                 $availabilityText = "Disponible";
+                                $availabilityData = "available";
                             }else{
                                 $availabilityClass = "is-sold";
                                 $availabilityText = "Vendido";
+                                $availabilityData = "sold";
                             }
                             ?>
-                            <article class="sales-studio-product-card">
+                            <article
+                                class="sales-studio-product-card<?php echo $selectable ? " is-selectable" : " is-disabled"; ?>"
+                                data-sales-studio-product
+                                data-product-id="<?php echo (int)($post["id"] ?? 0); ?>"
+                                data-artist="<?php echo adminSalesStudioEsc($artistName); ?>"
+                                data-album="<?php echo adminSalesStudioEsc($albumName); ?>"
+                                data-title="<?php echo adminSalesStudioEsc($title); ?>"
+                                data-year="<?php echo (int)$year; ?>"
+                                data-price="<?php echo adminSalesStudioEsc(number_format($price, 2, ".", "")); ?>"
+                                data-status="<?php echo adminSalesStudioEsc($availabilityData); ?>"
+                                data-photo-ready="<?php echo !empty($photoState["ready"]) ? "1" : "0"; ?>"
+                                data-selectable="<?php echo $selectable ? "1" : "0"; ?>"
+                            >
                                 <div class="sales-studio-product-card__image">
                                     <img
                                         src="<?php echo adminSalesStudioEsc($imageUrl); ?>"
@@ -316,27 +440,119 @@ foreach($catalogPosts as $post){
                                     </div>
                                 </div>
 
-                                <div class="sales-studio-product-card__future-select" aria-label="Selección pendiente">
-                                    <span></span>
-                                </div>
+                                <label class="sales-studio-product-card__select">
+                                    <input
+                                        type="checkbox"
+                                        value="<?php echo (int)($post["id"] ?? 0); ?>"
+                                        <?php echo $selectable ? "" : "disabled"; ?>
+                                        aria-label="Seleccionar <?php echo adminSalesStudioEsc($artistName . " - " . $albumName); ?>"
+                                    >
+                                    <span aria-hidden="true">
+                                        <i class="fa fa-check"></i>
+                                    </span>
+                                </label>
                             </article>
                         <?php } ?>
+                    </div>
+
+                    <div class="sales-studio-empty-filter" data-sales-studio-empty hidden>
+                        No encontramos CDs con esos filtros.
                     </div>
                 <?php } ?>
             </section>
         <?php } ?>
 
         <section class="sales-studio-phase-note">
-            <span>2.1</span>
+            <span>2.2</span>
             <div>
-                <strong>Lectura segura del catálogo</strong>
+                <strong>Selector interactivo de Marketplace</strong>
                 <p>
-                    Sales Studio solo consulta y muestra los CDs existentes. No modifica stock, precios, imágenes ni ningún dato del catálogo.
+                    La selección ocurre solo en el navegador. Sales Studio sigue sin modificar stock, precios, imágenes ni ningún dato del catálogo.
                 </p>
             </div>
             <strong>SOLO LECTURA</strong>
         </section>
     </main>
 </div>
+
+<div
+    class="sales-studio-selection-bar"
+    data-sales-studio-selection-bar
+    aria-hidden="true"
+>
+    <div>
+        <strong><span data-sales-studio-selected-count>0</span>/9 CDs</strong>
+        <span><span data-sales-studio-image-count>1</span>/10 imágenes</span>
+    </div>
+    <button
+        type="button"
+        class="sales-studio-selection-bar__review"
+        data-sales-studio-review
+        disabled
+    >
+        Ver selección
+    </button>
+</div>
+
+<div
+    class="sales-studio-drawer-backdrop"
+    data-sales-studio-drawer-backdrop
+    hidden
+></div>
+
+<section
+    class="sales-studio-drawer"
+    data-sales-studio-drawer
+    aria-labelledby="sales-studio-drawer-title"
+    hidden
+>
+    <div class="sales-studio-drawer__handle" aria-hidden="true"></div>
+
+    <div class="sales-studio-drawer__header">
+        <div>
+            <span>MARKETPLACE</span>
+            <h2 id="sales-studio-drawer-title">CDs seleccionados</h2>
+        </div>
+        <button
+            type="button"
+            class="sales-studio-drawer__close"
+            data-sales-studio-drawer-close
+            aria-label="Cerrar selección"
+        >
+            <i class="fa fa-times" aria-hidden="true"></i>
+        </button>
+    </div>
+
+    <div class="sales-studio-drawer__summary">
+        <span><b data-sales-studio-selected-count>0</b>/9 CDs</span>
+        <span><b data-sales-studio-image-count>1</b>/10 imágenes</span>
+    </div>
+
+    <div class="sales-studio-drawer__list" data-sales-studio-drawer-list></div>
+
+    <div class="sales-studio-drawer__footer">
+        <button
+            type="button"
+            class="admin-modern-button secondary"
+            data-sales-studio-clear
+            disabled
+        >
+            Limpiar
+        </button>
+        <span>La siguiente fase validará los datos antes de generar contenido.</span>
+    </div>
+</section>
+
+<div
+    class="sr-only"
+    aria-live="polite"
+    aria-atomic="true"
+    data-sales-studio-live
+></div>
+
+<script
+    defer
+    src="<?php echo adminSalesStudioEsc($baseurl . "admin-sales-studio.js?v=2"); ?>"
+></script>
 </body>
 </html>

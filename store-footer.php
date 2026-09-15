@@ -267,6 +267,10 @@ if(isset($storeBaseUrl) && trim((string)$storeBaseUrl) !== ""){
     ></script>
     <script
         defer
+        src="<?php echo storeFooterEsc($footerAssetBaseUrl); ?>frontend-merchandising.js?v=1"
+    ></script>
+    <script
+        defer
         src="<?php echo storeFooterEsc($footerAssetBaseUrl); ?>store-artist-filter-fit.js?v=1"
     ></script>
     <script

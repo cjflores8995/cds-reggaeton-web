@@ -40,7 +40,7 @@
         var style = document.createElement("style");
         style.id = STYLE_ID;
         style.textContent = [
-            "body.sales-studio-mode-originals [data-sales-studio-lot]{display:block!important}",
+            "body.sales-studio-mode-originals [data-sales-studio-lot].is-ready{display:block!important}",
             ".sales-studio-lot-artboard__header>span{display:none!important}",
             ".sales-studio-lot-artboard__header{padding-top:clamp(13px,2.2vw,24px)!important;padding-bottom:2px!important}",
             ".sales-studio-lot-artboard__header h3{font-size:clamp(38px,7.6vw,82px)!important;line-height:.92!important;letter-spacing:-.055em!important;text-transform:none!important}",

@@ -386,7 +386,7 @@ $seoHomeJsonLd = [
     <link rel="stylesheet" href="<?php echo e($storeBaseUrl); ?>catalog-toolbar.css?v=1">
     <link rel="stylesheet" href="<?php echo e($storeBaseUrl); ?>catalog-carousel.css?v=2">
     <link rel="stylesheet" href="<?php echo e($storeBaseUrl); ?>seo.css?v=1">
-    <link rel="stylesheet" href="<?php echo e($storeBaseUrl); ?>store-mobile.css?v=3" media="(max-width: 760px)">
+    <link rel="stylesheet" href="<?php echo e($storeBaseUrl); ?>store-mobile.css?v=4" media="(max-width: 760px)">
     <link rel="stylesheet" href="<?php echo e($storeBaseUrl); ?>home-rotation.css?v=1">
 
     <script>

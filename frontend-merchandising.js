@@ -1,7 +1,7 @@
 (function () {
     "use strict";
 
-    var ROTATION_MS = 3000;
+    var ROTATION_MS = 6000;
     var REQUEST_BATCH_SIZE = 24;
     var cardStates = new WeakMap();
     var slugCache = Object.create(null);

@@ -5,6 +5,13 @@
     var base = current && current.src
         ? current.src
         : document.baseURI;
+    var cacheToken = String(Date.now());
+
+    function versionedUrl(filename){
+        var url = new URL(filename, base);
+        url.searchParams.set("cb", cacheToken);
+        return url.href;
+    }
 
     function loadScript(filename, attribute, onload){
         if(document.querySelector("script[" + attribute + "]")){
@@ -15,7 +22,7 @@
         }
 
         var script = document.createElement("script");
-        script.src = new URL(filename, base).href;
+        script.src = versionedUrl(filename);
         script.async = false;
         script.setAttribute(attribute, "1");
 
@@ -68,13 +75,19 @@
     }
 
     loadScript(
-        "admin-sales-studio-phase3-core.js?v=1",
+        "admin-sales-studio-phase3-core.js",
         "data-sales-studio-phase3-core-js",
         function(){
             loadScript(
-                "admin-sales-studio-original-export.js?v=2",
+                "admin-sales-studio-original-export.js",
                 "data-sales-studio-original-export-js",
-                watchExportModePlacement
+                function(){
+                    loadScript(
+                        "admin-sales-studio-originals-marketplace.js",
+                        "data-sales-studio-originals-marketplace-js",
+                        watchExportModePlacement
+                    );
+                }
             );
         }
     );

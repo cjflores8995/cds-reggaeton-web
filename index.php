@@ -1,6 +1,7 @@
 <?php
 require_once __DIR__ . '/config.php';
 require_once __DIR__ . '/seo.php';
+require_once __DIR__ . '/home-rotation.php';
 
 function e($value): string
 {
@@ -96,6 +97,9 @@ if ($artistResult) {
         ];
     }
 }
+
+$homeRotation = storeHomeBuildRotation($products, $artists, $cfg);
+$catalogProducts = $homeRotation['catalog_products'] ?? $products;
 
 $availableCount = count($products);
 
@@ -383,6 +387,7 @@ $seoHomeJsonLd = [
     <link rel="stylesheet" href="<?php echo e($storeBaseUrl); ?>catalog-carousel.css?v=2">
     <link rel="stylesheet" href="<?php echo e($storeBaseUrl); ?>seo.css?v=1">
     <link rel="stylesheet" href="<?php echo e($storeBaseUrl); ?>store-mobile.css?v=3" media="(max-width: 760px)">
+    <link rel="stylesheet" href="<?php echo e($storeBaseUrl); ?>home-rotation.css?v=1">
 
     <script>
         window.StoreConfig = <?php
@@ -398,6 +403,7 @@ $seoHomeJsonLd = [
             );
         ?>;
     </script>
+    <script defer src="<?php echo e($storeBaseUrl); ?>catalog-sort-extension.js?v=1"></script>
     <script defer src="<?php echo e($storeBaseUrl); ?>store.js?v=8"></script>
 </head>
 <body>
@@ -467,6 +473,8 @@ $seoHomeJsonLd = [
             </div>
         </section>
 
+        <?php require __DIR__ . '/home-featured-view.php'; ?>
+
         <section class="catalog-section" id="catalogo">
             <div class="page-shell">
                 <div class="section-heading">
@@ -496,9 +504,10 @@ $seoHomeJsonLd = [
                     <label class="sort-box" for="catalogSort">
                         <span>ORDENAR</span>
                         <select id="catalogSort">
-                            <option value="newest">Más recientes</option>
+                            <option value="newest">Selección</option>
                             <option value="artist">Artista A–Z</option>
-                            <option value="year_desc">Año: nuevo a antiguo</option>
+                            <option value="year_desc" data-year-direction="desc">Año: nuevo a antiguo</option>
+                            <option value="year_desc" data-year-direction="asc">Año: antiguo a nuevo</option>
                             <option value="price_asc">Precio: menor a mayor</option>
                             <option value="price_desc">Precio: mayor a menor</option>
                         </select>
@@ -540,10 +549,8 @@ $seoHomeJsonLd = [
                         <h3>No hay CDs publicados todavía.</h3>
                     </div>
                 <?php else: ?>
-                    <div id="coleccion" aria-hidden="true"></div>
-
                     <div class="product-grid" id="productGrid" data-page-size="12">
-                        <?php foreach ($products as $productIndex => $product): ?>
+                        <?php foreach ($catalogProducts as $productIndex => $product): ?>
                             <?php
                                 $imageUrl = productImageUrl($product, $storeBaseUrl);
                                 $artist = trim((string)($product['artist'] ?? ''));
@@ -566,7 +573,7 @@ $seoHomeJsonLd = [
                                 class="product-card<?php echo $productIndex >= 12 ? ' is-hidden' : ''; ?>"
                                 <?php echo $productIndex >= 12 ? 'hidden' : ''; ?>
                                 data-product-id="<?php echo (int)$product['id']; ?>"
-                                data-newest="<?php echo (int)$product['id']; ?>"
+                                data-newest="<?php echo count($catalogProducts) - $productIndex; ?>"
                                 data-artist="<?php echo e(storeLower($artist)); ?>"
                                 data-album="<?php echo e(storeLower($album)); ?>"
                                 data-title="<?php echo e(storeLower($title)); ?>"
@@ -588,7 +595,7 @@ $seoHomeJsonLd = [
                                     >
                                 </a>
 
-                                <div class="product-card__body">
+                                      <div class="product-card__body">
                                     <p class="product-card__artist"><?php echo e($artist); ?></p>
 
                                     <a

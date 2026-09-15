@@ -87,22 +87,26 @@
         var phaseNote = document.querySelector(".sales-studio-phase-note div p");
 
         if(title){
-            title.textContent = artistTitle(cards);
+            var nextTitle = artistTitle(cards);
+            if(title.textContent !== nextTitle){ title.textContent = nextTitle; }
         }
 
         if(message && cards.length >= 2 && section.classList.contains("is-ready")){
-            message.textContent = "Imagen 1 preparada · " + String(cards.length) + " CDs.";
+            var nextMessage = "Imagen 1 preparada · " + String(cards.length) + " CDs.";
+            if(message.textContent !== nextMessage){ message.textContent = nextMessage; }
         }
 
         if(scope && cards.length >= 2){
-            scope.textContent =
+            var nextScope =
                 "Esta vista previa utiliza el orden actual de los " +
                 String(cards.length) +
                 " CDs seleccionados y prioriza visualmente las portadas delanteras reales.";
+            if(scope.textContent !== nextScope){ scope.textContent = nextScope; }
         }
 
         if(detailItems.length >= 4){
-            detailItems[3].textContent = "Las portadas tienen prioridad visual en la composición.";
+            var nextDetail = "Las portadas tienen prioridad visual en la composición.";
+            if(detailItems[3].textContent !== nextDetail){ detailItems[3].textContent = nextDetail; }
         }
 
         if(phaseNote && /menor precio|precio/i.test(phaseNote.textContent || "")){

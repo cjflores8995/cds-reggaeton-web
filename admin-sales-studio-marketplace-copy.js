@@ -2,6 +2,7 @@
     "use strict";
 
     var KEY = "reggaeton-sales-studio-marketplace-selection-v2";
+    var VARIANT_COUNT = 5;
     var initialized = false;
 
     function addStyles(){
@@ -18,18 +19,22 @@
             ".sales-studio-marketplace-copy__head p{margin:8px 0 0;color:#777;font-size:11px;line-height:1.5}",
             ".sales-studio-marketplace-copy__badge{height:max-content;padding:9px 12px;background:#111;color:#fff;font-size:9px;font-weight:900;letter-spacing:.1em}",
             ".sales-studio-marketplace-copy__body{display:grid;gap:18px;padding:22px}",
+            ".sales-studio-marketplace-copy__variant{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:16px;align-items:end;padding:16px;border:1px solid #e4e4e4;background:#fafafa}",
+            ".sales-studio-marketplace-copy__meta{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}",
+            ".sales-studio-marketplace-copy__meta-item span,.sales-studio-marketplace-copy__label>span{display:block;color:#777;font-size:9px;font-weight:900;letter-spacing:.15em}",
+            ".sales-studio-marketplace-copy__meta-item strong{display:block;margin-top:5px;color:#111;font-size:12px;line-height:1.35}",
+            ".sales-studio-marketplace-copy__next{min-height:44px;padding:0 16px;border:1px solid #111;background:#111;color:#fff;font:inherit;font-size:10px;font-weight:900;cursor:pointer;white-space:nowrap}",
             ".sales-studio-marketplace-copy__field{display:grid;gap:8px}",
             ".sales-studio-marketplace-copy__label{display:flex;justify-content:space-between;gap:12px;align-items:center}",
-            ".sales-studio-marketplace-copy__label span{color:#777;font-size:9px;font-weight:900;letter-spacing:.15em}",
             ".sales-studio-marketplace-copy__label button,.sales-studio-marketplace-copy__all{min-height:42px;padding:0 14px;border:1px solid #111;background:#fff;color:#111;font:inherit;font-size:10px;font-weight:900;cursor:pointer}",
             ".sales-studio-marketplace-copy__all{background:#111;color:#fff}",
             ".sales-studio-marketplace-copy input,.sales-studio-marketplace-copy textarea{width:100%;box-sizing:border-box;border:1px solid #d2d2d2;background:#fafafa;color:#111;font:inherit;font-size:12px;line-height:1.55}",
             ".sales-studio-marketplace-copy input{min-height:48px;padding:0 13px;font-weight:800}",
-            ".sales-studio-marketplace-copy textarea{min-height:330px;padding:13px;resize:vertical}",
+            ".sales-studio-marketplace-copy textarea{min-height:360px;padding:13px;resize:vertical}",
             ".sales-studio-marketplace-copy__footer{display:flex;justify-content:space-between;gap:14px;align-items:center;padding-top:2px}",
             ".sales-studio-marketplace-copy__status{min-height:18px;color:#666;font-size:10px;line-height:1.4}",
             ".sales-studio-marketplace-copy__status.has-error{color:#8b1a1a;font-weight:800}",
-            "@media(max-width:700px){.sales-studio-marketplace-copy{margin-top:18px}.sales-studio-marketplace-copy__head{padding:18px 16px}.sales-studio-marketplace-copy__head>div{gap:10px}.sales-studio-marketplace-copy h2{font-size:20px}.sales-studio-marketplace-copy__badge{display:none}.sales-studio-marketplace-copy__body{padding:16px}.sales-studio-marketplace-copy__label{align-items:flex-end}.sales-studio-marketplace-copy__label button{min-width:110px}.sales-studio-marketplace-copy textarea{min-height:390px}.sales-studio-marketplace-copy__footer{display:grid;grid-template-columns:1fr}.sales-studio-marketplace-copy__all{width:100%;min-height:48px}.sales-studio-marketplace-copy__status{order:2}}"
+            "@media(max-width:700px){.sales-studio-marketplace-copy{margin-top:18px}.sales-studio-marketplace-copy__head{padding:18px 16px}.sales-studio-marketplace-copy__head>div{gap:10px}.sales-studio-marketplace-copy h2{font-size:20px}.sales-studio-marketplace-copy__badge{display:none}.sales-studio-marketplace-copy__body{padding:16px}.sales-studio-marketplace-copy__variant{grid-template-columns:1fr;gap:14px}.sales-studio-marketplace-copy__meta{grid-template-columns:1fr}.sales-studio-marketplace-copy__next{width:100%;min-height:48px}.sales-studio-marketplace-copy__label{align-items:flex-end}.sales-studio-marketplace-copy__label button{min-width:110px}.sales-studio-marketplace-copy textarea{min-height:430px}.sales-studio-marketplace-copy__footer{display:grid;grid-template-columns:1fr}.sales-studio-marketplace-copy__all{width:100%;min-height:48px}.sales-studio-marketplace-copy__status{order:2}}"
         ].join("");
         document.head.appendChild(style);
     }
@@ -39,21 +44,21 @@
         var description = document.querySelector(".sales-studio-toolbar .admin-muted");
         var note = document.querySelector(".sales-studio-phase-note");
 
-        if(eyebrow){ eyebrow.textContent = "VENTAS · FASE 8/11"; }
+        if(eyebrow){ eyebrow.textContent = "VENTAS · FASE 8.1/11"; }
         if(description){
-            description.textContent = "Genera el título y la descripción final para Facebook Marketplace usando únicamente los datos reales de los CDs seleccionados.";
+            description.textContent = "Genera copy inteligente para Facebook Marketplace según sea un CD, una colección de un artista o una selección de varios artistas.";
         }
         if(note){
             var index = note.querySelector(":scope > span");
             var title = note.querySelector(":scope > div > strong");
             var text = note.querySelector(":scope > div > p");
             var state = note.querySelector(":scope > strong");
-            if(index){ index.textContent = "08"; }
-            if(title){ title.textContent = "Texto para Marketplace"; }
+            if(index){ index.textContent = "08.1"; }
+            if(title){ title.textContent = "Copy inteligente para Marketplace"; }
             if(text){
-                text.textContent = "Genera un título y una descripción listos para copiar, con envío por Servientrega y el catálogo web como opción secundaria.";
+                text.textContent = "Detecta el tipo de selección y ofrece cinco variantes comerciales secuenciales sin alterar los datos reales del catálogo.";
             }
-            if(state){ state.textContent = "LISTO PARA COPIAR"; }
+            if(state){ state.textContent = "5 VARIANTES"; }
         }
     }
 
@@ -124,17 +129,26 @@
         var section = document.createElement("section");
         section.className = "sales-studio-marketplace-copy";
         section.setAttribute("data-sales-studio-marketplace-copy", "1");
+        section.setAttribute("data-variant-index", "0");
         section.hidden = true;
         section.innerHTML = [
             '<div class="sales-studio-marketplace-copy__head">',
-                '<div><span class="sales-studio-marketplace-copy__step">08</span><div>',
+                '<div><span class="sales-studio-marketplace-copy__step">08.1</span><div>',
                     '<span class="sales-studio-marketplace-copy__eyebrow">FACEBOOK MARKETPLACE</span>',
-                    '<h2>Título y descripción de la publicación</h2>',
-                    '<p>Marketplace primero: precio y envío claros; el catálogo web queda como opción para descubrir más CDs.</p>',
+                    '<h2>Copy inteligente de la publicación</h2>',
+                    '<p>Sales Studio adapta el mensaje al tipo de selección y recorre cinco variantes comerciales sin modificar los datos reales.</p>',
                 '</div></div>',
-                '<span class="sales-studio-marketplace-copy__badge">SOLO LECTURA</span>',
+                '<span class="sales-studio-marketplace-copy__badge">5 VARIANTES</span>',
             '</div>',
             '<div class="sales-studio-marketplace-copy__body">',
+                '<div class="sales-studio-marketplace-copy__variant">',
+                    '<div class="sales-studio-marketplace-copy__meta">',
+                        '<div class="sales-studio-marketplace-copy__meta-item"><span>TIPO DE PUBLICACIÓN</span><strong data-copy-type></strong></div>',
+                        '<div class="sales-studio-marketplace-copy__meta-item"><span>ARTISTA</span><strong data-copy-artist></strong></div>',
+                        '<div class="sales-studio-marketplace-copy__meta-item"><span>VARIANTE</span><strong data-copy-variant>1 de 5</strong></div>',
+                    '</div>',
+                    '<button type="button" class="sales-studio-marketplace-copy__next" data-next-variant>Generar siguiente variante</button>',
+                '</div>',
                 '<label class="sales-studio-marketplace-copy__field">',
                     '<span class="sales-studio-marketplace-copy__label"><span>TÍTULO</span><button type="button" data-copy-title>Copiar título</button></span>',
                     '<input type="text" data-marketplace-title autocomplete="off">',
@@ -169,32 +183,88 @@
         }).filter(Boolean);
     }
 
+    function normalized(value){
+        return String(value || "").trim().toLocaleLowerCase("es");
+    }
+
     function uniqueArtists(products){
         var seen = Object.create(null);
         return products.map(function(product){ return product.artist; }).filter(function(artist){
-            var key = artist.toLowerCase();
+            var key = normalized(artist);
             if(seen[key]){ return false; }
             seen[key] = true;
             return true;
         });
     }
 
-    function titleFor(products){
-        if(products.length === 1){
-            return products[0].artist + " - " + products[0].album + " | CD original de reggaetón";
-        }
-
+    function publicationContext(products){
         var artists = uniqueArtists(products);
-        var suffix = "";
-        if(artists.length === 1){
-            suffix = " | " + artists[0];
-        }else if(artists.length === 2){
-            suffix = " | " + artists[0] + ", " + artists[1];
-        }else if(artists.length > 2){
-            suffix = " | " + artists[0] + ", " + artists[1] + " y más";
+        if(products.length === 1){
+            return {
+                type: "single",
+                label: "CD individual",
+                artist: products[0].artist,
+                artists: artists
+            };
         }
 
-        return "Lote de " + products.length + " CDs originales de reggaetón" + suffix;
+        if(artists.length === 1 && normalized(artists[0]) !== "varios artistas"){
+            return {
+                type: "artist",
+                label: "Colección de un solo artista",
+                artist: artists[0],
+                artists: artists
+            };
+        }
+
+        return {
+            type: "mixed",
+            label: "Selección de varios artistas",
+            artist: "Varios artistas",
+            artists: artists
+        };
+    }
+
+    function mixedArtistSuffix(artists){
+        if(!artists.length){ return ""; }
+        if(artists.length === 1){ return " | " + artists[0]; }
+        if(artists.length === 2){ return " | " + artists[0] + ", " + artists[1]; }
+        return " | " + artists[0] + ", " + artists[1] + " y más";
+    }
+
+    function titleFor(products, context, variantIndex){
+        var count = products.length;
+        var variant = ((variantIndex % VARIANT_COUNT) + VARIANT_COUNT) % VARIANT_COUNT;
+
+        if(context.type === "single"){
+            var product = products[0];
+            return [
+                product.artist + " - " + product.album + " | CD original de reggaetón",
+                "CD original de " + product.artist + " - " + product.album,
+                product.album + " de " + product.artist + " | CD original",
+                "Disponible: " + product.artist + " - " + product.album + " | CD original",
+                "Oportunidad: " + product.artist + " - " + product.album + " | CD original"
+            ][variant];
+        }
+
+        if(context.type === "artist"){
+            return [
+                "Selección de " + count + " CDs originales de " + context.artist,
+                "Colección de " + count + " CDs originales de " + context.artist,
+                "Oportunidad: " + count + " CDs originales de " + context.artist,
+                count + " CDs originales de " + context.artist + " disponibles",
+                "Oferta de " + count + " CDs originales de " + context.artist
+            ][variant];
+        }
+
+        var suffix = mixedArtistSuffix(context.artists);
+        return [
+            "Selección de " + count + " CDs originales de reggaetón" + suffix,
+            "Colección de " + count + " CDs originales de reggaetón" + suffix,
+            "Oportunidad: " + count + " CDs originales de reggaetón" + suffix,
+            count + " CDs originales de reggaetón disponibles" + suffix,
+            "Oferta de " + count + " CDs originales de reggaetón" + suffix
+        ][variant];
     }
 
     function lineForProduct(product, index){
@@ -202,35 +272,80 @@
         return String(index + 1).padStart(2, "0") + ". " + product.artist + " — " + product.album + year + " — " + money(product.price);
     }
 
-    function descriptionFor(products){
+    function appendShippingAndCatalog(lines, context, single){
+        lines.push("");
+        lines.push("📦 Envíos a todo Ecuador por Servientrega.");
+        lines.push("El costo del envío corre por cuenta del comprador.");
+        lines.push("");
+        lines.push(single
+            ? "Consulta las imágenes para revisar el estado del CD."
+            : "Consulta las imágenes para revisar cada título y su estado.");
+        lines.push("");
+        if(context.type === "artist"){
+            lines.push("¿Buscas más CDs de " + context.artist + " y reggaetón?");
+        }else{
+            lines.push("¿Buscas más CDs de reggaetón?");
+        }
+        lines.push("Catálogo completo:");
+        lines.push("reggaetonelreal.com");
+    }
+
+    function singleOpening(product, variantIndex){
+        return [
+            ["🎵 " + product.artist + " — " + product.album, "CD original disponible en Reggaeton El Real."],
+            ["🎵 CD original de " + product.artist, product.album + " disponible actualmente."],
+            ["🎵 " + product.album + " — " + product.artist, "Título original disponible para fans del reggaetón."],
+            ["🎵 Disponible: " + product.artist + " — " + product.album, "CD original listo para encontrar un nuevo dueño."],
+            ["🎵 Oportunidad: " + product.artist + " — " + product.album, "CD original disponible en Reggaeton El Real."]
+        ][variantIndex];
+    }
+
+    function artistOpening(context, count, variantIndex){
+        return [
+            ["🎵 Selección de " + context.artist, count + " CDs originales disponibles para fans de " + context.artist + " y el reggaetón."],
+            ["🎵 Colección de " + context.artist, "Una selección de " + count + " títulos originales de " + context.artist + " disponibles en Reggaeton El Real."],
+            ["🎵 Oportunidad para fans de " + context.artist, count + " CDs originales de " + context.artist + " disponibles en una sola publicación."],
+            ["🎵 " + context.artist + ": " + count + " CDs originales disponibles", "Varios títulos del artista disponibles para elegir."],
+            ["🎵 Oferta de CDs de " + context.artist, count + " títulos originales del artista disponibles actualmente."]
+        ][variantIndex];
+    }
+
+    function mixedOpening(count, variantIndex){
+        return [
+            ["🎵 Selección de reggaetón", count + " CDs originales de distintos títulos y artistas disponibles en una sola publicación."],
+            ["🎵 Colección de reggaetón", "Una selección de " + count + " CDs originales disponibles en Reggaeton El Real."],
+            ["🎵 Oportunidad para fans del reggaetón", count + " CDs originales disponibles para elegir entre distintos títulos."],
+            ["🎵 " + count + " CDs originales de reggaetón disponibles", "Distintos artistas y álbumes reunidos en una sola publicación."],
+            ["🎵 Oferta de CDs de reggaetón", count + " títulos originales disponibles actualmente."]
+        ][variantIndex];
+    }
+
+    function descriptionFor(products, context, variantIndex){
+        var variant = ((variantIndex % VARIANT_COUNT) + VARIANT_COUNT) % VARIANT_COUNT;
+
         if(products.length === 1){
             var product = products[0];
-            var lines = [
-                "🎵 " + product.artist + " — " + product.album,
-                ""
-            ];
+            var opening = singleOpening(product, variant);
+            var lines = [opening[0], "", opening[1], ""];
             if(product.year && product.year !== "0"){
                 lines.push("Año: " + product.year);
             }
             lines.push("Estado del CD: " + product.cdCondition);
             lines.push("Estado de la caja: " + product.caseCondition);
             lines.push("Precio: " + money(product.price));
-            lines.push("");
-            lines.push("📦 Envíos a todo Ecuador por Servientrega.");
-            lines.push("El costo del envío corre por cuenta del comprador.");
-            lines.push("");
-            lines.push("Consulta las imágenes para revisar el estado del CD.");
-            lines.push("");
-            lines.push("¿Buscas más CDs de reggaetón?");
-            lines.push("Catálogo completo:");
-            lines.push("reggaetonelreal.com");
+            appendShippingAndCatalog(lines, context, true);
             return lines.join("\n");
         }
 
         var prices = products.map(function(product){ return product.price; }).filter(function(value){ return value > 0; });
         var minimum = prices.length ? Math.min.apply(Math, prices) : 0;
+        var opening = context.type === "artist"
+            ? artistOpening(context, products.length, variant)
+            : mixedOpening(products.length, variant);
         var result = [
-            "🎵 Lote de " + products.length + " CDs originales de reggaetón",
+            opening[0],
+            "",
+            opening[1],
             "",
             "Incluye:",
             ""
@@ -242,38 +357,56 @@
 
         result.push("");
         result.push("Precio desde: " + money(minimum));
-        result.push("");
-        result.push("📦 Envíos a todo Ecuador por Servientrega.");
-        result.push("El costo del envío corre por cuenta del comprador.");
-        result.push("");
-        result.push("Consulta las imágenes para revisar cada título y su estado.");
-        result.push("");
-        result.push("¿Buscas más CDs de reggaetón?");
-        result.push("Catálogo completo:");
-        result.push("reggaetonelreal.com");
+        appendShippingAndCatalog(result, context, false);
         return result.join("\n");
     }
 
-    function render(section){
+    function setMeta(section, context, variantIndex){
+        var type = section.querySelector("[data-copy-type]");
+        var artist = section.querySelector("[data-copy-artist]");
+        var variant = section.querySelector("[data-copy-variant]");
+        if(type){ type.textContent = context.label; }
+        if(artist){ artist.textContent = context.type === "mixed" ? "Varios artistas" : context.artist; }
+        if(variant){ variant.textContent = String(variantIndex + 1) + " de " + VARIANT_COUNT; }
+    }
+
+    function render(section, resetVariant){
         var products = productsFromSelection();
         var title = section.querySelector("[data-marketplace-title]");
         var description = section.querySelector("[data-marketplace-description]");
-        var status = section.querySelector("[data-marketplace-copy-status]");
 
         if(!products.length){
             section.hidden = true;
             return;
         }
 
-        section.hidden = false;
-        if(title){ title.value = titleFor(products); }
-        if(description){ description.value = descriptionFor(products); }
-        if(status){
-            status.textContent = products.length === 1
-                ? "Texto generado para 1 CD. Puedes editarlo antes de copiar."
-                : "Texto generado para " + products.length + " CDs en el mismo orden de la publicación.";
-            status.classList.remove("has-error");
+        if(resetVariant){
+            section.setAttribute("data-variant-index", "0");
         }
+
+        var variantIndex = parseInt(section.getAttribute("data-variant-index") || "0", 10);
+        if(!Number.isFinite(variantIndex) || variantIndex < 0 || variantIndex >= VARIANT_COUNT){
+            variantIndex = 0;
+            section.setAttribute("data-variant-index", "0");
+        }
+
+        var context = publicationContext(products);
+        section.hidden = false;
+        setMeta(section, context, variantIndex);
+        if(title){ title.value = titleFor(products, context, variantIndex); }
+        if(description){ description.value = descriptionFor(products, context, variantIndex); }
+
+        var statusMessage = context.type === "single"
+            ? "Publicación individual · variante " + (variantIndex + 1) + " de " + VARIANT_COUNT + ". Puedes editar el texto antes de copiar."
+            : context.label + " · variante " + (variantIndex + 1) + " de " + VARIANT_COUNT + ". Se mantiene el orden de las imágenes.";
+        setStatus(section, statusMessage, false);
+    }
+
+    function nextVariant(section){
+        var current = parseInt(section.getAttribute("data-variant-index") || "0", 10);
+        if(!Number.isFinite(current)){ current = 0; }
+        section.setAttribute("data-variant-index", String((current + 1) % VARIANT_COUNT));
+        render(section, false);
     }
 
     function copyText(value){
@@ -310,6 +443,11 @@
 
     function bind(section){
         section.addEventListener("click", function(event){
+            if(event.target.closest("[data-next-variant]")){
+                nextVariant(section);
+                return;
+            }
+
             var title = section.querySelector("[data-marketplace-title]");
             var description = section.querySelector("[data-marketplace-description]");
             var value = null;
@@ -337,6 +475,7 @@
         document.addEventListener("change", function(event){
             if(event.target && event.target.matches("[data-sales-studio-product] input[type='checkbox']")){
                 section.hidden = true;
+                section.setAttribute("data-variant-index", "0");
             }
         });
     }
@@ -367,7 +506,7 @@
         )).forEach(function(button){
             button.addEventListener("click", function(){
                 if(!button.disabled){
-                    window.setTimeout(function(){ render(section); }, 650);
+                    window.setTimeout(function(){ render(section, true); }, 650);
                 }
             });
         });

@@ -51,20 +51,52 @@
         });
     }
 
+    function appendScript(baseUrl, fileName, version, attributeName){
+        if(document.querySelector("script[" + attributeName + "]")){
+            return;
+        }
+
+        var script = document.createElement("script");
+        script.src =
+            baseUrl +
+            fileName +
+            "?v=" +
+            String(version);
+        script.defer = true;
+        script.setAttribute(attributeName, "1");
+        document.head.appendChild(script);
+    }
+
     function loadAdminCatalogView(baseUrl){
         if(!document.querySelector("#productGrid")){
             return;
         }
 
-        if(document.querySelector("script[data-store-admin-view]")){
+        appendScript(
+            baseUrl,
+            "store-admin-view.js",
+            3,
+            "data-store-admin-view"
+        );
+        appendScript(
+            baseUrl,
+            "store-admin-link.js",
+            1,
+            "data-store-admin-link-script"
+        );
+    }
+
+    function loadAdminProductPrice(baseUrl){
+        if(!document.querySelector(".product-detail__price")){
             return;
         }
 
-        var script = document.createElement("script");
-        script.src = baseUrl + "store-admin-view.js?v=3";
-        script.defer = true;
-        script.dataset.storeAdminView = "1";
-        document.head.appendChild(script);
+        appendScript(
+            baseUrl,
+            "store-admin-product-price.js",
+            1,
+            "data-store-admin-product-price"
+        );
     }
 
     var baseUrl = scriptBaseUrl();
@@ -83,4 +115,5 @@
 
     normalizeBrandLinks(baseUrl);
     loadAdminCatalogView(baseUrl);
+    loadAdminProductPrice(baseUrl);
 })();

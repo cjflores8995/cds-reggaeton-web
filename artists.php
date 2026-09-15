@@ -3,6 +3,7 @@ session_start();
 
 require_once __DIR__ . "/config.php";
 require_once __DIR__ . "/artistshelper.php";
+require_once __DIR__ . "/artist-display-settings.php";
 
 if(
     !isset($_SESSION["adminusername"]) ||
@@ -19,6 +20,7 @@ $messageType = "info";
 
 if(isset($_POST["create_artist"])){
     $name = trim(isset($_POST["artist_name"]) ? $_POST["artist_name"] : "");
+    $nickname = trim(isset($_POST["artist_nickname"]) ? $_POST["artist_nickname"] : "");
 
     if($name === ""){
         $message = "El nombre del artista es obligatorio.";
@@ -28,8 +30,12 @@ if(isset($_POST["create_artist"])){
         $artistId = artistCreate($name);
 
         if($artistId > 0){
-            $message = "Artista creado correctamente.";
-            $messageType = "success";
+            if(artistDisplaySaveNickname($artistId, $nickname, $cfg)){
+                $message = "Artista creado correctamente.";
+                $messageType = "success";
+            }else{
+                $message = "El artista fue creado, pero no se pudo guardar su apodo.";
+            }
         }else{
             $message = "No se pudo crear el artista.";
         }
@@ -42,6 +48,7 @@ if(isset($_POST["update_artist"])){
         : 0;
 
     $name = trim(isset($_POST["artist_name"]) ? $_POST["artist_name"] : "");
+    $nickname = trim(isset($_POST["artist_nickname"]) ? $_POST["artist_nickname"] : "");
 
     if($artistId <= 0 || !artistExists($artistId)){
         $message = "Artista no válido.";
@@ -78,8 +85,12 @@ if(isset($_POST["update_artist"])){
                     );
                 }
 
-                $message = "Artista actualizado correctamente.";
-                $messageType = "success";
+                if(artistDisplaySaveNickname($artistId, $nickname, $cfg)){
+                    $message = "Artista actualizado correctamente.";
+                    $messageType = "success";
+                }else{
+                    $message = "El nombre fue actualizado, pero no se pudo guardar el apodo.";
+                }
             }else{
                 $message = "No se pudo actualizar el artista.";
             }
@@ -106,6 +117,7 @@ if(isset($_POST["delete_artist"])){
             );
 
             if($deleted){
+                artistDisplayRemoveNickname($artistId, $cfg);
                 $message = "Artista eliminado correctamente.";
                 $messageType = "success";
             }else{
@@ -140,6 +152,10 @@ if(isset($_GET["edit"])){
 
         if($editResult && mysqli_num_rows($editResult) > 0){
             $editArtist = mysqli_fetch_assoc($editResult);
+            $editArtist["nickname"] = artistDisplayNickname(
+                $editId,
+                $cfg
+            );
         }
     }
 }
@@ -157,6 +173,10 @@ $listResult = mysqli_query(
 
 if($listResult){
     while($row = mysqli_fetch_assoc($listResult)){
+        $row["nickname"] = artistDisplayNickname(
+            (int)$row["id"],
+            $cfg
+        );
         $artists[] = $row;
     }
 }
@@ -246,6 +266,18 @@ if($unassignedResult){
                         maxlength="150"
                     >
 
+                    <label>Apodo / subtítulo de la selección</label>
+                    <input
+                        type="text"
+                        name="artist_nickname"
+                        value="<?php echo htmlspecialchars($editArtist["nickname"], ENT_QUOTES, "UTF-8"); ?>"
+                        placeholder="Ej. El Big Boss"
+                        maxlength="120"
+                    >
+                    <div class="admin-muted">
+                        Opcional. Se mostrará únicamente cuando este artista tenga una selección destacada en la tienda.
+                    </div>
+
                     <button
                         class="admin-modern-button"
                         type="submit"
@@ -272,6 +304,17 @@ if($unassignedResult){
                         maxlength="150"
                     >
 
+                    <label>Apodo / subtítulo de la selección</label>
+                    <input
+                        type="text"
+                        name="artist_nickname"
+                        placeholder="Ej. El Big Boss"
+                        maxlength="120"
+                    >
+                    <div class="admin-muted">
+                        Opcional. Puedes dejarlo vacío y configurarlo después.
+                    </div>
+
                     <button
                         class="admin-modern-button"
                         type="submit"
@@ -297,6 +340,7 @@ if($unassignedResult){
                         <thead>
                         <tr>
                             <th>Artista</th>
+                            <th>Apodo</th>
                             <th>URL</th>
                             <th style="width:100px;">CDs</th>
                             <th style="width:260px;">Acciones</th>
@@ -307,6 +351,13 @@ if($unassignedResult){
                             <tr>
                                 <td>
                                     <?php echo htmlspecialchars($artist["name"], ENT_QUOTES, "UTF-8"); ?>
+                                </td>
+                                <td>
+                                    <?php if($artist["nickname"] !== ""){ ?>
+                                        <?php echo htmlspecialchars($artist["nickname"], ENT_QUOTES, "UTF-8"); ?>
+                                    <?php }else{ ?>
+                                        <span class="admin-muted">Sin apodo</span>
+                                    <?php } ?>
                                 </td>
                                 <td>
                                     <span class="admin-muted">

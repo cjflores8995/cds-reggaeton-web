@@ -89,7 +89,13 @@
                             loadScript(
                                 "admin-sales-studio-approved-cover.js",
                                 "data-sales-studio-approved-cover-js",
-                                watchExportModePlacement
+                                function(){
+                                    loadScript(
+                                        "admin-sales-studio-approved-cover-v2.js",
+                                        "data-sales-studio-approved-cover-v2-js",
+                                        watchExportModePlacement
+                                    );
+                                }
                             );
                         }
                     );

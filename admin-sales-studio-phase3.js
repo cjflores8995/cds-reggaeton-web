@@ -85,7 +85,13 @@
                     loadScript(
                         "admin-sales-studio-originals-marketplace.js",
                         "data-sales-studio-originals-marketplace-js",
-                        watchExportModePlacement
+                        function(){
+                            loadScript(
+                                "admin-sales-studio-approved-cover.js",
+                                "data-sales-studio-approved-cover-js",
+                                watchExportModePlacement
+                            );
+                        }
                     );
                 }
             );

@@ -84,6 +84,12 @@
             1,
             "data-store-admin-link-script"
         );
+        appendScript(
+            baseUrl,
+            "store-admin-catalog-price.js",
+            1,
+            "data-store-admin-catalog-price-script"
+        );
     }
 
     function loadAdminProductPrice(baseUrl){

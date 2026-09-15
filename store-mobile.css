@@ -71,7 +71,19 @@ main,
 }
 
 .header-actions {
-    gap: 0;
+    gap: 8px;
+}
+
+/*
+ * store.css hides header icon buttons below 640px. The homepage already has
+ * a working .js-focus-search button, so keep that magnifier visible on phones
+ * and let the existing JavaScript scroll to/focus the catalog search field.
+ */
+.header-actions .js-focus-search {
+    width: 44px;
+    height: 44px;
+    display: inline-grid !important;
+    flex: 0 0 44px;
 }
 
 .cart-button {

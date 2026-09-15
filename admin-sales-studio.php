@@ -644,7 +644,7 @@ if(count($artistOptions) > 0){
 ></script>
 <script
     defer
-    src="<?php echo adminSalesStudioEsc($baseurl . "admin-sales-studio-phase3.js?v=2"); ?>"
+    src="<?php echo adminSalesStudioEsc($baseurl . "admin-sales-studio-phase3.js?v=" . (string)@filemtime(__DIR__ . "/admin-sales-studio-phase3.js")); ?>"
 ></script>
 </body>
 </html>

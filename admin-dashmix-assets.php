@@ -23,7 +23,7 @@ if(!defined("RER_ADMIN_DASHMIX_PRODUCT_FORM_VERSION")){
 }
 
 if(!defined("RER_ADMIN_DASHMIX_CATALOG_MEDIA_VERSION")){
-    define("RER_ADMIN_DASHMIX_CATALOG_MEDIA_VERSION", "1");
+    define("RER_ADMIN_DASHMIX_CATALOG_MEDIA_VERSION", "2");
 }
 
 if(!function_exists("adminDashmixAssetUrl")){
@@ -43,6 +43,19 @@ if(!function_exists("adminDashmixAssetUrl")){
 if(!function_exists("adminDashmixEsc")){
     function adminDashmixEsc($value){
         return htmlspecialchars((string)$value, ENT_QUOTES, "UTF-8");
+    }
+}
+
+if(!function_exists("adminDashmixIsCatalogMediaSection")){
+    function adminDashmixIsCatalogMediaSection(){
+        global $adminActiveSection;
+
+        return
+            isset($adminActiveSection) &&
+            (
+                $adminActiveSection === "artists" ||
+                $adminActiveSection === "pictures"
+            );
     }
 }
 
@@ -106,14 +119,7 @@ if(!function_exists("adminDashmixHeadAssets")){
                 '">';
         }
 
-        $isCatalogMedia =
-            isset($adminActiveSection) &&
-            (
-                $adminActiveSection === "artists" ||
-                $adminActiveSection === "pictures"
-            );
-
-        if($isCatalogMedia){
+        if(adminDashmixIsCatalogMediaSection()){
             $catalogMediaVersion = rawurlencode(
                 RER_ADMIN_DASHMIX_CATALOG_MEDIA_VERSION
             );
@@ -125,6 +131,10 @@ if(!function_exists("adminDashmixHeadAssets")){
                 adminDashmixAssetUrl("admin-dashmix-catalog-media-fix.css") .
                 "?v=" .
                 $catalogMediaVersion;
+            $catalogMediaV2Href =
+                adminDashmixAssetUrl("admin-dashmix-catalog-media-v2.css") .
+                "?v=" .
+                $catalogMediaVersion;
 
             $assets[] =
                 '<link rel="stylesheet" href="' .
@@ -133,6 +143,10 @@ if(!function_exists("adminDashmixHeadAssets")){
             $assets[] =
                 '<link rel="stylesheet" href="' .
                 adminDashmixEsc($catalogMediaFixHref) .
+                '">';
+            $assets[] =
+                '<link rel="stylesheet" href="' .
+                adminDashmixEsc($catalogMediaV2Href) .
                 '">';
         }
 
@@ -144,10 +158,28 @@ if(!function_exists("adminDashmixFooterAssets")){
     function adminDashmixFooterAssets(){
         $version = rawurlencode(RER_ADMIN_DASHMIX_INTEGRATION_VERSION);
         $src = adminDashmixAssetUrl("admin-dashmix-core.js") . "?v=" . $version;
+        $assets = [
+            '<script defer src="' .
+                adminDashmixEsc($src) .
+                '"></script>'
+        ];
 
-        return '<script defer src="' .
-            adminDashmixEsc($src) .
-            '"></script>';
+        if(adminDashmixIsCatalogMediaSection()){
+            $catalogMediaVersion = rawurlencode(
+                RER_ADMIN_DASHMIX_CATALOG_MEDIA_VERSION
+            );
+            $catalogMediaSrc =
+                adminDashmixAssetUrl("admin-dashmix-catalog-media.js") .
+                "?v=" .
+                $catalogMediaVersion;
+
+            $assets[] =
+                '<script defer src="' .
+                adminDashmixEsc($catalogMediaSrc) .
+                '"></script>';
+        }
+
+        return implode("\n", $assets);
     }
 }
 

@@ -515,29 +515,29 @@ $adminNavigation = [
 ></script>
 <script
     defer
-    src="<?php echo adminMenuEsc($baseurl . "admin-branding.js?v=1", ENT_QUOTES, "UTF-8"); ?>"
+    src="<?php echo adminMenuEsc($baseurl . "admin-branding.js?v=1"); ?>"
 ></script>
 <script
     defer
-    src="<?php echo adminMenuEsc($baseurl . "admin-media-resolver.js?v=2", ENT_QUOTES, "UTF-8"); ?>"
+    src="<?php echo adminMenuEsc($baseurl . "admin-media-resolver.js?v=2"); ?>"
 ></script>
 
 <?php if($adminActiveSection === "home"){ ?>
     <script
         defer
-        src="<?php echo adminMenuEsc($baseurl . "admin-home-enhancements.js?v=3", ENT_QUOTES, "UTF-8"); ?>"
+        src="<?php echo adminMenuEsc($baseurl . "admin-home-enhancements.js?v=3"); ?>"
     ></script>
     <script
         defer
-        src="<?php echo adminMenuEsc($baseurl . "admin-tiktok-status.js?v=9", ENT_QUOTES, "UTF-8"); ?>"
+        src="<?php echo adminMenuEsc($baseurl . "admin-tiktok-status.js?v=9"); ?>"
     ></script>
     <script
         defer
-        src="<?php echo adminMenuEsc($baseurl . "admin-product-links.js?v=1", ENT_QUOTES, "UTF-8"); ?>"
+        src="<?php echo adminMenuEsc($baseurl . "admin-product-links.js?v=1"); ?>"
     ></script>
     <script
         defer
-        src="<?php echo adminMenuEsc($baseurl . "admin-sales-home.js?v=1", ENT_QUOTES, "UTF-8"); ?>"
+        src="<?php echo adminMenuEsc($baseurl . "admin-sales-home.js?v=1"); ?>"
     ></script>
 <?php } ?>
 
@@ -547,62 +547,62 @@ $adminNavigation = [
 ){ ?>
     <script
         defer
-        src="<?php echo adminMenuEsc($baseurl . "admin-edit-product.js?v=2", ENT_QUOTES, "UTF-8"); ?>"
+        src="<?php echo adminMenuEsc($baseurl . "admin-edit-product.js?v=2"); ?>"
     ></script>
 <?php } ?>
 
 <?php if($adminActiveSection === "settings"){ ?>
     <script
         defer
-        src="<?php echo adminMenuEsc($baseurl . "admin-settings-cleanup.js?v=1", ENT_QUOTES, "UTF-8"); ?>"
+        src="<?php echo adminMenuEsc($baseurl . "admin-settings-cleanup.js?v=1"); ?>"
     ></script>
 <?php } ?>
 
 <?php if($adminActiveSection === "image-settings"){ ?>
     <script
         defer
-        src="<?php echo adminMenuEsc($baseurl . "admin-watermark-branding.js?v=2", ENT_QUOTES, "UTF-8"); ?>"
+        src="<?php echo adminMenuEsc($baseurl . "admin-watermark-branding.js?v=2"); ?>"
     ></script>
 <?php } ?>
 
 <?php if($adminActiveSection === "add-cd"){ ?>
     <script
         defer
-        src="<?php echo adminMenuEsc($baseurl . "admin-price-suggestions.js?v=1", ENT_QUOTES, "UTF-8"); ?>"
+        src="<?php echo adminMenuEsc($baseurl . "admin-price-suggestions.js?v=1"); ?>"
     ></script>
 <?php } ?>
 
 <?php if($adminActiveSection === "sales-studio"){ ?>
     <script
         defer
-        src="<?php echo adminMenuEsc($baseurl . "admin-sales-studio-templates.js?v=3", ENT_QUOTES, "UTF-8"); ?>"
+        src="<?php echo adminMenuEsc($baseurl . "admin-sales-studio-templates.js?v=3"); ?>"
     ></script>
     <script
         defer
-        src="<?php echo adminMenuEsc($baseurl . "admin-sales-studio-lot.js?v=1", ENT_QUOTES, "UTF-8"); ?>"
+        src="<?php echo adminMenuEsc($baseurl . "admin-sales-studio-lot.js?v=1"); ?>"
     ></script>
     <script
         defer
-        src="<?php echo adminMenuEsc($baseurl . "admin-sales-studio-publication.js?v=1", ENT_QUOTES, "UTF-8"); ?>"
+        src="<?php echo adminMenuEsc($baseurl . "admin-sales-studio-publication.js?v=1"); ?>"
     ></script>
     <script
         defer
-        src="<?php echo adminMenuEsc($baseurl . "admin-sales-studio-export.js?v=2", ENT_QUOTES, "UTF-8"); ?>"
+        src="<?php echo adminMenuEsc($baseurl . "admin-sales-studio-export.js?v=2"); ?>"
     ></script>
     <script
         defer
-        src="<?php echo adminMenuEsc($baseurl . "admin-sales-studio-lot-artist.js?v=1", ENT_QUOTES, "UTF-8"); ?>"
+        src="<?php echo adminMenuEsc($baseurl . "admin-sales-studio-lot-artist.js?v=1"); ?>"
     ></script>
     <script
         defer
-        src="<?php echo adminMenuEsc($baseurl . "admin-sales-studio-export-direct.js?v=2", ENT_QUOTES, "UTF-8"); ?>"
+        src="<?php echo adminMenuEsc($baseurl . "admin-sales-studio-export-direct.js?v=2"); ?>"
     ></script>
     <script
         defer
-        src="<?php echo adminMenuEsc($baseurl . "admin-sales-studio-marketplace-copy.js?v=2", ENT_QUOTES, "UTF-8"); ?>"
+        src="<?php echo adminMenuEsc($baseurl . "admin-sales-studio-marketplace-copy.js?v=2"); ?>"
     ></script>
     <script
         defer
-        src="<?php echo adminMenuEsc($baseurl . "admin-sales-studio-flow-ui.js?v=1", ENT_QUOTES, "UTF-8"); ?>"
+        src="<?php echo adminMenuEsc($baseurl . "admin-sales-studio-flow-ui.js?v=1"); ?>"
     ></script>
 <?php } ?>

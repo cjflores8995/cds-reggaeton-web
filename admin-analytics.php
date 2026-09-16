@@ -68,15 +68,26 @@ function analyticsDashboardTabUrl($baseurl, $view, $environment){
     <link rel="shortcut icon" href="<?php echo analyticsDashboardEsc($baseurl); ?>favicon.ico">
     <link rel="stylesheet" type="text/css" href="<?php echo analyticsDashboardEsc($baseurl); ?>assets/css/font-awesome.css">
     <link rel="stylesheet" type="text/css" href="<?php echo analyticsDashboardEsc($baseurl); ?>admin-modern.css?v=16">
+
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr@4.6.13/dist/flatpickr.min.css">
     <link rel="stylesheet" href="https://unpkg.com/tabulator-tables@6.5.0/dist/css/tabulator.min.css">
+    <link rel="stylesheet" type="text/css" href="<?php echo analyticsDashboardEsc($baseurl); ?>admin-analytics-dashboard.css?v=2">
+    <link rel="stylesheet" type="text/css" href="<?php echo analyticsDashboardEsc($baseurl); ?>admin-analytics-dashboard-enhanced.css?v=1">
+    <link rel="stylesheet" type="text/css" href="<?php echo analyticsDashboardEsc($baseurl); ?>admin-analytics-dashboard-vibrant.css?v=1">
+    <link rel="stylesheet" type="text/css" href="<?php echo analyticsDashboardEsc($baseurl); ?>admin-analytics-sessions.css?v=1">
+    <?php if($selectedView === "diagnostics"){ ?>
+        <link rel="stylesheet" type="text/css" href="<?php echo analyticsDashboardEsc($baseurl); ?>admin-analytics-diagnostics.css?v=1">
+    <?php } ?>
+    <?php if($selectedView === "maintenance"){ ?>
+        <link rel="stylesheet" type="text/css" href="<?php echo analyticsDashboardEsc($baseurl); ?>admin-analytics-maintenance.css?v=1">
+    <?php } ?>
 </head>
 <body>
 <div class="admin-page-shell">
     <?php require __DIR__ . "/admin-menu.php"; ?>
 
-    <main class="admin-page-content analytics-dashboard-page rer-dm-content">
-        <header class="analytics-dashboard-header rer-dm-block">
+    <main class="admin-page-content analytics-dashboard-page">
+        <header class="analytics-dashboard-header">
             <div>
                 <span class="analytics-dashboard-kicker">ANALYTICS</span>
                 <h1>Dashboard comercial</h1>
@@ -85,8 +96,8 @@ function analyticsDashboardTabUrl($baseurl, $view, $environment){
 
             <form class="analytics-dashboard-environment" method="get">
                 <input type="hidden" name="view" value="<?php echo analyticsDashboardEsc($selectedView); ?>">
-                <label for="analyticsEnvironment" class="rer-dm-form-label">Ambiente</label>
-                <select id="analyticsEnvironment" class="rer-dm-form-select" name="environment" onchange="this.form.submit()">
+                <label for="analyticsEnvironment">Ambiente</label>
+                <select id="analyticsEnvironment" name="environment" onchange="this.form.submit()">
                     <option value="development" <?php echo $selectedEnvironment === "development" ? "selected" : ""; ?>>Development</option>
                     <option value="production" <?php echo $selectedEnvironment === "production" ? "selected" : ""; ?>>Production</option>
                 </select>
@@ -94,12 +105,12 @@ function analyticsDashboardTabUrl($baseurl, $view, $environment){
         </header>
 
         <?php if(!$schemaReady){ ?>
-            <div class="admin-alert error rer-dm-block">
+            <div class="admin-alert error">
                 No fue posible inicializar Analytics. La tienda puede seguir funcionando normalmente.
             </div>
         <?php } ?>
 
-        <nav class="analytics-dashboard-tabs rer-dm-block" aria-label="Secciones de Analytics">
+        <nav class="analytics-dashboard-tabs" aria-label="Secciones de Analytics">
             <a href="<?php echo analyticsDashboardEsc(analyticsDashboardTabUrl($baseurl, "summary", $selectedEnvironment)); ?>" <?php echo $selectedView === "summary" ? 'class="is-active"' : ""; ?>>Resumen</a>
             <a href="<?php echo analyticsDashboardEsc(analyticsDashboardTabUrl($baseurl, "products", $selectedEnvironment)); ?>" <?php echo $selectedView === "products" ? 'class="is-active"' : ""; ?>>Productos</a>
             <a href="<?php echo analyticsDashboardEsc(analyticsDashboardTabUrl($baseurl, "searches", $selectedEnvironment)); ?>" <?php echo $selectedView === "searches" ? 'class="is-active"' : ""; ?>>Búsquedas</a>
@@ -120,7 +131,7 @@ function analyticsDashboardTabUrl($baseurl, $view, $environment){
             data-maintenance-csrf="<?php echo analyticsDashboardEsc($analyticsMaintenanceCsrf); ?>"
         >
             <?php if($selectedView !== "maintenance"){ ?>
-                <div class="analytics-dashboard-filterbar rer-dm-block">
+                <div class="analytics-dashboard-filterbar">
                     <div class="analytics-dashboard-periods" aria-label="Período">
                         <button type="button" data-period="today">Hoy</button>
                         <button type="button" data-period="7d">7 días</button>
@@ -134,16 +145,16 @@ function analyticsDashboardTabUrl($baseurl, $view, $environment){
                     </div>
                 </div>
 
-                <div class="analytics-dashboard-custom rer-dm-block" data-custom-range hidden>
+                <div class="analytics-dashboard-custom" data-custom-range hidden>
                     <label>
                         Desde
-                        <input id="analyticsDashboardFrom" class="rer-dm-form-control" type="date" autocomplete="off">
+                        <input id="analyticsDashboardFrom" type="date" autocomplete="off">
                     </label>
                     <label>
                         Hasta
-                        <input id="analyticsDashboardTo" class="rer-dm-form-control" type="date" autocomplete="off">
+                        <input id="analyticsDashboardTo" type="date" autocomplete="off">
                     </label>
-                    <button type="button" class="rer-dm-btn rer-dm-btn-primary" data-apply-range>Aplicar</button>
+                    <button type="button" data-apply-range>Aplicar</button>
                 </div>
             <?php } ?>
 
@@ -165,6 +176,7 @@ function analyticsDashboardTabUrl($baseurl, $view, $environment){
     <script defer src="<?php echo analyticsDashboardEsc($baseurl); ?>admin-analytics-maintenance.js?v=2"></script>
 <?php }else{ ?>
     <script defer src="<?php echo analyticsDashboardEsc($baseurl); ?>admin-analytics-dashboard.js?v=2"></script>
+    <script defer src="<?php echo analyticsDashboardEsc($baseurl); ?>admin-analytics-dashboard-vibrant.js?v=1"></script>
 <?php } ?>
 <script defer src="<?php echo analyticsDashboardEsc($baseurl); ?>admin-analytics-phase6-bridge.js?v=2"></script>
 </body>

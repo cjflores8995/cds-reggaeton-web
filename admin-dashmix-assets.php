@@ -34,10 +34,6 @@ if(!defined("RER_ADMIN_DASHMIX_SALES_STUDIO_VERSION")){
     define("RER_ADMIN_DASHMIX_SALES_STUDIO_VERSION", "2");
 }
 
-if(!defined("RER_ADMIN_DASHMIX_ANALYTICS_VERSION")){
-    define("RER_ADMIN_DASHMIX_ANALYTICS_VERSION", "2");
-}
-
 if(!function_exists("adminDashmixAssetUrl")){
     function adminDashmixAssetUrl($relativePath){
         global $baseurl;
@@ -68,16 +64,6 @@ if(!function_exists("adminDashmixIsCatalogMediaSection")){
                 $adminActiveSection === "artists" ||
                 $adminActiveSection === "pictures"
             );
-    }
-}
-
-if(!function_exists("adminDashmixIsAnalyticsSection")){
-    function adminDashmixIsAnalyticsSection(){
-        global $adminActiveSection;
-
-        return
-            isset($adminActiveSection) &&
-            $adminActiveSection === "analytics";
     }
 }
 
@@ -218,21 +204,6 @@ if(!function_exists("adminDashmixHeadAssets")){
                 '">';
         }
 
-        if(adminDashmixIsAnalyticsSection()){
-            $analyticsVersion = rawurlencode(
-                RER_ADMIN_DASHMIX_ANALYTICS_VERSION
-            );
-            $analyticsHref =
-                adminDashmixAssetUrl("admin-dashmix-analytics.css") .
-                "?v=" .
-                $analyticsVersion;
-
-            $assets[] =
-                '<link rel="stylesheet" href="' .
-                adminDashmixEsc($analyticsHref) .
-                '">';
-        }
-
         return implode("\n", $assets);
     }
 }
@@ -259,21 +230,6 @@ if(!function_exists("adminDashmixFooterAssets")){
             $assets[] =
                 '<script defer src="' .
                 adminDashmixEsc($catalogMediaSrc) .
-                '"></script>';
-        }
-
-        if(adminDashmixIsAnalyticsSection()){
-            $analyticsVersion = rawurlencode(
-                RER_ADMIN_DASHMIX_ANALYTICS_VERSION
-            );
-            $analyticsSrc =
-                adminDashmixAssetUrl("admin-dashmix-analytics.js") .
-                "?v=" .
-                $analyticsVersion;
-
-            $assets[] =
-                '<script defer src="' .
-                adminDashmixEsc($analyticsSrc) .
                 '"></script>';
         }
 

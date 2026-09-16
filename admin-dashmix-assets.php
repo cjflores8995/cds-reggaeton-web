@@ -18,6 +18,10 @@ if(!defined("RER_ADMIN_DASHMIX_HOME_VERSION")){
     define("RER_ADMIN_DASHMIX_HOME_VERSION", "1");
 }
 
+if(!defined("RER_ADMIN_DASHMIX_PRODUCT_FORM_VERSION")){
+    define("RER_ADMIN_DASHMIX_PRODUCT_FORM_VERSION", "1");
+}
+
 if(!function_exists("adminDashmixAssetUrl")){
     function adminDashmixAssetUrl($relativePath){
         global $baseurl;
@@ -62,6 +66,31 @@ if(!function_exists("adminDashmixHeadAssets")){
             $assets[] =
                 '<link rel="stylesheet" href="' .
                 adminDashmixEsc($homeHref) .
+                '">';
+        }
+
+        $isProductForm =
+            isset($adminActiveSection) &&
+            (
+                $adminActiveSection === "add-cd" ||
+                (
+                    $adminActiveSection === "home" &&
+                    isset($_GET["editpost"])
+                )
+            );
+
+        if($isProductForm){
+            $productFormVersion = rawurlencode(
+                RER_ADMIN_DASHMIX_PRODUCT_FORM_VERSION
+            );
+            $productFormHref =
+                adminDashmixAssetUrl("admin-dashmix-product-form.css") .
+                "?v=" .
+                $productFormVersion;
+
+            $assets[] =
+                '<link rel="stylesheet" href="' .
+                adminDashmixEsc($productFormHref) .
                 '">';
         }
 

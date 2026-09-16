@@ -1,0 +1,57 @@
+/*
+ * Reggaeton El Real - Dashmix product form corrections
+ * Phase 4 validation fixes.
+ * Backend only.
+ */
+
+/*
+ * Legacy product forms still contain a few helper messages with inline
+ * negative top margins. Under the Dashmix field height those messages can
+ * overlap the select/input above them. Force helpers back into normal flow.
+ */
+body.admin-dashmix-enabled .admin-form-card select + .admin-muted,
+body.admin-dashmix-enabled .admin-form-card input[type='text'] + .admin-muted,
+body.admin-dashmix-enabled .admin-form-card input[type='number'] + .admin-muted,
+body.admin-dashmix-enabled .admin-form-card input[type='url'] + .admin-muted,
+body.admin-dashmix-enabled .admin-form-card input[type='email'] + .admin-muted,
+body.admin-dashmix-enabled form[data-ajax-product='1'] select + .admin-muted,
+body.admin-dashmix-enabled form[data-ajax-product='1'] input[type='text'] + .admin-muted,
+body.admin-dashmix-enabled form[data-ajax-product='1'] input[type='number'] + .admin-muted,
+body.admin-dashmix-enabled form[data-ajax-product='1'] input[type='url'] + .admin-muted {
+    position: static !important;
+    display: block;
+    clear: both;
+    margin-top: 7px !important;
+    margin-bottom: 0 !important;
+    padding: 0;
+    line-height: 1.5 !important;
+}
+
+/*
+ * The dynamically injected TikTok helper on Edit CD lives outside the grid,
+ * so preserve a comfortable bottom gap before the following field.
+ */
+body.admin-dashmix-enabled form[data-ajax-product='1'] .admin-edit-tiktok-field > .admin-muted {
+    position: static !important;
+    display: block;
+    margin-top: 7px !important;
+    margin-bottom: 14px !important;
+    padding: 0;
+    line-height: 1.5 !important;
+}
+
+/* Ensure each grid field owns the full height of its label/control/helper. */
+body.admin-dashmix-enabled .admin-form-grid > div {
+    min-width: 0;
+    align-self: start;
+}
+
+@media (max-width: 700px) {
+    body.admin-dashmix-enabled .admin-form-card select + .admin-muted,
+    body.admin-dashmix-enabled .admin-form-card input + .admin-muted,
+    body.admin-dashmix-enabled form[data-ajax-product='1'] select + .admin-muted,
+    body.admin-dashmix-enabled form[data-ajax-product='1'] input + .admin-muted {
+        margin-top: 8px !important;
+        line-height: 1.55 !important;
+    }
+}

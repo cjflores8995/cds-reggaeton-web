@@ -1,0 +1,18 @@
+/* Phase 5 spacing guard for Artists and Images. */
+body.admin-dashmix-enabled .admin-form-card > p.admin-muted {
+    margin-top: 16px;
+    margin-bottom: 0;
+    font-size: 12px;
+    line-height: 1.55;
+}
+
+body.admin-dashmix-enabled .admin-form-card form .admin-muted {
+    margin-top: -4px;
+    margin-bottom: 14px;
+    font-size: 11px;
+    line-height: 1.5;
+}
+
+body.admin-dashmix-enabled .admin-table-wrap td .admin-muted {
+    margin: 0;
+}

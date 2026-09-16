@@ -24,6 +24,15 @@
     padding: 0 10px;
     border: 1px solid var(--soft-line);
     background: var(--paper);
+    font-size: 0;
+}
+
+.hero__content .eyebrow::before {
+    content: "DISCOTIENDA DE REGGAETÓN / ECUADOR";
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: .16em;
+    line-height: 1.2;
 }
 
 .hero__lead {
@@ -72,7 +81,7 @@
 
 /* Subtle jewel-case edge behind the disc. */
 .hero__panel::after {
-    content: "CD FÍSICO";
+    content: "REGGAETON EL REAL · CD FÍSICO";
     position: absolute;
     z-index: -2;
     width: min(70%, 370px);
@@ -103,6 +112,22 @@
     font-size: clamp(58px, 7vw, 104px);
 }
 
+.hero__number::after {
+    content: "DISCOTIENDA\A REGGAETON EL REAL";
+    position: absolute;
+    left: 0;
+    top: calc(100% + 16px);
+    width: max-content;
+    max-width: 210px;
+    white-space: pre-line;
+    color: rgba(255, 255, 255, .9);
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: .16em;
+    line-height: 1.45;
+    text-transform: uppercase;
+}
+
 .hero__label {
     position: relative;
     z-index: 2;
@@ -111,6 +136,16 @@
     border: 1px solid rgba(255, 255, 255, .28);
     background: rgba(0, 0, 0, .5);
     backdrop-filter: blur(4px);
+    font-size: 0;
+}
+
+.hero__label::before {
+    content: "CDs FÍSICOS DISPONIBLES";
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: .12em;
+    line-height: 1.35;
+    text-transform: uppercase;
 }
 
 /* --------------------------------------------------------------------------
@@ -202,16 +237,24 @@
     min-width: 94px;
     height: 42px;
     padding: 0 14px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
     font-size: 0;
+    line-height: 1;
     letter-spacing: .11em;
 }
 
 .catalog-section .square-action.js-add-product::before,
 .home-curation .square-action.js-add-product::before {
     content: "AÑADIR";
+    display: block;
+    position: relative;
+    top: 1px;
     font-size: 9px;
     font-weight: 800;
     letter-spacing: .11em;
+    line-height: 1;
 }
 
 /* Stronger store rhythm between curated blocks and the full catalog. */
@@ -255,11 +298,20 @@
     }
 
     .hero__content {
-        padding: 42px 24px 38px;
+        padding: 42px 20px 38px;
+    }
+
+    .hero__content .eyebrow::before {
+        font-size: 8px;
+        letter-spacing: .13em;
     }
 
     .hero h1 {
-        font-size: clamp(55px, 18vw, 86px);
+        width: 100%;
+        max-width: 100%;
+        font-size: clamp(46px, 13vw, 62px);
+        line-height: .9;
+        letter-spacing: -.055em;
     }
 
     .hero__lead {
@@ -272,6 +324,7 @@
         border-left: 0;
         border-top: 1px solid var(--soft-line);
         padding: 22px;
+        align-items: flex-start;
     }
 
     .hero__panel::before {
@@ -280,10 +333,27 @@
 
     .hero__panel::after {
         width: min(63%, 215px);
+        content: "REGGAETON EL REAL · CD FÍSICO";
     }
 
     .hero__number {
         font-size: 50px;
+    }
+
+    .hero__number::after {
+        top: calc(100% + 14px);
+        max-width: 150px;
+        font-size: 8px;
+        letter-spacing: .14em;
+    }
+
+    .hero__label {
+        max-width: 150px;
+        text-align: right;
+    }
+
+    .hero__label::before {
+        font-size: 8px;
     }
 
     .catalog-section .product-card__image-wrap,

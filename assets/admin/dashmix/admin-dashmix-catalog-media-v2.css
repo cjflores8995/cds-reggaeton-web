@@ -79,13 +79,14 @@ body.rer-dm-catalog-pictures .admin-page-content > .admin-toolbar h1 {
 
 .rer-dm-artist-workspace {
     display: grid;
-    grid-template-columns: minmax(0, 1.35fr) minmax(280px, .65fr);
+    grid-template-columns: minmax(0, 1fr);
     gap: 18px;
     align-items: start;
     margin-bottom: 20px;
 }
 
 .rer-dm-artist-workspace > .admin-form-card {
+    width: 100%;
     margin-bottom: 0 !important;
 }
 
@@ -220,10 +221,6 @@ body.rer-dm-catalog-pictures .rer-dm-picture-upload .admin-modern-button {
 }
 
 @media (max-width: 980px) {
-    .rer-dm-artist-workspace {
-        grid-template-columns: 1fr;
-    }
-
     .rer-dm-phase5-summary {
         grid-template-columns: repeat(2, minmax(0, 1fr));
     }

@@ -1,0 +1,269 @@
+/*
+ * Reggaeton El Real - Dashmix catalog media composition
+ * Phase 5 visual correction: explicit Artists and Pictures layouts.
+ */
+
+body.rer-dm-catalog-artists .admin-page-content,
+body.rer-dm-catalog-pictures .admin-page-content {
+    padding-top: 24px;
+}
+
+body.rer-dm-catalog-artists .admin-page-content > .admin-toolbar,
+body.rer-dm-catalog-pictures .admin-page-content > .admin-toolbar {
+    margin: 0 0 20px;
+    padding: 20px 22px;
+    border: 1px solid var(--rer-dm-border);
+    border-radius: var(--rer-dm-radius-lg);
+    background: linear-gradient(135deg, #ffffff 0%, #f7faff 100%);
+    box-shadow: var(--rer-dm-shadow);
+}
+
+body.rer-dm-catalog-artists .admin-page-content > .admin-toolbar h1,
+body.rer-dm-catalog-pictures .admin-page-content > .admin-toolbar h1 {
+    font-size: 26px;
+}
+
+.rer-dm-phase5-summary {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 14px;
+    margin: 0 0 20px;
+}
+
+.rer-dm-phase5-stat {
+    display: flex;
+    align-items: center;
+    gap: 13px;
+    min-height: 88px;
+    padding: 15px 17px;
+    border: 1px solid var(--rer-dm-border);
+    border-radius: var(--rer-dm-radius-lg);
+    background: #fff;
+    box-shadow: var(--rer-dm-shadow);
+}
+
+.rer-dm-phase5-stat__icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex: 0 0 42px;
+    width: 42px;
+    height: 42px;
+    border-radius: 10px;
+    color: var(--rer-dm-accent);
+    background: var(--rer-dm-accent-soft);
+    font-size: 17px;
+}
+
+.rer-dm-phase5-stat__body {
+    min-width: 0;
+}
+
+.rer-dm-phase5-stat__label {
+    display: block;
+    margin-bottom: 3px;
+    color: var(--rer-dm-text-muted);
+    font-size: 10px;
+    font-weight: 750;
+    letter-spacing: .06em;
+    text-transform: uppercase;
+}
+
+.rer-dm-phase5-stat__value {
+    display: block;
+    color: var(--rer-dm-heading);
+    font-size: 23px;
+    font-weight: 750;
+    line-height: 1.1;
+}
+
+.rer-dm-artist-workspace {
+    display: grid;
+    grid-template-columns: minmax(0, 1.35fr) minmax(280px, .65fr);
+    gap: 18px;
+    align-items: start;
+    margin-bottom: 20px;
+}
+
+.rer-dm-artist-workspace > .admin-form-card {
+    margin-bottom: 0 !important;
+}
+
+.rer-dm-artist-editor {
+    border-top: 3px solid var(--rer-dm-accent) !important;
+}
+
+.rer-dm-artist-import {
+    border-top: 3px solid #e8a317 !important;
+}
+
+.rer-dm-artist-import > h2::before {
+    background: #e8a317 !important;
+}
+
+.rer-dm-artist-list {
+    border-top: 3px solid #475569 !important;
+}
+
+.rer-dm-artist-list > h2::before {
+    background: #475569 !important;
+}
+
+body.rer-dm-catalog-artists .admin-form-card > form {
+    padding: 2px 0 4px;
+}
+
+body.rer-dm-catalog-artists .admin-form-card > form > .admin-modern-button {
+    margin-top: 4px;
+}
+
+body.rer-dm-catalog-artists .admin-table-wrap {
+    border-radius: 0 0 var(--rer-dm-radius-lg) var(--rer-dm-radius-lg);
+}
+
+.rer-dm-media-library {
+    margin: 0 0 20px;
+    overflow: hidden;
+    border: 1px solid var(--rer-dm-border);
+    border-radius: var(--rer-dm-radius-lg);
+    background: #fff;
+    box-shadow: var(--rer-dm-shadow);
+}
+
+.rer-dm-media-library__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    min-height: 58px;
+    padding: 14px 18px;
+    border-bottom: 1px solid var(--rer-dm-border);
+    background: #fbfcfd;
+}
+
+.rer-dm-media-library__title {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin: 0;
+    color: var(--rer-dm-heading);
+    font-size: 14px;
+    font-weight: 700;
+}
+
+.rer-dm-media-library__title i {
+    color: var(--rer-dm-accent);
+}
+
+.rer-dm-media-library__count {
+    display: inline-flex;
+    align-items: center;
+    min-height: 26px;
+    padding: 4px 9px;
+    border-radius: 999px;
+    color: #15599e;
+    background: #eaf3fd;
+    font-size: 11px;
+    font-weight: 750;
+}
+
+.rer-dm-media-library__content {
+    padding: 18px;
+}
+
+body.rer-dm-catalog-pictures .admin-picture-grid {
+    grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
+    gap: 15px;
+    margin: 0;
+}
+
+body.rer-dm-catalog-pictures .admin-picture-card {
+    padding: 11px;
+    border-color: #dce2ea;
+    box-shadow: 0 2px 7px rgba(31, 45, 61, .055);
+}
+
+body.rer-dm-catalog-pictures .admin-picture-card img {
+    height: 185px;
+    margin-bottom: 11px;
+    background: #f5f7fa;
+}
+
+.rer-dm-picture-upload {
+    border-top: 3px solid var(--rer-dm-accent) !important;
+}
+
+.rer-dm-picture-upload > h2::before {
+    background: var(--rer-dm-accent) !important;
+}
+
+body.rer-dm-catalog-pictures .rer-dm-picture-upload > form {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 10px 14px;
+    align-items: end;
+}
+
+body.rer-dm-catalog-pictures .rer-dm-picture-upload > form > label {
+    grid-column: 1 / -1;
+    margin-bottom: -4px;
+}
+
+body.rer-dm-catalog-pictures .rer-dm-picture-upload input[type='file'] {
+    margin: 0;
+}
+
+body.rer-dm-catalog-pictures .rer-dm-picture-upload .admin-modern-button {
+    min-height: 44px;
+    margin: 0;
+    white-space: nowrap;
+}
+
+@media (max-width: 980px) {
+    .rer-dm-artist-workspace {
+        grid-template-columns: 1fr;
+    }
+
+    .rer-dm-phase5-summary {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 700px) {
+    body.rer-dm-catalog-artists .admin-page-content > .admin-toolbar,
+    body.rer-dm-catalog-pictures .admin-page-content > .admin-toolbar {
+        padding: 16px;
+    }
+
+    .rer-dm-phase5-summary {
+        grid-template-columns: 1fr;
+        gap: 10px;
+    }
+
+    .rer-dm-phase5-stat {
+        min-height: 74px;
+    }
+
+    .rer-dm-media-library__content {
+        padding: 12px;
+    }
+
+    body.rer-dm-catalog-pictures .admin-picture-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 10px;
+    }
+
+    body.rer-dm-catalog-pictures .rer-dm-picture-upload > form {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 460px) {
+    body.rer-dm-catalog-pictures .admin-picture-grid {
+        grid-template-columns: 1fr;
+    }
+
+    body.rer-dm-catalog-pictures .admin-picture-card img {
+        height: 220px;
+    }
+}

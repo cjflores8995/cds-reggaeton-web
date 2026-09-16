@@ -73,7 +73,6 @@ function analyticsDashboardTabUrl($baseurl, $view, $environment){
     <link rel="stylesheet" href="https://unpkg.com/tabulator-tables@6.5.0/dist/css/tabulator.min.css">
     <link rel="stylesheet" type="text/css" href="<?php echo analyticsDashboardEsc($baseurl); ?>admin-analytics-dashboard.css?v=2">
     <link rel="stylesheet" type="text/css" href="<?php echo analyticsDashboardEsc($baseurl); ?>admin-analytics-dashboard-enhanced.css?v=1">
-    <link rel="stylesheet" type="text/css" href="<?php echo analyticsDashboardEsc($baseurl); ?>admin-analytics-dashboard-vibrant.css?v=1">
     <link rel="stylesheet" type="text/css" href="<?php echo analyticsDashboardEsc($baseurl); ?>admin-analytics-sessions.css?v=1">
     <?php if($selectedView === "diagnostics"){ ?>
         <link rel="stylesheet" type="text/css" href="<?php echo analyticsDashboardEsc($baseurl); ?>admin-analytics-diagnostics.css?v=1">
@@ -176,7 +175,6 @@ function analyticsDashboardTabUrl($baseurl, $view, $environment){
     <script defer src="<?php echo analyticsDashboardEsc($baseurl); ?>admin-analytics-maintenance.js?v=2"></script>
 <?php }else{ ?>
     <script defer src="<?php echo analyticsDashboardEsc($baseurl); ?>admin-analytics-dashboard.js?v=2"></script>
-    <script defer src="<?php echo analyticsDashboardEsc($baseurl); ?>admin-analytics-dashboard-vibrant.js?v=1"></script>
 <?php } ?>
 <script defer src="<?php echo analyticsDashboardEsc($baseurl); ?>admin-analytics-phase6-bridge.js?v=2"></script>
 </body>

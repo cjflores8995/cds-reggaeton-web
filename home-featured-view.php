@@ -5,7 +5,7 @@ if (!isset($homeRotation) || !is_array($homeRotation)) {
 ?>
 <link
     rel="stylesheet"
-    href="<?php echo e($storeBaseUrl); ?>store-physical-phase1.css?v=2"
+    href="<?php echo e($storeBaseUrl); ?>store-physical-phase1.css?v=3"
 >
 <?php
 if (!function_exists('homeRenderFeaturedProductCard')) {

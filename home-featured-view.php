@@ -2,7 +2,12 @@
 if (!isset($homeRotation) || !is_array($homeRotation)) {
     return;
 }
-
+?>
+<link
+    rel="stylesheet"
+    href="<?php echo e($storeBaseUrl); ?>store-physical-phase1.css?v=2"
+>
+<?php
 if (!function_exists('homeRenderFeaturedProductCard')) {
     function homeRenderFeaturedProductCard(array $product, string $storeBaseUrl): void
     {

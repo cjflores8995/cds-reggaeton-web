@@ -19,7 +19,7 @@ if(!defined("RER_ADMIN_DASHMIX_HOME_VERSION")){
 }
 
 if(!defined("RER_ADMIN_DASHMIX_PRODUCT_FORM_VERSION")){
-    define("RER_ADMIN_DASHMIX_PRODUCT_FORM_VERSION", "1");
+    define("RER_ADMIN_DASHMIX_PRODUCT_FORM_VERSION", "2");
 }
 
 if(!function_exists("adminDashmixAssetUrl")){
@@ -87,10 +87,18 @@ if(!function_exists("adminDashmixHeadAssets")){
                 adminDashmixAssetUrl("admin-dashmix-product-form.css") .
                 "?v=" .
                 $productFormVersion;
+            $productFormFixHref =
+                adminDashmixAssetUrl("admin-dashmix-product-form-fix.css") .
+                "?v=" .
+                $productFormVersion;
 
             $assets[] =
                 '<link rel="stylesheet" href="' .
                 adminDashmixEsc($productFormHref) .
+                '">';
+            $assets[] =
+                '<link rel="stylesheet" href="' .
+                adminDashmixEsc($productFormFixHref) .
                 '">';
         }
 

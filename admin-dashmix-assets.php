@@ -34,6 +34,10 @@ if(!defined("RER_ADMIN_DASHMIX_SALES_STUDIO_VERSION")){
     define("RER_ADMIN_DASHMIX_SALES_STUDIO_VERSION", "2");
 }
 
+if(!defined("RER_ADMIN_DASHMIX_SYSTEM_VERSION")){
+    define("RER_ADMIN_DASHMIX_SYSTEM_VERSION", "1");
+}
+
 if(!function_exists("adminDashmixAssetUrl")){
     function adminDashmixAssetUrl($relativePath){
         global $baseurl;
@@ -63,6 +67,25 @@ if(!function_exists("adminDashmixIsCatalogMediaSection")){
             (
                 $adminActiveSection === "artists" ||
                 $adminActiveSection === "pictures"
+            );
+    }
+}
+
+if(!function_exists("adminDashmixIsSystemSection")){
+    function adminDashmixIsSystemSection(){
+        global $adminActiveSection;
+
+        return
+            isset($adminActiveSection) &&
+            in_array(
+                $adminActiveSection,
+                [
+                    "orders",
+                    "settings",
+                    "image-settings",
+                    "system-logs"
+                ],
+                true
             );
     }
 }
@@ -204,6 +227,21 @@ if(!function_exists("adminDashmixHeadAssets")){
                 '">';
         }
 
+        if(adminDashmixIsSystemSection()){
+            $systemVersion = rawurlencode(
+                RER_ADMIN_DASHMIX_SYSTEM_VERSION
+            );
+            $systemHref =
+                adminDashmixAssetUrl("admin-dashmix-system.css") .
+                "?v=" .
+                $systemVersion;
+
+            $assets[] =
+                '<link rel="stylesheet" href="' .
+                adminDashmixEsc($systemHref) .
+                '">';
+        }
+
         return implode("\n", $assets);
     }
 }
@@ -230,6 +268,21 @@ if(!function_exists("adminDashmixFooterAssets")){
             $assets[] =
                 '<script defer src="' .
                 adminDashmixEsc($catalogMediaSrc) .
+                '"></script>';
+        }
+
+        if(adminDashmixIsSystemSection()){
+            $systemVersion = rawurlencode(
+                RER_ADMIN_DASHMIX_SYSTEM_VERSION
+            );
+            $systemSrc =
+                adminDashmixAssetUrl("admin-dashmix-system.js") .
+                "?v=" .
+                $systemVersion;
+
+            $assets[] =
+                '<script defer src="' .
+                adminDashmixEsc($systemSrc) .
                 '"></script>';
         }
 

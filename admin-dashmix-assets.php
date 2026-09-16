@@ -35,7 +35,7 @@ if(!defined("RER_ADMIN_DASHMIX_SALES_STUDIO_VERSION")){
 }
 
 if(!defined("RER_ADMIN_DASHMIX_ANALYTICS_VERSION")){
-    define("RER_ADMIN_DASHMIX_ANALYTICS_VERSION", "1");
+    define("RER_ADMIN_DASHMIX_ANALYTICS_VERSION", "2");
 }
 
 if(!function_exists("adminDashmixAssetUrl")){

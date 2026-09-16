@@ -26,6 +26,10 @@ if(!defined("RER_ADMIN_DASHMIX_CATALOG_MEDIA_VERSION")){
     define("RER_ADMIN_DASHMIX_CATALOG_MEDIA_VERSION", "3");
 }
 
+if(!defined("RER_ADMIN_DASHMIX_INVENTORY_SALES_VERSION")){
+    define("RER_ADMIN_DASHMIX_INVENTORY_SALES_VERSION", "1");
+}
+
 if(!function_exists("adminDashmixAssetUrl")){
     function adminDashmixAssetUrl($relativePath){
         global $baseurl;
@@ -147,6 +151,25 @@ if(!function_exists("adminDashmixHeadAssets")){
             $assets[] =
                 '<link rel="stylesheet" href="' .
                 adminDashmixEsc($catalogMediaV2Href) .
+                '">';
+        }
+
+        $isInventorySales =
+            isset($adminActiveSection) &&
+            $adminActiveSection === "inventory-sales";
+
+        if($isInventorySales){
+            $inventorySalesVersion = rawurlencode(
+                RER_ADMIN_DASHMIX_INVENTORY_SALES_VERSION
+            );
+            $inventorySalesHref =
+                adminDashmixAssetUrl("admin-dashmix-inventory-sales.css") .
+                "?v=" .
+                $inventorySalesVersion;
+
+            $assets[] =
+                '<link rel="stylesheet" href="' .
+                adminDashmixEsc($inventorySalesHref) .
                 '">';
         }
 

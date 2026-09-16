@@ -1,0 +1,344 @@
+/*
+ * REGGAETON EL REAL — Physical Storefront / Phase 1
+ * Objective: make the storefront read immediately as a physical CD shop.
+ * This layer intentionally avoids changing PHP, cart logic or catalog data.
+ */
+
+/* --------------------------------------------------------------------------
+ * HERO — physical CD language
+ * ----------------------------------------------------------------------- */
+
+.hero {
+    grid-template-columns: minmax(0, 1.32fr) minmax(360px, .68fr);
+}
+
+.hero__content {
+    position: relative;
+    z-index: 2;
+}
+
+.hero__content .eyebrow {
+    display: inline-flex;
+    align-items: center;
+    min-height: 28px;
+    padding: 0 10px;
+    border: 1px solid var(--soft-line);
+    background: var(--paper);
+}
+
+.hero__lead {
+    max-width: 660px;
+}
+
+.hero__panel {
+    position: relative;
+    isolation: isolate;
+    overflow: hidden;
+    min-height: 520px;
+    padding: 34px;
+    background:
+        linear-gradient(145deg, #181818 0%, #090909 100%);
+}
+
+/* Physical compact disc. */
+.hero__panel::before {
+    content: "";
+    position: absolute;
+    z-index: -1;
+    width: min(78%, 430px);
+    aspect-ratio: 1;
+    left: 50%;
+    top: 50%;
+    transform: translate(-48%, -47%);
+    border-radius: 50%;
+    background:
+        radial-gradient(circle at center,
+            #0b0b0b 0 4.2%,
+            #e8e8e8 4.4% 8%,
+            #777 8.2% 9%,
+            #f7f7f7 9.4% 15%,
+            transparent 15.3% 18%,
+            rgba(255, 255, 255, .88) 18.4% 19.2%,
+            rgba(205, 205, 205, .96) 19.6% 46%,
+            rgba(245, 245, 245, .96) 46.4% 50%,
+            rgba(162, 162, 162, .96) 50.4% 71%,
+            rgba(234, 234, 234, .98) 71.4% 100%);
+    box-shadow:
+        0 36px 70px rgba(0, 0, 0, .45),
+        inset 0 0 0 1px rgba(255, 255, 255, .7),
+        inset 0 0 38px rgba(0, 0, 0, .26);
+    opacity: .95;
+}
+
+/* Subtle jewel-case edge behind the disc. */
+.hero__panel::after {
+    content: "CD FÍSICO";
+    position: absolute;
+    z-index: -2;
+    width: min(70%, 370px);
+    aspect-ratio: 1;
+    left: 50%;
+    top: 50%;
+    transform: translate(-60%, -53%) rotate(-8deg);
+    display: flex;
+    align-items: flex-end;
+    padding: 18px;
+    border: 1px solid rgba(255, 255, 255, .45);
+    background: rgba(255, 255, 255, .08);
+    box-shadow: 0 24px 55px rgba(0, 0, 0, .34);
+    color: rgba(255, 255, 255, .7);
+    font-size: 9px;
+    font-weight: 800;
+    letter-spacing: .16em;
+}
+
+.hero__number {
+    position: relative;
+    z-index: 2;
+    align-self: flex-start;
+    padding: 8px 12px 10px;
+    border: 1px solid rgba(255, 255, 255, .28);
+    background: rgba(0, 0, 0, .42);
+    backdrop-filter: blur(4px);
+    font-size: clamp(58px, 7vw, 104px);
+}
+
+.hero__label {
+    position: relative;
+    z-index: 2;
+    align-self: flex-start;
+    padding: 10px 12px;
+    border: 1px solid rgba(255, 255, 255, .28);
+    background: rgba(0, 0, 0, .5);
+    backdrop-filter: blur(4px);
+}
+
+/* --------------------------------------------------------------------------
+ * PRODUCT CARDS — from flat artwork to physical jewel case
+ * ----------------------------------------------------------------------- */
+
+.catalog-section .product-card__image-wrap,
+.home-curation .product-card__image-wrap {
+    isolation: isolate;
+    overflow: hidden;
+    padding: clamp(22px, 2.6vw, 38px);
+    background:
+        linear-gradient(145deg, #fafafa 0%, #f2f2f2 100%);
+}
+
+/* "Physical object" label lives on the photography area, not hidden in meta. */
+.catalog-section .product-card__image-wrap::before,
+.home-curation .product-card__image-wrap::before {
+    content: "CD FÍSICO · ÚNICA COPIA";
+    position: absolute;
+    z-index: 4;
+    top: 12px;
+    left: 12px;
+    padding: 7px 9px;
+    border: 1px solid rgba(17, 17, 17, .16);
+    background: rgba(255, 255, 255, .94);
+    color: var(--ink);
+    font-size: 8px;
+    font-weight: 800;
+    letter-spacing: .11em;
+    line-height: 1;
+    backdrop-filter: blur(4px);
+}
+
+/* Jewel-case shell around the existing cover artwork. */
+.catalog-section .product-card__image-wrap::after,
+.home-curation .product-card__image-wrap::after {
+    content: "";
+    position: absolute;
+    z-index: 2;
+    inset: clamp(21px, 2.55vw, 37px);
+    pointer-events: none;
+    border: 1px solid rgba(17, 17, 17, .22);
+    box-shadow:
+        9px 10px 0 rgba(255, 255, 255, .78),
+        10px 10px 0 1px rgba(17, 17, 17, .14),
+        0 18px 35px rgba(17, 17, 17, .13),
+        inset 7px 0 0 rgba(255, 255, 255, .16),
+        inset -5px 0 0 rgba(17, 17, 17, .05);
+}
+
+.catalog-section .product-card__image,
+.home-curation .product-card__image {
+    position: relative;
+    z-index: 1;
+    object-fit: contain;
+    box-shadow: 0 15px 28px rgba(17, 17, 17, .1);
+}
+
+.catalog-section .product-card:hover .product-card__image,
+.home-curation .product-card:hover .product-card__image {
+    transform: scale(1.012);
+}
+
+.catalog-section .product-card__body,
+.home-curation .product-card__body {
+    min-height: 220px;
+}
+
+.catalog-section .product-card__meta,
+.home-curation .product-card__meta {
+    margin-top: 13px;
+}
+
+.catalog-section .product-card__meta span:last-child,
+.home-curation .product-card__meta span:last-child {
+    color: var(--ink);
+}
+
+.catalog-section .product-card__price,
+.home-curation .product-card__price {
+    font-size: 26px;
+}
+
+/* Replace the ambiguous plus icon with an explicit shopping action. */
+.catalog-section .square-action.js-add-product,
+.home-curation .square-action.js-add-product {
+    width: auto;
+    min-width: 94px;
+    height: 42px;
+    padding: 0 14px;
+    font-size: 0;
+    letter-spacing: .11em;
+}
+
+.catalog-section .square-action.js-add-product::before,
+.home-curation .square-action.js-add-product::before {
+    content: "AÑADIR";
+    font-size: 9px;
+    font-weight: 800;
+    letter-spacing: .11em;
+}
+
+/* Stronger store rhythm between curated blocks and the full catalog. */
+.home-curation__block {
+    position: relative;
+}
+
+.home-curation__block::before {
+    content: "TIENDA DE CDS FÍSICOS";
+    position: absolute;
+    right: 0;
+    top: 2px;
+    color: var(--muted);
+    font-size: 8px;
+    font-weight: 800;
+    letter-spacing: .14em;
+}
+
+/* --------------------------------------------------------------------------
+ * RESPONSIVE
+ * ----------------------------------------------------------------------- */
+
+@media (max-width: 1050px) {
+    .hero {
+        grid-template-columns: minmax(0, 1.15fr) minmax(300px, .85fr);
+    }
+
+    .hero__panel::before {
+        width: min(76%, 340px);
+    }
+
+    .hero__panel::after {
+        width: min(69%, 300px);
+    }
+}
+
+@media (max-width: 760px) {
+    .hero {
+        display: block;
+        min-height: 0;
+    }
+
+    .hero__content {
+        padding: 42px 24px 38px;
+    }
+
+    .hero h1 {
+        font-size: clamp(55px, 18vw, 86px);
+    }
+
+    .hero__lead {
+        margin: 26px 0 24px;
+        font-size: 17px;
+    }
+
+    .hero__panel {
+        min-height: 330px;
+        border-left: 0;
+        border-top: 1px solid var(--soft-line);
+        padding: 22px;
+    }
+
+    .hero__panel::before {
+        width: min(72%, 245px);
+    }
+
+    .hero__panel::after {
+        width: min(63%, 215px);
+    }
+
+    .hero__number {
+        font-size: 50px;
+    }
+
+    .catalog-section .product-card__image-wrap,
+    .home-curation .product-card__image-wrap {
+        padding: 24px;
+    }
+
+    .catalog-section .product-card__image-wrap::after,
+    .home-curation .product-card__image-wrap::after {
+        inset: 23px;
+        box-shadow:
+            6px 7px 0 rgba(255, 255, 255, .8),
+            7px 7px 0 1px rgba(17, 17, 17, .14),
+            0 14px 25px rgba(17, 17, 17, .11);
+    }
+
+    .catalog-section .product-card__image-wrap::before,
+    .home-curation .product-card__image-wrap::before {
+        top: 8px;
+        left: 8px;
+        padding: 6px 7px;
+        font-size: 7px;
+    }
+
+    .catalog-section .square-action.js-add-product,
+    .home-curation .square-action.js-add-product {
+        min-width: 86px;
+        padding-inline: 11px;
+    }
+
+    .home-curation__block::before {
+        display: none;
+    }
+}
+
+@media (max-width: 430px) {
+    .catalog-section .product-card__body,
+    .home-curation .product-card__body {
+        min-height: 212px;
+    }
+
+    .catalog-section .product-card__price,
+    .home-curation .product-card__price {
+        font-size: 23px;
+    }
+
+    .catalog-section .square-action.js-add-product,
+    .home-curation .square-action.js-add-product {
+        min-width: 78px;
+        height: 40px;
+        padding-inline: 9px;
+    }
+
+    .catalog-section .square-action.js-add-product::before,
+    .home-curation .square-action.js-add-product::before {
+        font-size: 8px;
+    }
+}

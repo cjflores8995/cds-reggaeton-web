@@ -23,7 +23,7 @@ if(!defined("RER_ADMIN_DASHMIX_PRODUCT_FORM_VERSION")){
 }
 
 if(!defined("RER_ADMIN_DASHMIX_CATALOG_MEDIA_VERSION")){
-    define("RER_ADMIN_DASHMIX_CATALOG_MEDIA_VERSION", "2");
+    define("RER_ADMIN_DASHMIX_CATALOG_MEDIA_VERSION", "3");
 }
 
 if(!function_exists("adminDashmixAssetUrl")){

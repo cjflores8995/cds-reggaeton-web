@@ -30,6 +30,10 @@ if(!defined("RER_ADMIN_DASHMIX_INVENTORY_SALES_VERSION")){
     define("RER_ADMIN_DASHMIX_INVENTORY_SALES_VERSION", "1");
 }
 
+if(!defined("RER_ADMIN_DASHMIX_SALES_STUDIO_VERSION")){
+    define("RER_ADMIN_DASHMIX_SALES_STUDIO_VERSION", "1");
+}
+
 if(!function_exists("adminDashmixAssetUrl")){
     function adminDashmixAssetUrl($relativePath){
         global $baseurl;
@@ -170,6 +174,25 @@ if(!function_exists("adminDashmixHeadAssets")){
             $assets[] =
                 '<link rel="stylesheet" href="' .
                 adminDashmixEsc($inventorySalesHref) .
+                '">';
+        }
+
+        $isSalesStudio =
+            isset($adminActiveSection) &&
+            $adminActiveSection === "sales-studio";
+
+        if($isSalesStudio){
+            $salesStudioVersion = rawurlencode(
+                RER_ADMIN_DASHMIX_SALES_STUDIO_VERSION
+            );
+            $salesStudioHref =
+                adminDashmixAssetUrl("admin-dashmix-sales-studio.css") .
+                "?v=" .
+                $salesStudioVersion;
+
+            $assets[] =
+                '<link rel="stylesheet" href="' .
+                adminDashmixEsc($salesStudioHref) .
                 '">';
         }
 

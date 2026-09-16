@@ -1,0 +1,465 @@
+/*
+ * Reggaeton El Real - Dashmix Sales Studio completion layer
+ * Phase 7 visual completion. Backend controls only.
+ * Generated Marketplace artboards intentionally keep their own design.
+ */
+
+body.admin-dashmix-enabled .sales-studio-export-mode,
+body.admin-dashmix-enabled .sales-studio-template-picker,
+body.admin-dashmix-enabled .sales-studio-classic,
+body.admin-dashmix-enabled .sales-studio-lot,
+body.admin-dashmix-enabled .sales-studio-publication,
+body.admin-dashmix-enabled .sales-studio-export,
+body.admin-dashmix-enabled .sales-studio-original-export,
+body.admin-dashmix-enabled .sales-studio-export-direct,
+body.admin-dashmix-enabled .sales-studio-new-publication {
+    border: 1px solid var(--rer-dm-border) !important;
+    border-radius: var(--rer-dm-radius-lg) !important;
+    background: #fff !important;
+    box-shadow: var(--rer-dm-shadow) !important;
+}
+
+body.admin-dashmix-enabled .sales-studio-export-mode,
+body.admin-dashmix-enabled .sales-studio-publication {
+    overflow: hidden;
+}
+
+body.admin-dashmix-enabled .sales-studio-export-mode__head,
+body.admin-dashmix-enabled .sales-studio-publication__heading,
+body.admin-dashmix-enabled .sales-studio-export-direct__head {
+    border-bottom: 1px solid var(--rer-dm-border) !important;
+    background: #fbfcfd !important;
+}
+
+body.admin-dashmix-enabled .sales-studio-export-mode__eyebrow,
+body.admin-dashmix-enabled .sales-studio-template-picker__heading span,
+body.admin-dashmix-enabled .sales-studio-classic__eyebrow,
+body.admin-dashmix-enabled .sales-studio-lot__eyebrow,
+body.admin-dashmix-enabled .sales-studio-publication__eyebrow,
+body.admin-dashmix-enabled .sales-studio-export__info span,
+body.admin-dashmix-enabled .sales-studio-original-export__toolbar label > span,
+body.admin-dashmix-enabled .sales-studio-export-direct__eyebrow,
+body.admin-dashmix-enabled .sales-studio-export-direct__toolbar span,
+body.admin-dashmix-enabled .sales-studio-new-publication__eyebrow {
+    color: var(--rer-dm-accent) !important;
+}
+
+body.admin-dashmix-enabled .sales-studio-export-mode h2,
+body.admin-dashmix-enabled .sales-studio-template-picker__heading h3,
+body.admin-dashmix-enabled .sales-studio-classic__heading h2,
+body.admin-dashmix-enabled .sales-studio-lot__heading h2,
+body.admin-dashmix-enabled .sales-studio-publication__heading h2,
+body.admin-dashmix-enabled .sales-studio-export__info strong,
+body.admin-dashmix-enabled .sales-studio-original-export__top strong,
+body.admin-dashmix-enabled .sales-studio-export-direct h2,
+body.admin-dashmix-enabled .sales-studio-new-publication strong {
+    color: var(--rer-dm-heading) !important;
+    font-weight: 700 !important;
+}
+
+body.admin-dashmix-enabled .sales-studio-export-mode__head p,
+body.admin-dashmix-enabled .sales-studio-template-picker__heading p,
+body.admin-dashmix-enabled .sales-studio-classic__heading p,
+body.admin-dashmix-enabled .sales-studio-lot__heading p,
+body.admin-dashmix-enabled .sales-studio-publication__heading p,
+body.admin-dashmix-enabled .sales-studio-export__info small,
+body.admin-dashmix-enabled .sales-studio-original-export__top p,
+body.admin-dashmix-enabled .sales-studio-export-direct__head p,
+body.admin-dashmix-enabled .sales-studio-export-direct__toolbar p,
+body.admin-dashmix-enabled .sales-studio-new-publication p {
+    color: var(--rer-dm-text-muted) !important;
+}
+
+/* Export mode */
+body.admin-dashmix-enabled .sales-studio-export-mode__choices {
+    gap: 12px !important;
+    padding: 18px 22px !important;
+}
+
+body.admin-dashmix-enabled .sales-studio-export-mode__choice {
+    min-height: 94px !important;
+    padding: 15px 16px !important;
+    border: 1px solid #d7dce5 !important;
+    border-radius: var(--rer-dm-radius) !important;
+    color: var(--rer-dm-heading) !important;
+    background: #fff !important;
+    box-shadow: none !important;
+    transition: border-color var(--rer-dm-transition), background-color var(--rer-dm-transition), box-shadow var(--rer-dm-transition) !important;
+}
+
+body.admin-dashmix-enabled .sales-studio-export-mode__choice:hover {
+    border-color: #9db9d8 !important;
+    background: #f7fbff !important;
+}
+
+body.admin-dashmix-enabled .sales-studio-export-mode__choice.is-active {
+    border-color: var(--rer-dm-accent) !important;
+    color: #fff !important;
+    background: var(--rer-dm-accent) !important;
+    box-shadow: 0 5px 14px rgba(6, 101, 208, .16) !important;
+}
+
+body.admin-dashmix-enabled .sales-studio-export-mode__choice span {
+    color: var(--rer-dm-text-muted) !important;
+}
+
+body.admin-dashmix-enabled .sales-studio-export-mode__choice.is-active span {
+    color: rgba(255, 255, 255, .82) !important;
+}
+
+/* Original image export controls */
+body.admin-dashmix-enabled .sales-studio-original-export {
+    margin: 0 22px 22px !important;
+    padding: 18px !important;
+    background: #f8fafc !important;
+}
+
+body.admin-dashmix-enabled .sales-studio-original-export__budget {
+    border: 1px solid #cfe0f4 !important;
+    border-radius: var(--rer-dm-radius) !important;
+    color: var(--rer-dm-accent) !important;
+    background: var(--rer-dm-accent-soft) !important;
+}
+
+body.admin-dashmix-enabled .sales-studio-original-export__role {
+    border: 1px solid #d7dce5 !important;
+    border-radius: var(--rer-dm-radius) !important;
+    background: #fff !important;
+}
+
+body.admin-dashmix-enabled .sales-studio-original-export__role:has(input:checked) {
+    border-color: #91b9e7 !important;
+    background: #f5f9ff !important;
+}
+
+body.admin-dashmix-enabled .sales-studio-original-export__toolbar select,
+body.admin-dashmix-enabled .sales-studio-export-direct__toolbar select {
+    min-height: 44px !important;
+    border: 1px solid #d7dce5 !important;
+    border-radius: var(--rer-dm-radius) !important;
+    color: var(--rer-dm-text) !important;
+    background: #fff !important;
+    box-shadow: none !important;
+}
+
+body.admin-dashmix-enabled .sales-studio-original-export__download,
+body.admin-dashmix-enabled .sales-studio-export-direct__all,
+body.admin-dashmix-enabled .sales-studio-new-publication button {
+    border: 1px solid var(--rer-dm-accent) !important;
+    border-radius: var(--rer-dm-radius) !important;
+    color: #fff !important;
+    background: var(--rer-dm-accent) !important;
+    box-shadow: none !important;
+}
+
+body.admin-dashmix-enabled .sales-studio-original-export__download:not(:disabled):hover,
+body.admin-dashmix-enabled .sales-studio-export-direct__all:not(:disabled):hover,
+body.admin-dashmix-enabled .sales-studio-new-publication button:hover {
+    border-color: #0557b4 !important;
+    background: #0557b4 !important;
+}
+
+/* Individual template chooser - admin UI only */
+body.admin-dashmix-enabled .sales-studio-template-picker {
+    padding: 18px !important;
+    background: #f8fafc !important;
+}
+
+body.admin-dashmix-enabled .sales-studio-template-picker__options {
+    gap: 10px !important;
+}
+
+body.admin-dashmix-enabled .sales-studio-template-option {
+    min-height: 98px !important;
+    padding: 14px !important;
+    border: 1px solid #d7dce5 !important;
+    border-radius: var(--rer-dm-radius) !important;
+    color: var(--rer-dm-heading) !important;
+    background: #fff !important;
+    box-shadow: none !important;
+}
+
+body.admin-dashmix-enabled .sales-studio-template-option:hover {
+    border-color: #9db9d8 !important;
+    background: #f7fbff !important;
+}
+
+body.admin-dashmix-enabled .sales-studio-template-option.is-active {
+    border-color: var(--rer-dm-accent) !important;
+    color: #fff !important;
+    background: var(--rer-dm-accent) !important;
+    box-shadow: 0 5px 14px rgba(6, 101, 208, .14) !important;
+}
+
+body.admin-dashmix-enabled .sales-studio-template-option small,
+body.admin-dashmix-enabled .sales-studio-template-option__top b {
+    color: var(--rer-dm-text-muted) !important;
+}
+
+body.admin-dashmix-enabled .sales-studio-template-option__top b {
+    border-color: #d7dce5 !important;
+    border-radius: 999px !important;
+    background: #f8fafc !important;
+}
+
+body.admin-dashmix-enabled .sales-studio-template-option.is-active small,
+body.admin-dashmix-enabled .sales-studio-template-option.is-active .sales-studio-template-option__top b {
+    color: rgba(255, 255, 255, .85) !important;
+}
+
+body.admin-dashmix-enabled .sales-studio-template-option.is-active .sales-studio-template-option__top b {
+    border-color: rgba(255, 255, 255, .42) !important;
+    background: rgba(255, 255, 255, .10) !important;
+}
+
+body.admin-dashmix-enabled .sales-studio-template-picker__note {
+    border-top-color: var(--rer-dm-border) !important;
+    color: var(--rer-dm-text-muted) !important;
+}
+
+/* Classic preview admin shell. The artboard itself is intentionally excluded. */
+body.admin-dashmix-enabled .sales-studio-classic,
+body.admin-dashmix-enabled .sales-studio-lot {
+    padding: 20px !important;
+}
+
+body.admin-dashmix-enabled .sales-studio-classic__status,
+body.admin-dashmix-enabled .sales-studio-lot__status,
+body.admin-dashmix-enabled .sales-studio-publication__status,
+body.admin-dashmix-enabled .sales-studio-export-direct__badge {
+    border: 1px solid #cfe0f4 !important;
+    border-radius: 999px !important;
+    color: var(--rer-dm-accent) !important;
+    background: var(--rer-dm-accent-soft) !important;
+}
+
+body.admin-dashmix-enabled .sales-studio-classic.is-ready .sales-studio-classic__status,
+body.admin-dashmix-enabled .sales-studio-lot.is-ready .sales-studio-lot__status {
+    border-color: var(--rer-dm-accent) !important;
+    color: #fff !important;
+    background: var(--rer-dm-accent) !important;
+}
+
+body.admin-dashmix-enabled .sales-studio-classic-nav {
+    overflow: hidden !important;
+    border: 1px solid var(--rer-dm-border) !important;
+    border-radius: var(--rer-dm-radius) !important;
+    background: #f8fafc !important;
+}
+
+body.admin-dashmix-enabled .sales-studio-classic-nav__controls {
+    border-bottom: 1px solid var(--rer-dm-border) !important;
+    background: #fbfcfd !important;
+}
+
+body.admin-dashmix-enabled .sales-studio-classic-nav__controls button {
+    color: #566273 !important;
+    background: transparent !important;
+}
+
+body.admin-dashmix-enabled .sales-studio-classic-nav__controls button:not(:disabled):hover {
+    color: var(--rer-dm-accent) !important;
+    background: var(--rer-dm-accent-soft) !important;
+}
+
+body.admin-dashmix-enabled .sales-studio-classic-nav__controls button:first-child,
+body.admin-dashmix-enabled .sales-studio-classic-nav__controls button:last-child {
+    border-color: var(--rer-dm-border) !important;
+}
+
+body.admin-dashmix-enabled .sales-studio-classic-nav-item {
+    overflow: hidden !important;
+    border: 1px solid #d7dce5 !important;
+    border-radius: var(--rer-dm-radius) !important;
+    color: #566273 !important;
+    background: #fff !important;
+}
+
+body.admin-dashmix-enabled .sales-studio-classic-nav-item:hover {
+    border-color: #a8bfd9 !important;
+    background: #f7fbff !important;
+}
+
+body.admin-dashmix-enabled .sales-studio-classic-nav-item.is-active {
+    border-color: var(--rer-dm-accent) !important;
+    color: #fff !important;
+    background: var(--rer-dm-accent) !important;
+}
+
+body.admin-dashmix-enabled .sales-studio-classic-nav-item.is-active > span,
+body.admin-dashmix-enabled .sales-studio-classic-nav-item.is-active strong,
+body.admin-dashmix-enabled .sales-studio-classic-nav-item.is-active small {
+    color: #fff !important;
+}
+
+body.admin-dashmix-enabled .sales-studio-classic__message,
+body.admin-dashmix-enabled .sales-studio-lot__message {
+    border: 1px solid #dce4ee !important;
+    border-radius: var(--rer-dm-radius) !important;
+    color: #526071 !important;
+    background: #f8fafc !important;
+}
+
+body.admin-dashmix-enabled .sales-studio-classic__details,
+body.admin-dashmix-enabled .sales-studio-lot__details {
+    border: 1px solid var(--rer-dm-border) !important;
+    border-radius: var(--rer-dm-radius) !important;
+    color: var(--rer-dm-text) !important;
+    background: #f8fafc !important;
+}
+
+body.admin-dashmix-enabled .sales-studio-classic__back {
+    min-height: 42px !important;
+    border: 1px solid #d7dce5 !important;
+    border-radius: var(--rer-dm-radius) !important;
+    color: #4b5563 !important;
+    background: #fff !important;
+}
+
+body.admin-dashmix-enabled .sales-studio-classic__back:hover {
+    border-color: #a8bfd9 !important;
+    color: var(--rer-dm-accent) !important;
+    background: #f7fbff !important;
+}
+
+/* Publication review */
+body.admin-dashmix-enabled .sales-studio-publication__status {
+    padding: 7px 10px !important;
+}
+
+body.admin-dashmix-enabled .sales-studio-publication__summary {
+    border-bottom: 1px solid var(--rer-dm-border) !important;
+    background: #fff !important;
+}
+
+body.admin-dashmix-enabled .sales-studio-publication__summary > div + div {
+    border-left: 1px solid var(--rer-dm-border) !important;
+}
+
+body.admin-dashmix-enabled .sales-studio-publication__notice {
+    border: 1px solid #dce4ee !important;
+    border-radius: var(--rer-dm-radius) !important;
+    color: #526071 !important;
+    background: #f8fafc !important;
+}
+
+body.admin-dashmix-enabled .sales-studio-publication-item {
+    border: 1px solid #dfe4eb !important;
+    border-radius: var(--rer-dm-radius) !important;
+    background: #fff !important;
+}
+
+body.admin-dashmix-enabled .sales-studio-publication-item.is-cover {
+    border-color: #8eb6e4 !important;
+    background: #f7fbff !important;
+}
+
+body.admin-dashmix-enabled .sales-studio-publication-item__number {
+    border-radius: var(--rer-dm-radius) !important;
+    color: var(--rer-dm-accent) !important;
+    background: var(--rer-dm-accent-soft) !important;
+}
+
+body.admin-dashmix-enabled .sales-studio-publication-item__tag {
+    border: 1px solid #d7dce5 !important;
+    border-radius: 999px !important;
+    color: #596574 !important;
+    background: #fff !important;
+}
+
+body.admin-dashmix-enabled .sales-studio-publication-item.is-cover .sales-studio-publication-item__tag {
+    border-color: #cfe0f4 !important;
+    color: var(--rer-dm-accent) !important;
+    background: var(--rer-dm-accent-soft) !important;
+}
+
+/* Export panels */
+body.admin-dashmix-enabled .sales-studio-export {
+    background: #f8fafc !important;
+}
+
+body.admin-dashmix-enabled .sales-studio-export__actions button {
+    border: 1px solid #d7dce5 !important;
+    border-radius: var(--rer-dm-radius) !important;
+    color: #4b5563 !important;
+    background: #fff !important;
+}
+
+body.admin-dashmix-enabled .sales-studio-export__actions button:first-child {
+    border-color: var(--rer-dm-accent) !important;
+    color: #fff !important;
+    background: var(--rer-dm-accent) !important;
+}
+
+body.admin-dashmix-enabled .sales-studio-publication > .sales-studio-export-direct,
+body.admin-dashmix-enabled .sales-studio-export-direct {
+    border-color: var(--rer-dm-border) !important;
+}
+
+body.admin-dashmix-enabled .sales-studio-publication > .sales-studio-export-direct .sales-studio-export-direct__toolbar,
+body.admin-dashmix-enabled .sales-studio-export-direct__toolbar {
+    border-color: var(--rer-dm-border) !important;
+    background: #f8fafc !important;
+}
+
+body.admin-dashmix-enabled .sales-studio-export-direct__progress {
+    border-color: var(--rer-dm-border) !important;
+    color: #526071 !important;
+    background: #fff !important;
+}
+
+body.admin-dashmix-enabled .sales-studio-export-direct__item {
+    border-bottom-color: var(--rer-dm-border) !important;
+    background: #fff !important;
+}
+
+body.admin-dashmix-enabled .sales-studio-export-direct__num {
+    color: var(--rer-dm-accent) !important;
+}
+
+/* Reset/new publication panel */
+body.admin-dashmix-enabled .sales-studio-new-publication {
+    background: linear-gradient(135deg, #f8fbff 0%, #fff 100%) !important;
+}
+
+/* Focus treatment for dynamically created controls */
+body.admin-dashmix-enabled .sales-studio-export-mode button:focus-visible,
+body.admin-dashmix-enabled .sales-studio-template-picker button:focus-visible,
+body.admin-dashmix-enabled .sales-studio-classic button:focus-visible,
+body.admin-dashmix-enabled .sales-studio-lot button:focus-visible,
+body.admin-dashmix-enabled .sales-studio-publication button:focus-visible,
+body.admin-dashmix-enabled .sales-studio-export button:focus-visible,
+body.admin-dashmix-enabled .sales-studio-original-export button:focus-visible,
+body.admin-dashmix-enabled .sales-studio-export-direct button:focus-visible,
+body.admin-dashmix-enabled .sales-studio-original-export select:focus,
+body.admin-dashmix-enabled .sales-studio-export-direct select:focus {
+    outline: 0 !important;
+    border-color: #83b2e8 !important;
+    box-shadow: 0 0 0 3px rgba(6, 101, 208, .12) !important;
+}
+
+@media (max-width: 700px) {
+    body.admin-dashmix-enabled .sales-studio-export-mode__head,
+    body.admin-dashmix-enabled .sales-studio-publication__heading,
+    body.admin-dashmix-enabled .sales-studio-export-direct__head {
+        padding: 16px !important;
+    }
+
+    body.admin-dashmix-enabled .sales-studio-export-mode__choices {
+        padding: 14px 16px !important;
+    }
+
+    body.admin-dashmix-enabled .sales-studio-original-export {
+        margin: 0 16px 16px !important;
+        padding: 15px !important;
+    }
+
+    body.admin-dashmix-enabled .sales-studio-classic,
+    body.admin-dashmix-enabled .sales-studio-lot {
+        padding: 14px !important;
+    }
+
+    body.admin-dashmix-enabled .sales-studio-new-publication {
+        padding: 18px 16px !important;
+    }
+}

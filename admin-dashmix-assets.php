@@ -2,8 +2,8 @@
 /**
  * Reggaeton El Real admin UI asset loader.
  *
- * Phase 1 only prepares the Dashmix-derived admin infrastructure.
- * Public storefront files must never include this file.
+ * Dashmix-derived assets are scoped to the backend and must never be loaded
+ * from public storefront pages.
  */
 
 if(!defined("RER_ADMIN_DASHMIX_SOURCE_VERSION")){
@@ -12,6 +12,10 @@ if(!defined("RER_ADMIN_DASHMIX_SOURCE_VERSION")){
 
 if(!defined("RER_ADMIN_DASHMIX_INTEGRATION_VERSION")){
     define("RER_ADMIN_DASHMIX_INTEGRATION_VERSION", "1");
+}
+
+if(!defined("RER_ADMIN_DASHMIX_HOME_VERSION")){
+    define("RER_ADMIN_DASHMIX_HOME_VERSION", "1");
 }
 
 if(!function_exists("adminDashmixAssetUrl")){
@@ -36,12 +40,32 @@ if(!function_exists("adminDashmixEsc")){
 
 if(!function_exists("adminDashmixHeadAssets")){
     function adminDashmixHeadAssets(){
-        $version = rawurlencode(RER_ADMIN_DASHMIX_INTEGRATION_VERSION);
-        $href = adminDashmixAssetUrl("admin-dashmix-core.css") . "?v=" . $version;
+        global $adminActiveSection;
 
-        return '<link rel="stylesheet" href="' .
-            adminDashmixEsc($href) .
-            '">';
+        $version = rawurlencode(RER_ADMIN_DASHMIX_INTEGRATION_VERSION);
+        $coreHref = adminDashmixAssetUrl("admin-dashmix-core.css") . "?v=" . $version;
+        $assets = [
+            '<link rel="stylesheet" href="' .
+                adminDashmixEsc($coreHref) .
+                '">'
+        ];
+
+        $isHomeDashboard =
+            isset($adminActiveSection) &&
+            $adminActiveSection === "home" &&
+            !isset($_GET["editpost"]);
+
+        if($isHomeDashboard){
+            $homeVersion = rawurlencode(RER_ADMIN_DASHMIX_HOME_VERSION);
+            $homeHref = adminDashmixAssetUrl("admin-dashmix-home.css") . "?v=" . $homeVersion;
+
+            $assets[] =
+                '<link rel="stylesheet" href="' .
+                adminDashmixEsc($homeHref) .
+                '">';
+        }
+
+        return implode("\n", $assets);
     }
 }
 

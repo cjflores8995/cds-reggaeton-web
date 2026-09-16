@@ -6,6 +6,7 @@
     'use strict';
 
     var STORAGE_KEY = 'rer.admin.sidebarMini';
+    var PLUGIN_REGISTRY_VERSION = '1';
 
     function body() {
         return document.body;
@@ -106,17 +107,72 @@
         });
     }
 
+    function coreAssetBaseUrl() {
+        var scripts = document.querySelectorAll('script[src]');
+        var index;
+
+        for (index = scripts.length - 1; index >= 0; index -= 1) {
+            var src = scripts[index].getAttribute('src') || '';
+
+            if (src.indexOf('admin-dashmix-core.js') !== -1) {
+                return src.replace(/admin-dashmix-core\.js(?:\?.*)?$/i, '');
+            }
+        }
+
+        return '';
+    }
+
+    function shouldLoadPluginRegistry() {
+        var params = new URLSearchParams(window.location.search);
+
+        return (
+            /\/admin\.php$/i.test(window.location.pathname) &&
+            params.has('settings')
+        );
+    }
+
+    function loadPluginRegistry() {
+        if (!shouldLoadPluginRegistry()) {
+            return;
+        }
+
+        if (
+            window.ReggaetonAdminPlugins ||
+            document.getElementById('rer-dm-plugin-registry')
+        ) {
+            return;
+        }
+
+        var assetBase = coreAssetBaseUrl();
+
+        if (!assetBase) {
+            return;
+        }
+
+        var script = document.createElement('script');
+        script.id = 'rer-dm-plugin-registry';
+        script.src =
+            assetBase +
+            'admin-dashmix-plugins.js?v=' +
+            encodeURIComponent(PLUGIN_REGISTRY_VERSION);
+        script.async = false;
+        document.head.appendChild(script);
+    }
+
     function init() {
         restoreLayoutPreference();
         bindCoreControls();
+        loadPluginRegistry();
     }
 
     window.ReggaetonAdminDashmix = {
-        version: '1.0.0',
+        version: '1.1.0',
         dashmixSourceVersion: '5.12.0',
+        pluginRegistryVersion: PLUGIN_REGISTRY_VERSION,
         init: init,
         toggleSidebar: toggleSidebar,
-        closeSidebar: closeSidebar
+        closeSidebar: closeSidebar,
+        loadPluginRegistry: loadPluginRegistry
     };
 
     if (document.readyState === 'loading') {

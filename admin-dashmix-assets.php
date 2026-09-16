@@ -37,14 +37,8 @@ if(!defined("RER_ADMIN_DASHMIX_SALES_STUDIO_VERSION")){
 if(!function_exists("adminDashmixAssetUrl")){
     function adminDashmixAssetUrl($relativePath){
         global $baseurl;
-
-        $prefix = isset($baseurl)
-            ? rtrim((string)$baseurl, "/") . "/"
-            : "";
-
-        return $prefix .
-            "assets/admin/dashmix/" .
-            ltrim((string)$relativePath, "/");
+        $prefix = isset($baseurl) ? rtrim((string)$baseurl, "/") . "/" : "";
+        return $prefix . "assets/admin/dashmix/" . ltrim((string)$relativePath, "/");
     }
 }
 
@@ -57,143 +51,55 @@ if(!function_exists("adminDashmixEsc")){
 if(!function_exists("adminDashmixIsCatalogMediaSection")){
     function adminDashmixIsCatalogMediaSection(){
         global $adminActiveSection;
-
-        return
-            isset($adminActiveSection) &&
-            (
-                $adminActiveSection === "artists" ||
-                $adminActiveSection === "pictures"
-            );
+        return isset($adminActiveSection) && ($adminActiveSection === "artists" || $adminActiveSection === "pictures");
     }
 }
 
 if(!function_exists("adminDashmixHeadAssets")){
     function adminDashmixHeadAssets(){
         global $adminActiveSection;
-
         $version = rawurlencode(RER_ADMIN_DASHMIX_INTEGRATION_VERSION);
         $coreHref = adminDashmixAssetUrl("admin-dashmix-core.css") . "?v=" . $version;
-        $assets = [
-            '<link rel="stylesheet" href="' .
-                adminDashmixEsc($coreHref) .
-                '">'
-        ];
+        $assets = ['<link rel="stylesheet" href="' . adminDashmixEsc($coreHref) . '">'];
 
-        $isHomeDashboard =
-            isset($adminActiveSection) &&
-            $adminActiveSection === "home" &&
-            !isset($_GET["editpost"]);
-
+        $isHomeDashboard = isset($adminActiveSection) && $adminActiveSection === "home" && !isset($_GET["editpost"]);
         if($isHomeDashboard){
             $homeVersion = rawurlencode(RER_ADMIN_DASHMIX_HOME_VERSION);
             $homeHref = adminDashmixAssetUrl("admin-dashmix-home.css") . "?v=" . $homeVersion;
-
-            $assets[] =
-                '<link rel="stylesheet" href="' .
-                adminDashmixEsc($homeHref) .
-                '">';
+            $assets[] = '<link rel="stylesheet" href="' . adminDashmixEsc($homeHref) . '">';
         }
 
-        $isProductForm =
-            isset($adminActiveSection) &&
-            (
-                $adminActiveSection === "add-cd" ||
-                (
-                    $adminActiveSection === "home" &&
-                    isset($_GET["editpost"])
-                )
-            );
-
+        $isProductForm = isset($adminActiveSection) && ($adminActiveSection === "add-cd" || ($adminActiveSection === "home" && isset($_GET["editpost"])));
         if($isProductForm){
-            $productFormVersion = rawurlencode(
-                RER_ADMIN_DASHMIX_PRODUCT_FORM_VERSION
-            );
-            $productFormHref =
-                adminDashmixAssetUrl("admin-dashmix-product-form.css") .
-                "?v=" .
-                $productFormVersion;
-            $productFormFixHref =
-                adminDashmixAssetUrl("admin-dashmix-product-form-fix.css") .
-                "?v=" .
-                $productFormVersion;
-
-            $assets[] =
-                '<link rel="stylesheet" href="' .
-                adminDashmixEsc($productFormHref) .
-                '">';
-            $assets[] =
-                '<link rel="stylesheet" href="' .
-                adminDashmixEsc($productFormFixHref) .
-                '">';
+            $productFormVersion = rawurlencode(RER_ADMIN_DASHMIX_PRODUCT_FORM_VERSION);
+            $productFormHref = adminDashmixAssetUrl("admin-dashmix-product-form.css") . "?v=" . $productFormVersion;
+            $productFormFixHref = adminDashmixAssetUrl("admin-dashmix-product-form-fix.css") . "?v=" . $productFormVersion;
+            $assets[] = '<link rel="stylesheet" href="' . adminDashmixEsc($productFormHref) . '">';
+            $assets[] = '<link rel="stylesheet" href="' . adminDashmixEsc($productFormFixHref) . '">';
         }
 
         if(adminDashmixIsCatalogMediaSection()){
-            $catalogMediaVersion = rawurlencode(
-                RER_ADMIN_DASHMIX_CATALOG_MEDIA_VERSION
-            );
-            $catalogMediaHref =
-                adminDashmixAssetUrl("admin-dashmix-catalog-media.css") .
-                "?v=" .
-                $catalogMediaVersion;
-            $catalogMediaFixHref =
-                adminDashmixAssetUrl("admin-dashmix-catalog-media-fix.css") .
-                "?v=" .
-                $catalogMediaVersion;
-            $catalogMediaV2Href =
-                adminDashmixAssetUrl("admin-dashmix-catalog-media-v2.css") .
-                "?v=" .
-                $catalogMediaVersion;
-
-            $assets[] =
-                '<link rel="stylesheet" href="' .
-                adminDashmixEsc($catalogMediaHref) .
-                '">';
-            $assets[] =
-                '<link rel="stylesheet" href="' .
-                adminDashmixEsc($catalogMediaFixHref) .
-                '">';
-            $assets[] =
-                '<link rel="stylesheet" href="' .
-                adminDashmixEsc($catalogMediaV2Href) .
-                '">';
+            $catalogMediaVersion = rawurlencode(RER_ADMIN_DASHMIX_CATALOG_MEDIA_VERSION);
+            $catalogMediaHref = adminDashmixAssetUrl("admin-dashmix-catalog-media.css") . "?v=" . $catalogMediaVersion;
+            $catalogMediaFixHref = adminDashmixAssetUrl("admin-dashmix-catalog-media-fix.css") . "?v=" . $catalogMediaVersion;
+            $catalogMediaV2Href = adminDashmixAssetUrl("admin-dashmix-catalog-media-v2.css") . "?v=" . $catalogMediaVersion;
+            $assets[] = '<link rel="stylesheet" href="' . adminDashmixEsc($catalogMediaHref) . '">';
+            $assets[] = '<link rel="stylesheet" href="' . adminDashmixEsc($catalogMediaFixHref) . '">';
+            $assets[] = '<link rel="stylesheet" href="' . adminDashmixEsc($catalogMediaV2Href) . '">';
         }
 
-        $isInventorySales =
-            isset($adminActiveSection) &&
-            $adminActiveSection === "inventory-sales";
-
+        $isInventorySales = isset($adminActiveSection) && $adminActiveSection === "inventory-sales";
         if($isInventorySales){
-            $inventorySalesVersion = rawurlencode(
-                RER_ADMIN_DASHMIX_INVENTORY_SALES_VERSION
-            );
-            $inventorySalesHref =
-                adminDashmixAssetUrl("admin-dashmix-inventory-sales.css") .
-                "?v=" .
-                $inventorySalesVersion;
-
-            $assets[] =
-                '<link rel="stylesheet" href="' .
-                adminDashmixEsc($inventorySalesHref) .
-                '">';
+            $inventorySalesVersion = rawurlencode(RER_ADMIN_DASHMIX_INVENTORY_SALES_VERSION);
+            $inventorySalesHref = adminDashmixAssetUrl("admin-dashmix-inventory-sales.css") . "?v=" . $inventorySalesVersion;
+            $assets[] = '<link rel="stylesheet" href="' . adminDashmixEsc($inventorySalesHref) . '">';
         }
 
-        $isSalesStudio =
-            isset($adminActiveSection) &&
-            $adminActiveSection === "sales-studio";
-
+        $isSalesStudio = isset($adminActiveSection) && $adminActiveSection === "sales-studio";
         if($isSalesStudio){
-            $salesStudioVersion = rawurlencode(
-                RER_ADMIN_DASHMIX_SALES_STUDIO_VERSION
-            );
-            $salesStudioHref =
-                adminDashmixAssetUrl("admin-dashmix-sales-studio.css") .
-                "?v=" .
-                $salesStudioVersion;
-
-            $assets[] =
-                '<link rel="stylesheet" href="' .
-                adminDashmixEsc($salesStudioHref) .
-                '">';
+            $salesStudioVersion = rawurlencode(RER_ADMIN_DASHMIX_SALES_STUDIO_VERSION);
+            $salesStudioHref = adminDashmixAssetUrl("admin-dashmix-sales-studio.css") . "?v=" . $salesStudioVersion;
+            $assets[] = '<link rel="stylesheet" href="' . adminDashmixEsc($salesStudioHref) . '">';
         }
 
         return implode("\n", $assets);
@@ -204,27 +110,12 @@ if(!function_exists("adminDashmixFooterAssets")){
     function adminDashmixFooterAssets(){
         $version = rawurlencode(RER_ADMIN_DASHMIX_INTEGRATION_VERSION);
         $src = adminDashmixAssetUrl("admin-dashmix-core.js") . "?v=" . $version;
-        $assets = [
-            '<script defer src="' .
-                adminDashmixEsc($src) .
-                '"></script>'
-        ];
-
+        $assets = ['<script defer src="' . adminDashmixEsc($src) . '"></script>'];
         if(adminDashmixIsCatalogMediaSection()){
-            $catalogMediaVersion = rawurlencode(
-                RER_ADMIN_DASHMIX_CATALOG_MEDIA_VERSION
-            );
-            $catalogMediaSrc =
-                adminDashmixAssetUrl("admin-dashmix-catalog-media.js") .
-                "?v=" .
-                $catalogMediaVersion;
-
-            $assets[] =
-                '<script defer src="' .
-                adminDashmixEsc($catalogMediaSrc) .
-                '"></script>';
+            $catalogMediaVersion = rawurlencode(RER_ADMIN_DASHMIX_CATALOG_MEDIA_VERSION);
+            $catalogMediaSrc = adminDashmixAssetUrl("admin-dashmix-catalog-media.js") . "?v=" . $catalogMediaVersion;
+            $assets[] = '<script defer src="' . adminDashmixEsc($catalogMediaSrc) . '"></script>';
         }
-
         return implode("\n", $assets);
     }
 }
@@ -232,24 +123,17 @@ if(!function_exists("adminDashmixFooterAssets")){
 if(!function_exists("adminDashmixBodyClasses")){
     function adminDashmixBodyClasses($extraClasses = []){
         $classes = ["admin-dashmix-enabled"];
-
         if(is_string($extraClasses)){
             $extraClasses = preg_split('/\s+/', trim($extraClasses));
         }
-
         if(is_array($extraClasses)){
             foreach($extraClasses as $className){
                 $className = trim((string)$className);
-
-                if(
-                    $className !== "" &&
-                    preg_match('/^[A-Za-z0-9_-]+$/', $className) === 1
-                ){
+                if($className !== "" && preg_match('/^[A-Za-z0-9_-]+$/', $className) === 1){
                     $classes[] = $className;
                 }
             }
         }
-
         return implode(" ", array_values(array_unique($classes)));
     }
 }

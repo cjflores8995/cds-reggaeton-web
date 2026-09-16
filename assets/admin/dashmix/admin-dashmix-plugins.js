@@ -31,26 +31,6 @@
         return baseUrl + String(relativePath || '').replace(/^\/+/, '');
     }
 
-    function loadStyle(id, relativePath) {
-        if (document.getElementById(id)) {
-            return Promise.resolve(true);
-        }
-
-        return new Promise(function (resolve) {
-            var link = document.createElement('link');
-            link.id = id;
-            link.rel = 'stylesheet';
-            link.href = assetUrl(relativePath);
-            link.onload = function () {
-                resolve(true);
-            };
-            link.onerror = function () {
-                resolve(false);
-            };
-            document.head.appendChild(link);
-        });
-    }
-
     function loadScript(id, relativePath) {
         if (document.getElementById(id)) {
             return Promise.resolve(true);
@@ -71,132 +51,89 @@
         });
     }
 
-    function loadMagnificPopup() {
+    function loadMaskedInput() {
         if (
             window.jQuery &&
             window.jQuery.fn &&
-            typeof window.jQuery.fn.magnificPopup === 'function'
+            typeof window.jQuery.fn.mask === 'function'
         ) {
             return Promise.resolve(true);
         }
 
-        if (loaded.magnificPopup) {
-            return loaded.magnificPopup;
+        if (loaded.maskedInput) {
+            return loaded.maskedInput;
         }
 
         if (!window.jQuery) {
             return Promise.resolve(false);
         }
 
-        loaded.magnificPopup = Promise.all([
-            loadStyle(
-                'rer-dm-magnific-css',
-                'plugins/magnific-popup/magnific-popup.css?v=1.2.0'
-            ),
-            loadStyle(
-                'rer-dm-magnific-theme',
-                'admin-dashmix-magnific.css?v=1'
-            ),
-            loadScript(
-                'rer-dm-magnific-js',
-                'plugins/magnific-popup/jquery.magnific-popup.min.js?v=1.2.0'
-            )
-        ]).then(function (results) {
+        loaded.maskedInput = loadScript(
+            'rer-dm-masked-input-js',
+            'plugins/jquery.maskedinput/jquery.maskedinput.min.js?v=1.4.1'
+        ).then(function (ready) {
             return Boolean(
-                results[2] &&
+                ready &&
                 window.jQuery &&
                 window.jQuery.fn &&
-                typeof window.jQuery.fn.magnificPopup === 'function'
+                typeof window.jQuery.fn.mask === 'function'
             );
         });
 
-        return loaded.magnificPopup;
+        return loaded.maskedInput;
     }
 
-    function pictureFileName(image) {
-        var src = image.getAttribute('src') || '';
+    function isSettingsPage() {
+        var params = new URLSearchParams(window.location.search);
 
-        try {
-            var parsed = new URL(src, window.location.href);
-            var name = parsed.pathname.split('/').pop() || 'Imagen';
-            return decodeURIComponent(name);
-        } catch (error) {
-            return 'Imagen';
-        }
+        return (
+            params.has('settings') &&
+            Boolean(document.querySelector('input[name="saleswhatsapp"]'))
+        );
     }
 
-    function preparePictureGallery(grid) {
-        var images = grid.querySelectorAll('.admin-picture-card img');
+    function initSalesWhatsAppMask() {
+        var input = document.querySelector('input[name="saleswhatsapp"]');
 
-        Array.prototype.forEach.call(images, function (image) {
-            if (image.closest('.rer-dm-magnific-item')) {
-                return;
-            }
-
-            var anchor = document.createElement('a');
-            anchor.className = 'rer-dm-magnific-item';
-            anchor.href = image.currentSrc || image.src;
-            anchor.title = pictureFileName(image);
-            anchor.setAttribute('aria-label', 'Ampliar ' + anchor.title);
-
-            image.parentNode.insertBefore(anchor, image);
-            anchor.appendChild(image);
-        });
-    }
-
-    function initMagnificPopup() {
-        var grid = document.querySelector('.admin-picture-grid');
-
-        if (!grid || !window.jQuery) {
+        if (
+            !input ||
+            !window.jQuery ||
+            !window.jQuery.fn ||
+            typeof window.jQuery.fn.mask !== 'function'
+        ) {
             return false;
         }
 
-        if (grid.dataset.rerDmMagnificReady === '1') {
+        if (input.dataset.rerDmMaskReady === '1') {
             return true;
         }
 
-        preparePictureGallery(grid);
-
-        window.jQuery(grid).magnificPopup({
-            delegate: 'a.rer-dm-magnific-item',
-            type: 'image',
-            closeOnContentClick: false,
-            closeBtnInside: false,
-            fixedContentPos: true,
-            gallery: {
-                enabled: true,
-                navigateByImgClick: true,
-                preload: [0, 1],
-                tPrev: 'Anterior',
-                tNext: 'Siguiente',
-                tCounter: '%curr% de %total%'
-            },
-            image: {
-                titleSrc: 'title',
-                verticalFit: true,
-                tError: 'No se pudo cargar la imagen.'
-            },
-            tClose: 'Cerrar (Esc)',
-            tLoading: 'Cargando...'
+        /*
+         * E.164 allows up to 15 digits. The current store already persists
+         * the WhatsApp number without spaces or a leading plus sign, so this
+         * mask improves input hygiene without changing the stored format.
+         * The optional segment keeps valid numbers shorter than 15 digits.
+         */
+        window.jQuery(input).mask('9999999?99999999', {
+            autoclear: false,
+            placeholder: ''
         });
 
-        grid.dataset.rerDmMagnificReady = '1';
+        input.setAttribute('maxlength', '15');
+        input.setAttribute('pattern', '[0-9]{7,15}');
+        input.dataset.rerDmMaskReady = '1';
+
         return true;
     }
 
-    function isPicturesPage() {
-        var params = new URLSearchParams(window.location.search);
-        return params.has('pictures') && Boolean(document.querySelector('.admin-picture-grid'));
-    }
-
     function autoInit() {
-        if (!isPicturesPage()) {
+        if (!isSettingsPage()) {
             return;
         }
 
-        loadMagnificPopup().then(function (ready) {
+        loadMaskedInput().then(function (ready) {
             if (ready) {
-                initMagnificPopup();
+                initSalesWhatsAppMask();
             }
         });
     }
@@ -204,13 +141,13 @@
     window.ReggaetonAdminPlugins = {
         version: REGISTRY_VERSION,
         load: function (name) {
-            if (name === 'magnific-popup') {
-                return loadMagnificPopup();
+            if (name === 'masked-input') {
+                return loadMaskedInput();
             }
 
             return Promise.resolve(false);
         },
-        initMagnificPopup: initMagnificPopup,
+        initSalesWhatsAppMask: initSalesWhatsAppMask,
         autoInit: autoInit
     };
 

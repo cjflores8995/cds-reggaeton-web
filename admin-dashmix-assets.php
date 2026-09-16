@@ -121,10 +121,18 @@ if(!function_exists("adminDashmixHeadAssets")){
                 adminDashmixAssetUrl("admin-dashmix-catalog-media.css") .
                 "?v=" .
                 $catalogMediaVersion;
+            $catalogMediaFixHref =
+                adminDashmixAssetUrl("admin-dashmix-catalog-media-fix.css") .
+                "?v=" .
+                $catalogMediaVersion;
 
             $assets[] =
                 '<link rel="stylesheet" href="' .
                 adminDashmixEsc($catalogMediaHref) .
+                '">';
+            $assets[] =
+                '<link rel="stylesheet" href="' .
+                adminDashmixEsc($catalogMediaFixHref) .
                 '">';
         }
 

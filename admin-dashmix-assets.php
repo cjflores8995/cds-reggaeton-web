@@ -22,6 +22,10 @@ if(!defined("RER_ADMIN_DASHMIX_PRODUCT_FORM_VERSION")){
     define("RER_ADMIN_DASHMIX_PRODUCT_FORM_VERSION", "2");
 }
 
+if(!defined("RER_ADMIN_DASHMIX_CATALOG_MEDIA_VERSION")){
+    define("RER_ADMIN_DASHMIX_CATALOG_MEDIA_VERSION", "1");
+}
+
 if(!function_exists("adminDashmixAssetUrl")){
     function adminDashmixAssetUrl($relativePath){
         global $baseurl;
@@ -99,6 +103,28 @@ if(!function_exists("adminDashmixHeadAssets")){
             $assets[] =
                 '<link rel="stylesheet" href="' .
                 adminDashmixEsc($productFormFixHref) .
+                '">';
+        }
+
+        $isCatalogMedia =
+            isset($adminActiveSection) &&
+            (
+                $adminActiveSection === "artists" ||
+                $adminActiveSection === "pictures"
+            );
+
+        if($isCatalogMedia){
+            $catalogMediaVersion = rawurlencode(
+                RER_ADMIN_DASHMIX_CATALOG_MEDIA_VERSION
+            );
+            $catalogMediaHref =
+                adminDashmixAssetUrl("admin-dashmix-catalog-media.css") .
+                "?v=" .
+                $catalogMediaVersion;
+
+            $assets[] =
+                '<link rel="stylesheet" href="' .
+                adminDashmixEsc($catalogMediaHref) .
                 '">';
         }
 

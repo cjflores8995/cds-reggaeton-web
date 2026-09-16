@@ -31,6 +31,84 @@
             ")";
     }
 
+    function addClasses(root, selector, classNames) {
+        if (!root) {
+            return;
+        }
+
+        root.querySelectorAll(selector).forEach(function (node) {
+            classNames.forEach(function (className) {
+                node.classList.add(className);
+            });
+        });
+    }
+
+    function decorateDashmix(root) {
+        if (!root) {
+            return;
+        }
+
+        addClasses(
+            root,
+            ".analytics-dashboard-metric, .analytics-diagnostic-card, .analytics-maintenance-card, .analytics-session-metric",
+            ["rer-dm-kpi"]
+        );
+
+        addClasses(
+            root,
+            ".analytics-dashboard-panel, .analytics-dashboard-block, .analytics-maintenance-panel, .analytics-session-hero, .analytics-diagnostic-detail-hero, .analytics-maintenance-hero, .analytics-session-timeline-panel, .analytics-diagnostic-quality-panel, .analytics-session-checkout",
+            ["rer-dm-block"]
+        );
+
+        addClasses(
+            root,
+            ".analytics-dashboard-panel > header, .analytics-dashboard-block > header, .analytics-dashboard-activity-header, .analytics-session-list-header, .analytics-maintenance-panel > header",
+            ["rer-dm-block-header"]
+        );
+
+        addClasses(
+            root,
+            ".analytics-dashboard-panel > header h2, .analytics-dashboard-block > header h2, .analytics-dashboard-activity-header h2, .analytics-session-list-header h2, .analytics-maintenance-panel > header h3",
+            ["rer-dm-block-title"]
+        );
+
+        addClasses(
+            root,
+            ".analytics-dashboard-table-wrap",
+            ["rer-dm-table-wrap"]
+        );
+
+        addClasses(
+            root,
+            ".analytics-dashboard-table-wrap table",
+            ["rer-dm-table"]
+        );
+
+        addClasses(
+            root,
+            ".analytics-dashboard-environment select, .analytics-dashboard-activity-filters select, .analytics-session-filters select",
+            ["rer-dm-form-select"]
+        );
+
+        addClasses(
+            root,
+            ".analytics-dashboard-custom input",
+            ["rer-dm-form-control"]
+        );
+
+        addClasses(
+            root,
+            ".analytics-dashboard-periods button, .analytics-dashboard-pagination button, .analytics-session-detail-toolbar button, .analytics-session-not-found button",
+            ["rer-dm-btn", "rer-dm-btn-secondary"]
+        );
+
+        addClasses(
+            root,
+            ".analytics-dashboard-custom button, .analytics-maintenance-run",
+            ["rer-dm-btn", "rer-dm-btn-primary"]
+        );
+    }
+
     function chartFor(canvas) {
         if (!canvas || !window.Chart || typeof window.Chart.getChart !== "function") {
             return null;
@@ -122,7 +200,13 @@
 
         var app = document.getElementById("analyticsDashboardApp");
 
-        if (!app || !window.Chart) {
+        if (!app) {
+            return;
+        }
+
+        decorateDashmix(app);
+
+        if (!window.Chart) {
             return;
         }
 
@@ -155,6 +239,7 @@
         }
 
         initialized = true;
+        decorateDashmix(app);
 
         var content = app.querySelector("[data-dashboard-content]");
 

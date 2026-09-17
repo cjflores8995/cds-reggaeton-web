@@ -155,9 +155,9 @@ $footerIsCheckoutPage =
     basename((string)$footerScriptPath) ===
     "checkout.php";
 
-$footerDisableAnalytics =
-    function_exists("storeAdminSoldPreviewEnabled") &&
-    storeAdminSoldPreviewEnabled();
+require_once __DIR__ . "/store-admin-sold-preview.php";
+
+$footerDisableAnalytics = storeAdminSoldPreviewEnabled();
 
 require __DIR__ . "/artist-collection-runtime.php";
 ?>

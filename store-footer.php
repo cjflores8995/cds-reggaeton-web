@@ -151,6 +151,10 @@ $footerScriptPath = parse_url(
     PHP_URL_PATH
 );
 
+$footerIsHomePage =
+    basename((string)$footerScriptPath) ===
+    "index.php";
+
 $footerIsCheckoutPage =
     basename((string)$footerScriptPath) ===
     "checkout.php";
@@ -275,6 +279,13 @@ require __DIR__ . "/artist-collection-runtime.php";
             rel="stylesheet"
             href="<?php echo storeFooterEsc($footerAssetBaseUrl); ?>store-admin-sold-preview.css?v=2"
         >
+    <?php } ?>
+
+    <?php if($footerIsHomePage && !$footerDisableAnalytics){ ?>
+        <script
+            defer
+            src="<?php echo storeFooterEsc($footerAssetBaseUrl); ?>store-sold-search.js?v=1"
+        ></script>
     <?php } ?>
 
     <?php if($footerIsProductPage){ ?>

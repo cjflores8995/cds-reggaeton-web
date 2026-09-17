@@ -7,19 +7,28 @@ require_once __DIR__ . "/analytics-resilience.php";
 
 $productSlug = trim((string)($_GET["slug"] ?? ""));
 $productExists = false;
+$productStock = null;
 
 if($productSlug !== ""){
     $postsTable = analyticsQuoteIdentifier($tableposts);
     $stmt = mysqli_prepare(
         $connection,
-        "SELECT id FROM " . $postsTable . " WHERE slug = ? AND active = 1 AND stock = 1 LIMIT 1"
+        "SELECT id, stock FROM " . $postsTable . " WHERE slug = ? AND active = 1 LIMIT 1"
     );
 
     if($stmt){
         mysqli_stmt_bind_param($stmt, "s", $productSlug);
         mysqli_stmt_execute($stmt);
         $result = mysqli_stmt_get_result($stmt);
-        $productExists = $result && mysqli_fetch_assoc($result);
+        $productRouteRow = $result
+            ? (mysqli_fetch_assoc($result) ?: null)
+            : null;
+
+        if($productRouteRow){
+            $productExists = true;
+            $productStock = (int)($productRouteRow["stock"] ?? 0);
+        }
+
         mysqli_stmt_close($stmt);
     }
 }
@@ -36,6 +45,11 @@ if($productSlug !== "" && !$productExists){
             ]
         ]
     );
+}
+
+if($productExists && $productStock === 0){
+    require __DIR__ . "/sold-product.php";
+    exit;
 }
 
 require __DIR__ . "/product.php";

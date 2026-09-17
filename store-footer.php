@@ -132,7 +132,16 @@ if(isset($storeBaseUrl) && trim((string)$storeBaseUrl) !== ""){
     $footerAssetBaseUrl = trim((string)$baseurl);
 }
 
+$footerIsArtistPage =
+    isset($artistId) &&
+    (int)$artistId > 0 &&
+    isset($artistName) &&
+    trim((string)$artistName) !== "" &&
+    isset($artistSlug) &&
+    trim((string)$artistSlug) !== "";
+
 $footerIsProductPage =
+    !$footerIsArtistPage &&
     isset($product) &&
     is_array($product) &&
     isset($product["id"]);

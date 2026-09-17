@@ -155,6 +155,10 @@ $footerIsCheckoutPage =
     basename((string)$footerScriptPath) ===
     "checkout.php";
 
+$footerDisableAnalytics =
+    function_exists("storeAdminSoldPreviewEnabled") &&
+    storeAdminSoldPreviewEnabled();
+
 require __DIR__ . "/artist-collection-runtime.php";
 ?>
 <footer class="site-footer">
@@ -328,14 +332,17 @@ require __DIR__ . "/artist-collection-runtime.php";
         defer
         src="<?php echo storeFooterEsc($footerAssetBaseUrl); ?>store-buying-guide.js?v=1"
     ></script>
-    <script
-        defer
-        src="<?php echo storeFooterEsc($footerAssetBaseUrl); ?>analytics-client.js?v=2"
-        data-endpoint="<?php echo storeFooterEsc($footerAssetBaseUrl); ?>analytics-event.php"
-        data-timeout-ms="1800"
-    ></script>
-    <script
-        defer
-        src="<?php echo storeFooterEsc($footerAssetBaseUrl); ?>store-analytics.js?v=2"
-    ></script>
+
+    <?php if(!$footerDisableAnalytics){ ?>
+        <script
+            defer
+            src="<?php echo storeFooterEsc($footerAssetBaseUrl); ?>analytics-client.js?v=2"
+            data-endpoint="<?php echo storeFooterEsc($footerAssetBaseUrl); ?>analytics-event.php"
+            data-timeout-ms="1800"
+        ></script>
+        <script
+            defer
+            src="<?php echo storeFooterEsc($footerAssetBaseUrl); ?>store-analytics.js?v=2"
+        ></script>
+    <?php } ?>
 <?php } ?>

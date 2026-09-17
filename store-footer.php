@@ -270,6 +270,13 @@ require __DIR__ . "/artist-collection-runtime.php";
 <?php } ?>
 
 <?php if($footerAssetBaseUrl !== ""){ ?>
+    <?php if($footerDisableAnalytics){ ?>
+        <link
+            rel="stylesheet"
+            href="<?php echo storeFooterEsc($footerAssetBaseUrl); ?>store-admin-sold-preview.css?v=2"
+        >
+    <?php } ?>
+
     <?php if($footerIsProductPage){ ?>
         <script
             defer
@@ -302,7 +309,7 @@ require __DIR__ . "/artist-collection-runtime.php";
     ></script>
     <script
         defer
-        src="<?php echo storeFooterEsc($footerAssetBaseUrl); ?>store-branding.js?v=8"
+        src="<?php echo storeFooterEsc($footerAssetBaseUrl); ?>store-branding.js?v=9"
     ></script>
     <script
         defer

@@ -1,0 +1,56 @@
+/*
+ * REGGAETON EL REAL — Phase 3
+ * Cart confidence and purchase-flow refinements.
+ */
+
+.store-phase3-enabled .cart-drawer__checkout {
+    padding-top: 18px;
+}
+
+.cart-phase3-summary {
+    margin: 0;
+    padding: 12px 0 2px;
+    color: var(--muted);
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+}
+
+.cart-phase3-trust {
+    margin: 0 0 18px;
+    border-top: 1px solid var(--soft-line);
+}
+
+.cart-phase3-trust > div {
+    display: grid;
+    grid-template-columns: 82px 1fr;
+    gap: 12px;
+    padding: 12px 0;
+    border-bottom: 1px solid var(--soft-line);
+}
+
+.cart-phase3-trust strong {
+    font-size: 9px;
+    letter-spacing: .1em;
+}
+
+.cart-phase3-trust span {
+    color: var(--muted);
+    font-size: 10px;
+    line-height: 1.45;
+}
+
+.store-phase3-enabled .js-checkout-whatsapp {
+    min-height: 56px;
+}
+
+.store-phase3-enabled .checkout-note {
+    line-height: 1.5;
+}
+
+@media (max-width: 520px) {
+    .cart-phase3-trust > div {
+        grid-template-columns: 72px 1fr;
+    }
+}

@@ -298,7 +298,7 @@ require __DIR__ . "/artist-collection-runtime.php";
     ></script>
     <script
         defer
-        src="<?php echo storeFooterEsc($footerAssetBaseUrl); ?>store-branding.js?v=7"
+        src="<?php echo storeFooterEsc($footerAssetBaseUrl); ?>store-branding.js?v=8"
     ></script>
     <script
         defer

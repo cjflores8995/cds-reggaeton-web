@@ -265,7 +265,7 @@ $footerIsCheckoutPage =
     <?php if($footerIsCheckoutPage){ ?>
         <script
             defer
-            src="<?php echo storeFooterEsc($footerAssetBaseUrl); ?>checkout-phase3.js?v=1"
+            src="<?php echo storeFooterEsc($footerAssetBaseUrl); ?>checkout-phase3.js?v=2"
         ></script>
     <?php } ?>
 

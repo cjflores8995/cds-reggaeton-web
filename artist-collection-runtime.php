@@ -14,7 +14,25 @@ $artistCollectionArtistId = 0;
 $artistCollectionArtistName = '';
 $artistCollectionArtistSlug = '';
 
+/*
+ * artist.php reutiliza la variable $product en sus foreach. Por eso la
+ * detección de una landing de artista debe tener prioridad sobre la ficha de
+ * producto; de lo contrario, el último CD del foreach podría confundirse con
+ * el contexto de página.
+ */
 if(
+    isset($artistId) &&
+    (int)$artistId > 0 &&
+    isset($artistName) &&
+    trim((string)$artistName) !== '' &&
+    isset($artistSlug) &&
+    trim((string)$artistSlug) !== ''
+){
+    $artistCollectionContext = 'artist';
+    $artistCollectionArtistId = (int)$artistId;
+    $artistCollectionArtistName = trim((string)$artistName);
+    $artistCollectionArtistSlug = trim((string)$artistSlug);
+}else if(
     isset($product) &&
     is_array($product) &&
     isset($product['id'])
@@ -31,16 +49,6 @@ if(
     $artistCollectionArtistSlug = trim(
         (string)($product['artist_slug'] ?? '')
     );
-}else if(
-    isset($artistId) &&
-    (int)$artistId > 0 &&
-    isset($artistName) &&
-    trim((string)$artistName) !== ''
-){
-    $artistCollectionContext = 'artist';
-    $artistCollectionArtistId = (int)$artistId;
-    $artistCollectionArtistName = trim((string)$artistName);
-    $artistCollectionArtistSlug = trim((string)($artistSlug ?? ''));
 }
 
 if(

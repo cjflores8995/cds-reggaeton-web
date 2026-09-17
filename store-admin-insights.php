@@ -1,5 +1,6 @@
 <?php
 require_once __DIR__ . "/config.php";
+require_once __DIR__ . "/store-admin-sold-preview.php";
 
 header("Content-Type: application/json; charset=UTF-8");
 header("Cache-Control: no-store, no-cache, must-revalidate, max-age=0");
@@ -146,7 +147,11 @@ echo json_encode(
         "period" => $range["period"],
         "label" => $range["label"],
         "environment" => $environment,
-        "metrics" => $metrics
+        "metrics" => $metrics,
+        "sold_preview" => !empty(
+            $_SESSION[STORE_ADMIN_SOLD_PREVIEW_SESSION_KEY]
+        ),
+        "csrf_token" => adminAuthCsrfToken()
     ],
     JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES
 );

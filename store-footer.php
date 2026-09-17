@@ -131,6 +131,11 @@ if(isset($storeBaseUrl) && trim((string)$storeBaseUrl) !== ""){
 }else if(isset($baseurl)){
     $footerAssetBaseUrl = trim((string)$baseurl);
 }
+
+$footerIsProductPage =
+    isset($product) &&
+    is_array($product) &&
+    isset($product["id"]);
 ?>
 <footer class="site-footer">
     <div class="page-shell site-footer__grid site-footer__grid--social">
@@ -241,6 +246,13 @@ if(isset($storeBaseUrl) && trim((string)$storeBaseUrl) !== ""){
 <?php } ?>
 
 <?php if($footerAssetBaseUrl !== ""){ ?>
+    <?php if($footerIsProductPage){ ?>
+        <script
+            defer
+            src="<?php echo storeFooterEsc($footerAssetBaseUrl); ?>product-phase2.js?v=1"
+        ></script>
+    <?php } ?>
+
     <script
         defer
         src="<?php echo storeFooterEsc($footerAssetBaseUrl); ?>catalog-infinite-scroll.js?v=1"

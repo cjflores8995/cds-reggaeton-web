@@ -17,10 +17,12 @@ if(
 
 $message = "";
 $messageType = "info";
+$collectionMinCds = 3;
 
 if(isset($_POST["create_artist"])){
     $name = trim(isset($_POST["artist_name"]) ? $_POST["artist_name"] : "");
     $nickname = trim(isset($_POST["artist_nickname"]) ? $_POST["artist_nickname"] : "");
+    $collectionExcluded = isset($_POST["artist_collection_excluded"]);
 
     if($name === ""){
         $message = "El nombre del artista es obligatorio.";
@@ -30,11 +32,18 @@ if(isset($_POST["create_artist"])){
         $artistId = artistCreate($name);
 
         if($artistId > 0){
-            if(artistDisplaySaveNickname($artistId, $nickname, $cfg)){
+            if(
+                artistDisplaySaveSettings(
+                    $artistId,
+                    $nickname,
+                    $collectionExcluded,
+                    $cfg
+                )
+            ){
                 $message = "Artista creado correctamente.";
                 $messageType = "success";
             }else{
-                $message = "El artista fue creado, pero no se pudo guardar su apodo.";
+                $message = "El artista fue creado, pero no se pudo guardar su configuración de visualización.";
             }
         }else{
             $message = "No se pudo crear el artista.";
@@ -49,6 +58,7 @@ if(isset($_POST["update_artist"])){
 
     $name = trim(isset($_POST["artist_name"]) ? $_POST["artist_name"] : "");
     $nickname = trim(isset($_POST["artist_nickname"]) ? $_POST["artist_nickname"] : "");
+    $collectionExcluded = isset($_POST["artist_collection_excluded"]);
 
     if($artistId <= 0 || !artistExists($artistId)){
         $message = "Artista no válido.";
@@ -85,11 +95,18 @@ if(isset($_POST["update_artist"])){
                     );
                 }
 
-                if(artistDisplaySaveNickname($artistId, $nickname, $cfg)){
+                if(
+                    artistDisplaySaveSettings(
+                        $artistId,
+                        $nickname,
+                        $collectionExcluded,
+                        $cfg
+                    )
+                ){
                     $message = "Artista actualizado correctamente.";
                     $messageType = "success";
                 }else{
-                    $message = "El nombre fue actualizado, pero no se pudo guardar el apodo.";
+                    $message = "El nombre fue actualizado, pero no se pudo guardar la configuración de visualización.";
                 }
             }else{
                 $message = "No se pudo actualizar el artista.";
@@ -117,7 +134,7 @@ if(isset($_POST["delete_artist"])){
             );
 
             if($deleted){
-                artistDisplayRemoveNickname($artistId, $cfg);
+                artistDisplayRemoveSettings($artistId, $cfg);
                 $message = "Artista eliminado correctamente.";
                 $messageType = "success";
             }else{
@@ -156,6 +173,10 @@ if(isset($_GET["edit"])){
                 $editId,
                 $cfg
             );
+            $editArtist["collection_excluded"] = artistDisplayCollectionExcluded(
+                $editId,
+                $cfg
+            );
         }
     }
 }
@@ -164,7 +185,9 @@ $artists = [];
 
 $listResult = mysqli_query(
     $connection,
-    "SELECT a.id, a.name, a.slug, COUNT(p.id) AS cdcount " .
+    "SELECT " .
+    "a.id, a.name, a.slug, COUNT(p.id) AS cdcount, " .
+    "SUM(CASE WHEN p.id IS NOT NULL AND p.active = 1 AND p.stock = 1 THEN 1 ELSE 0 END) AS available_count " .
     "FROM $tableartists a " .
     "LEFT JOIN $tableposts p ON p.artistid = a.id " .
     "GROUP BY a.id, a.name, a.slug " .
@@ -177,6 +200,11 @@ if($listResult){
             (int)$row["id"],
             $cfg
         );
+        $row["collection_excluded"] = artistDisplayCollectionExcluded(
+            (int)$row["id"],
+            $cfg
+        );
+        $row["available_count"] = (int)($row["available_count"] ?? 0);
         $artists[] = $row;
     }
 }
@@ -214,7 +242,7 @@ if($unassignedResult){
             <div>
                 <h1>Artistas</h1>
                 <div class="admin-muted">
-                    Crea, edita y administra los artistas asociados a los CDs.
+                    Crea, edita y administra los artistas asociados a los CDs. Las colecciones se activan automáticamente desde <?php echo $collectionMinCds; ?> CDs disponibles.
                 </div>
             </div>
         </div>
@@ -266,16 +294,30 @@ if($unassignedResult){
                         maxlength="150"
                     >
 
-                    <label>Apodo / subtítulo de la selección</label>
+                    <label>Apodo / subtítulo de la colección</label>
                     <input
                         type="text"
                         name="artist_nickname"
                         value="<?php echo htmlspecialchars($editArtist["nickname"], ENT_QUOTES, "UTF-8"); ?>"
-                        placeholder="Ej. El Big Boss"
+                        placeholder="Ej. The Big Boss"
                         maxlength="120"
                     >
                     <div class="admin-muted">
-                        Opcional. Se mostrará únicamente cuando este artista tenga una selección destacada en la tienda.
+                        Opcional. Se mostrará en la colección y en las secciones destacadas del artista.
+                    </div>
+
+                    <label style="display:flex;align-items:center;gap:10px;margin-top:18px;">
+                        <input
+                            type="checkbox"
+                            name="artist_collection_excluded"
+                            value="1"
+                            <?php echo !empty($editArtist["collection_excluded"]) ? "checked" : ""; ?>
+                            style="width:auto;"
+                        >
+                        Excluir de colecciones automáticas
+                    </label>
+                    <div class="admin-muted">
+                        Aunque tenga <?php echo $collectionMinCds; ?> o más CDs disponibles, este artista no se destacará como colección automática.
                     </div>
 
                     <button
@@ -304,16 +346,26 @@ if($unassignedResult){
                         maxlength="150"
                     >
 
-                    <label>Apodo / subtítulo de la selección</label>
+                    <label>Apodo / subtítulo de la colección</label>
                     <input
                         type="text"
                         name="artist_nickname"
-                        placeholder="Ej. El Big Boss"
+                        placeholder="Ej. The Big Boss"
                         maxlength="120"
                     >
                     <div class="admin-muted">
                         Opcional. Puedes dejarlo vacío y configurarlo después.
                     </div>
+
+                    <label style="display:flex;align-items:center;gap:10px;margin-top:18px;">
+                        <input
+                            type="checkbox"
+                            name="artist_collection_excluded"
+                            value="1"
+                            style="width:auto;"
+                        >
+                        Excluir de colecciones automáticas
+                    </label>
 
                     <button
                         class="admin-modern-button"
@@ -342,12 +394,20 @@ if($unassignedResult){
                             <th>Artista</th>
                             <th>Apodo</th>
                             <th>URL</th>
-                            <th style="width:100px;">CDs</th>
+                            <th style="width:90px;">CDs</th>
+                            <th style="width:150px;">Colección</th>
                             <th style="width:260px;">Acciones</th>
                         </tr>
                         </thead>
                         <tbody>
                         <?php foreach($artists as $artist){ ?>
+                            <?php
+                            $availableCount = (int)$artist["available_count"];
+                            $collectionExcluded = !empty($artist["collection_excluded"]);
+                            $collectionActive =
+                                !$collectionExcluded &&
+                                $availableCount >= $collectionMinCds;
+                            ?>
                             <tr>
                                 <td>
                                     <?php echo htmlspecialchars($artist["name"], ENT_QUOTES, "UTF-8"); ?>
@@ -366,8 +426,19 @@ if($unassignedResult){
                                 </td>
                                 <td>
                                     <span class="admin-badge">
-                                        <?php echo (int)$artist["cdcount"]; ?>
+                                        <?php echo $availableCount; ?> disponibles
                                     </span>
+                                </td>
+                                <td>
+                                    <?php if($collectionActive){ ?>
+                                        <span class="admin-badge">ACTIVA</span>
+                                    <?php }else if($collectionExcluded){ ?>
+                                        <span class="admin-muted">Excluida</span>
+                                    <?php }else{ ?>
+                                        <span class="admin-muted">
+                                            Faltan <?php echo max(0, $collectionMinCds - $availableCount); ?>
+                                        </span>
+                                    <?php } ?>
                                 </td>
                                 <td>
                                     <a

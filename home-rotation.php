@@ -1,5 +1,6 @@
 <?php
 require_once __DIR__ . '/artist-display-settings.php';
+require_once __DIR__ . '/store-admin-sold-preview.php';
 
 function storeHomeNormalize(string $value): string
 {
@@ -179,6 +180,67 @@ function storeHomeBuildArtistMap(array $artists): array
     return $map;
 }
 
+function storeHomeAdminSoldCatalog(array $availableCatalog): array
+{
+    global $connection, $tableposts, $tableartists;
+
+    if(!storeAdminSoldPreviewEnabled()){
+        return $availableCatalog;
+    }
+
+    $soldProducts = [];
+    $soldResult = mysqli_query(
+        $connection,
+        "SELECT
+            p.*,
+            a.name AS preview_artist_name,
+            a.slug AS preview_artist_slug
+         FROM $tableposts p
+         LEFT JOIN $tableartists a
+            ON a.id = p.artistid
+         WHERE p.active = 1
+           AND p.stock = 0
+         ORDER BY
+            CASE WHEN p.sold_at IS NULL THEN 1 ELSE 0 END ASC,
+            p.sold_at DESC,
+            p.id DESC"
+    );
+
+    if($soldResult){
+        while($row = mysqli_fetch_assoc($soldResult)){
+            $databaseArtist = trim(
+                (string)($row['preview_artist_name'] ?? '')
+            );
+
+            if(
+                trim((string)($row['artist'] ?? '')) === '' &&
+                $databaseArtist !== ''
+            ){
+                $row['artist'] = $databaseArtist;
+            }
+
+            $soldProducts[] = $row;
+        }
+
+        mysqli_free_result($soldResult);
+    }
+
+    $filter = storeAdminSoldPreviewFilter();
+
+    if($filter === 'sold'){
+        return $soldProducts;
+    }
+
+    if($filter === 'available'){
+        return $availableCatalog;
+    }
+
+    return array_merge(
+        $availableCatalog,
+        $soldProducts
+    );
+}
+
 function storeHomeBuildRotation(array $products, array $artists, $cfg): array
 {
     $rotationKey = storeHomeRotationKey();
@@ -333,6 +395,10 @@ function storeHomeBuildRotation(array $products, array $artists, $cfg): array
         8,
         $rotationKey . '|discover',
         $usedIds
+    );
+
+    $catalogProducts = storeHomeAdminSoldCatalog(
+        $catalogProducts
     );
 
     return [

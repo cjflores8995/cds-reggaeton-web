@@ -75,7 +75,7 @@
         appendScript(
             baseUrl,
             "store-admin-view.js",
-            3,
+            4,
             "data-store-admin-view"
         );
         appendScript(
@@ -93,7 +93,10 @@
     }
 
     function loadAdminProductPrice(baseUrl){
-        if(!document.querySelector(".product-detail__price")){
+        if(
+            document.body.classList.contains("store-admin-sold-preview-page") ||
+            !document.querySelector(".product-detail__price")
+        ){
             return;
         }
 

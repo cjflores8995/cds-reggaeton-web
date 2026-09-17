@@ -29,11 +29,15 @@
     }
 
     function normalizeBrandLinks(baseUrl){
-        var logoUrl =
-            baseUrl +
-            "images/branding/originals/reggaeton-el-real-watermark.png";
-
         document.querySelectorAll("a.brand").forEach(function(link){
+            if(link.querySelector("img")){
+                return;
+            }
+
+            var logoUrl =
+                baseUrl +
+                "images/branding/originals/reggaeton-el-real-watermark.png";
+
             link.textContent = "";
             link.classList.add("brand--official");
             link.setAttribute(
@@ -75,7 +79,7 @@
         appendScript(
             baseUrl,
             "store-admin-view.js",
-            3,
+            4,
             "data-store-admin-view"
         );
         appendScript(
@@ -93,7 +97,10 @@
     }
 
     function loadAdminProductPrice(baseUrl){
-        if(!document.querySelector(".product-detail__price")){
+        if(
+            document.body.classList.contains("store-admin-sold-preview-page") ||
+            !document.querySelector(".product-detail__price")
+        ){
             return;
         }
 

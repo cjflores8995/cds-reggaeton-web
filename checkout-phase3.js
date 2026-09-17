@@ -268,9 +268,15 @@
         var checkoutReady = content && !content.hidden;
         var formReady = validateProfile(false);
         var shippingReady = selectedShippingZone() !== "";
+        var shouldDisable = !(checkoutReady && formReady && shippingReady);
 
-        button.disabled = !(checkoutReady && formReady && shippingReady);
-        button.textContent = "REVISAR PEDIDO";
+        if (button.disabled !== shouldDisable) {
+            button.disabled = shouldDisable;
+        }
+
+        if (button.textContent !== "REVISAR PEDIDO") {
+            button.textContent = "REVISAR PEDIDO";
+        }
     }
 
     function profileValues() {

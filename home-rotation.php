@@ -8,6 +8,11 @@ function storeHomeNormalize(string $value): string
         : strtolower(trim($value));
 }
 
+function storeHomeCollectionMinProducts(): int
+{
+    return 3;
+}
+
 function storeHomeRotationKey(): string
 {
     $timezone = new DateTimeZone('America/Guayaquil');
@@ -204,9 +209,13 @@ function storeHomeBuildRotation(array $products, array $artists, $cfg): array
     }
 
     $eligibleArtistIds = [];
+    $collectionMinProducts = storeHomeCollectionMinProducts();
 
     foreach ($artistGroups as $artistId => $groupProducts) {
-        if (count($groupProducts) >= 3) {
+        if (
+            count($groupProducts) >= $collectionMinProducts &&
+            !artistDisplayCollectionExcluded($artistId, $cfg)
+        ) {
             $eligibleArtistIds[] = (int)$artistId;
         }
     }
@@ -228,7 +237,7 @@ function storeHomeBuildRotation(array $products, array $artists, $cfg): array
             $usedIds
         );
 
-        if (count($remaining) < 3) {
+        if (count($remaining) < $collectionMinProducts) {
             continue;
         }
 
@@ -238,7 +247,7 @@ function storeHomeBuildRotation(array $products, array $artists, $cfg): array
         );
         $sectionProducts = array_slice($sectionProducts, 0, 4);
 
-        if (count($sectionProducts) < 3) {
+        if (count($sectionProducts) < $collectionMinProducts) {
             continue;
         }
 
@@ -255,6 +264,7 @@ function storeHomeBuildRotation(array $products, array $artists, $cfg): array
             'name' => $artistName,
             'slug' => trim((string)($artistMeta['slug'] ?? '')),
             'nickname' => artistDisplayNickname($artistId, $cfg),
+            'available_count' => count($artistGroups[$artistId] ?? []),
             'products' => $sectionProducts
         ];
 

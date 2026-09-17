@@ -145,6 +145,8 @@ $footerScriptPath = parse_url(
 $footerIsCheckoutPage =
     basename((string)$footerScriptPath) ===
     "checkout.php";
+
+require __DIR__ . "/artist-collection-runtime.php";
 ?>
 <footer class="site-footer">
     <div class="page-shell site-footer__grid site-footer__grid--social">

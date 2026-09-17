@@ -130,15 +130,16 @@ if (
             <section class="home-curation__block" aria-labelledby="artistSelectionOneTitle">
                 <div class="home-curation__heading">
                     <div>
-                        <p class="eyebrow">ARTISTA</p>
+                        <p class="eyebrow">COLECCIÓN DE ARTISTA</p>
                         <h2 id="artistSelectionOneTitle">
-                            Selección <?php echo e($artistSection['name'] ?? ''); ?>
+                            Colección <?php echo e($artistSection['name'] ?? ''); ?>
                         </h2>
-                        <?php if (trim((string)($artistSection['nickname'] ?? '')) !== ''): ?>
-                            <p class="home-curation__subtitle">
-                                <?php echo e($artistSection['nickname']); ?>
-                            </p>
-                        <?php endif; ?>
+                        <p class="home-curation__subtitle">
+                            <?php if (trim((string)($artistSection['nickname'] ?? '')) !== ''): ?>
+                                <?php echo e($artistSection['nickname']); ?> ·
+                            <?php endif; ?>
+                            <?php echo (int)($artistSection['available_count'] ?? 0); ?> CDs disponibles
+                        </p>
                     </div>
 
                     <?php if (trim((string)($artistSection['slug'] ?? '')) !== ''): ?>
@@ -146,7 +147,7 @@ if (
                             class="home-curation__link"
                             href="<?php echo e(seoArtistUrl($artistSection['slug'])); ?>"
                         >
-                            VER ARTISTA →
+                            VER COLECCIÓN →
                         </a>
                     <?php endif; ?>
                 </div>
@@ -175,15 +176,16 @@ if (
             <section class="home-curation__block" aria-labelledby="artistSelectionTwoTitle">
                 <div class="home-curation__heading">
                     <div>
-                        <p class="eyebrow">ARTISTA</p>
+                        <p class="eyebrow">COLECCIÓN DE ARTISTA</p>
                         <h2 id="artistSelectionTwoTitle">
-                            Selección <?php echo e($artistSection['name'] ?? ''); ?>
+                            Colección <?php echo e($artistSection['name'] ?? ''); ?>
                         </h2>
-                        <?php if (trim((string)($artistSection['nickname'] ?? '')) !== ''): ?>
-                            <p class="home-curation__subtitle">
-                                <?php echo e($artistSection['nickname']); ?>
-                            </p>
-                        <?php endif; ?>
+                        <p class="home-curation__subtitle">
+                            <?php if (trim((string)($artistSection['nickname'] ?? '')) !== ''): ?>
+                                <?php echo e($artistSection['nickname']); ?> ·
+                            <?php endif; ?>
+                            <?php echo (int)($artistSection['available_count'] ?? 0); ?> CDs disponibles
+                        </p>
                     </div>
 
                     <?php if (trim((string)($artistSection['slug'] ?? '')) !== ''): ?>
@@ -191,7 +193,7 @@ if (
                             class="home-curation__link"
                             href="<?php echo e(seoArtistUrl($artistSection['slug'])); ?>"
                         >
-                            VER ARTISTA →
+                            VER COLECCIÓN →
                         </a>
                     <?php endif; ?>
                 </div>

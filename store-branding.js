@@ -29,15 +29,11 @@
     }
 
     function normalizeBrandLinks(baseUrl){
+        var logoUrl =
+            baseUrl +
+            "images/branding/originals/reggaeton-el-real-watermark.png";
+
         document.querySelectorAll("a.brand").forEach(function(link){
-            if(link.querySelector("img")){
-                return;
-            }
-
-            var logoUrl =
-                baseUrl +
-                "images/branding/originals/reggaeton-el-real-watermark.png";
-
             link.textContent = "";
             link.classList.add("brand--official");
             link.setAttribute(

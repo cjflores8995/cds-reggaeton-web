@@ -274,6 +274,53 @@ require __DIR__ . "/artist-collection-runtime.php";
 <?php } ?>
 
 <?php if($footerAssetBaseUrl !== ""){ ?>
+    <style id="sold-visual-state">
+        .sold-search-card {
+            background: #f1f1f1 !important;
+            border-color: #c9c9c9 !important;
+        }
+
+        .sold-search-card .product-card__image-wrap {
+            background: #e4e4e4 !important;
+        }
+
+        .sold-search-card .product-card__image {
+            filter: grayscale(1) saturate(0) contrast(.88) brightness(.92) !important;
+            opacity: .66 !important;
+        }
+
+        .sold-search-card .product-card__artist,
+        .sold-search-card .product-card__meta {
+            color: #777 !important;
+        }
+
+        .sold-search-card .product-card__title {
+            color: #4f4f4f !important;
+        }
+
+        .sold-search-card .product-card__price {
+            color: #555 !important;
+        }
+
+        .sold-search-card .status-badge--sold {
+            background: #111 !important;
+            color: #fff !important;
+            opacity: 1 !important;
+        }
+
+        .sold-search-card .sold-label {
+            color: #111 !important;
+            font-size: 15px !important;
+            font-weight: 900 !important;
+            letter-spacing: .12em !important;
+        }
+
+        .public-sold-product .product-gallery__main img,
+        .public-sold-product .gallery-thumb img {
+            filter: grayscale(1) saturate(0) contrast(.9) brightness(.94) !important;
+        }
+    </style>
+
     <?php if($footerDisableAnalytics){ ?>
         <link
             rel="stylesheet"

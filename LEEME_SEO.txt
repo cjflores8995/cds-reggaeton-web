@@ -190,6 +190,47 @@ PENDIENTE EN GOOGLE MERCHANT CENTER:
   Reggaeton El Real | Tienda de CDs físicos en Ecuador
   para reducir canibalización con la landing genérica.
 
+
+10. SEO 2C - COLECCIONES TEMÁTICAS Y DÉCADAS
+- Infraestructura reutilizable:
+  seo-collection.php
+  seo-collection-rules.php
+  store-seo-collection.css
+- Regla de calidad:
+  una colección temática o década solo es indexable si tiene al menos 6 CDs
+  activos y disponibles.
+- Reggaetón clásico:
+  URL:
+  https://reggaetonelreal.com/reggaeton-clasico
+  Criterio editorial de la tienda:
+  años 1990 a 2009.
+  Si el stock cae por debajo de 6 títulos, responde 404 + noindex y desaparece
+  automáticamente del sitemap y de los enlaces indexables.
+- Décadas:
+  URLs limpias:
+  /decada/1990
+  /decada/2000
+  /decada/2010
+  /decada/2020
+  etc.
+  Solo se publican/enlazan cuando la década alcanza el mínimo de 6 CDs.
+- Cada colección incluye:
+  H1 y title propios
+  descripción editorial visible
+  inventario real
+  conteo de CDs
+  conteo de artistas
+  años disponibles
+  directorio de artistas
+  Product cards enlazadas a las fichas
+  CollectionPage + ItemList + BreadcrumbList
+- Jerarquía:
+  Home > CDs de reggaetón > Colección/Década
+- /cds-reggaeton enlaza dinámicamente a Reggaetón clásico y a las décadas
+  calificadas.
+- sitemap.xml calcula las mismas reglas con el stock actual, evitando páginas
+  pobres o vacías.
+
 NOTA SOBRE LASTMOD:
 - No se publica <lastmod> todavía porque la base histórica dispone de fecha de
   creación pero no de una fecha de última modificación fiable para todas las

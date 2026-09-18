@@ -1446,7 +1446,7 @@ if(isset($_GET["editpost"])){
                                 name="gtin"
                                 inputmode="numeric"
                                 maxlength="24"
-                                placeholder="Ej. 602517838358"
+                                placeholder="Ej. 012345678905"
                                 value="<?php echo adminEsc($editRow["gtin"] ?? ""); ?>"
                             >
                             <div class="admin-muted" style="margin-top:-7px;margin-bottom:14px;">

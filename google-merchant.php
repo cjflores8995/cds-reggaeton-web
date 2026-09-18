@@ -1,6 +1,7 @@
 <?php
 require_once __DIR__ . "/config.php";
 require_once __DIR__ . "/seo.php";
+require_once __DIR__ . "/product-gtin.php";
 
 function merchantXml($value){
     return htmlspecialchars(
@@ -309,6 +310,17 @@ echo "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n";
                 ""
             ) .
             " USD";
+
+        $merchantGtinResult =
+            productGtinNormalize(
+                $product["gtin"] ??
+                ""
+            );
+
+        $merchantGtin =
+            $merchantGtinResult["ok"]
+                ? $merchantGtinResult["gtin"]
+                : "";
     ?>
     <item>
         <g:id><?php echo merchantXml($merchantId); ?></g:id>
@@ -319,6 +331,9 @@ echo "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n";
         <g:availability>in stock</g:availability>
         <g:price><?php echo merchantXml($merchantPrice); ?></g:price>
         <g:condition><?php echo merchantXml($merchantCondition); ?></g:condition>
+        <?php if($merchantGtin !== ""){ ?>
+            <g:gtin><?php echo merchantXml($merchantGtin); ?></g:gtin>
+        <?php } ?>
         <g:product_type>Música &gt; CDs &gt; Reggaetón</g:product_type>
     </item>
 <?php } ?>

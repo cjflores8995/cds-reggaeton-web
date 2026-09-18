@@ -50,7 +50,13 @@ function storeUpper(string $value): string
 }
 
 $storeBaseUrl = buildStoreBaseUrl();
-$whatsappNumber = preg_replace('/\D+/', '', (string)$adminwhatsapp);
+$publicWhatsapp =
+    $saleswhatsapp ??
+    $adminwhatsapp ??
+    '';
+$whatsappNumber = seoWhatsappDigits($publicWhatsapp);
+$whatsappDisplay = seoWhatsappDisplay($publicWhatsapp);
+$whatsappUrl = seoWhatsappUrl($publicWhatsapp);
 
 $products = [];
 $productSql = "SELECT * FROM $tableposts WHERE active = 1 AND stock = 1 ORDER BY id DESC";
@@ -230,7 +236,9 @@ $seoStoreNode = [
     'name' => 'Reggaeton El Real',
     'url' => $seoCanonical,
     'description' => $seoDescription,
-    'logo' => seoUrl('images/logo.png'),
+    'logo' => seoUrl(
+        'images/branding/originals/reggaeton-el-real-logo-horizontal-black.png'
+    ),
     'image' => $seoOgImage,
     'areaServed' => [
         '@type' => 'Country',
@@ -321,8 +329,12 @@ $seoHomeJsonLd = [
     >
     <link
         rel="icon"
-        href="<?php echo e(seoUrl('images/logo.png')); ?>"
+        href="<?php echo e(seoPublicFaviconUrl()); ?>"
         type="image/png"
+    >
+    <link
+        rel="apple-touch-icon"
+        href="<?php echo e(seoPublicFaviconUrl()); ?>"
     >
 
     <meta property="og:type" content="website">
@@ -409,11 +421,21 @@ $seoHomeJsonLd = [
 <body>
     <div class="promo-strip">
         <div class="page-shell promo-strip__inner">
+            <?php if ($whatsappUrl !== '' && $whatsappDisplay !== ''): ?>
+                <a
+                    class="promo-strip__contact"
+                    href="<?php echo e($whatsappUrl); ?>"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    aria-label="Contactar por WhatsApp al <?php echo e($whatsappDisplay); ?>"
+                >
+                    WHATSAPP <?php echo e($whatsappDisplay); ?>
+                </a>
+                <span>•</span>
+            <?php endif; ?>
             <span>ENVÍOS EN ECUADOR</span>
             <span>•</span>
             <span>UNA SOLA UNIDAD POR CD</span>
-            <span>•</span>
-            <span>PEDIDOS POR WHATSAPP</span>
         </div>
     </div>
 

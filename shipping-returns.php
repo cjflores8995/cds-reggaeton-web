@@ -152,7 +152,7 @@ $policyJsonLd = [
             </p>
         </header>
 
-        <section class="policy-section" id="envios">
+        <section class="policy-section" id="servientrega">
             <div class="policy-section__index">01</div>
             <div class="policy-section__content">
                 <p class="eyebrow">ENVÍOS</p>

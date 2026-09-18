@@ -1,6 +1,7 @@
 <?php
 require_once __DIR__ . "/config.php";
 require_once __DIR__ . "/seo.php";
+require_once __DIR__ . "/seo-collection-rules.php";
 
 function cdsReggaetonEsc($value){
     return htmlspecialchars(
@@ -108,6 +109,7 @@ $availableCount =
 
 $artistStats = [];
 $decadeStats = [];
+$classicCount = 0;
 $minimumYear = null;
 $maximumYear = null;
 
@@ -190,6 +192,13 @@ foreach($products as $catalogProduct){
             $year > $maximumYear
         ){
             $maximumYear = $year;
+        }
+
+        if(
+            $year >= seoClassicMinimumYear() &&
+            $year <= seoClassicMaximumYear()
+        ){
+            $classicCount++;
         }
 
         $decade =
@@ -765,17 +774,50 @@ $jsonLd = [
                 <div class="section-heading">
                     <div>
                         <p class="eyebrow">POR ÉPOCA</p>
-                        <h2>Décadas presentes.</h2>
+                        <h2>Colecciones por época.</h2>
                     </div>
                 </div>
 
                 <div class="reggaeton-category__era-grid">
+                    <?php if($classicCount >= seoCollectionMinimumProducts()){ ?>
+                        <a
+                            class="reggaeton-category__era reggaeton-category__era--link reggaeton-category__era--classic"
+                            href="<?php echo cdsReggaetonEsc(seoClassicCollectionUrl()); ?>"
+                        >
+                            <span>COLECCIÓN</span>
+                            <strong>CLÁSICOS</strong>
+                            <small>
+                                <?php echo cdsReggaetonEsc($classicCount); ?> CDs ·
+                                <?php echo cdsReggaetonEsc(seoClassicMinimumYear()); ?>—<?php echo cdsReggaetonEsc(seoClassicMaximumYear()); ?>
+                            </small>
+                        </a>
+                    <?php } ?>
+
                     <?php foreach($decadeStats as $decade => $count){ ?>
-                        <div class="reggaeton-category__era">
-                            <span>AÑOS</span>
-                            <strong><?php echo cdsReggaetonEsc($decade); ?></strong>
-                            <small><?php echo cdsReggaetonEsc($count); ?> CDs disponibles</small>
-                        </div>
+                        <?php
+                            $decadeUrl =
+                                $count >= seoCollectionMinimumProducts() &&
+                                seoCollectionDecadeIsValid($decade)
+                                    ? seoCollectionDecadeUrl($decade)
+                                    : "";
+                        ?>
+
+                        <?php if($decadeUrl !== ""){ ?>
+                            <a
+                                class="reggaeton-category__era reggaeton-category__era--link"
+                                href="<?php echo cdsReggaetonEsc($decadeUrl); ?>"
+                            >
+                                <span>DÉCADA</span>
+                                <strong><?php echo cdsReggaetonEsc($decade); ?></strong>
+                                <small><?php echo cdsReggaetonEsc($count); ?> CDs disponibles</small>
+                            </a>
+                        <?php }else{ ?>
+                            <div class="reggaeton-category__era">
+                                <span>DÉCADA</span>
+                                <strong><?php echo cdsReggaetonEsc($decade); ?></strong>
+                                <small><?php echo cdsReggaetonEsc($count); ?> CDs disponibles</small>
+                            </div>
+                        <?php } ?>
                     <?php } ?>
                 </div>
             </section>

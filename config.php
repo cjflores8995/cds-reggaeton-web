@@ -21,6 +21,13 @@ if(!$connection){
 $connection->set_charset("utf8");
 
 /*
+ * Customer Analytics: any authenticated administrator connection is registered
+ * as temporary internal traffic. Only the HMAC hash of the IP is persisted.
+ */
+require_once __DIR__ . "/analytics-internal-traffic.php";
+analyticsInternalTrafficRegisterAuthenticatedAdmin($connection);
+
+/*
  * SEO hygiene:
  * páginas administrativas, endpoints y checkout no deben aparecer en Google.
  * Se usa X-Robots-Tag para que la regla funcione incluso sin modificar su HTML.

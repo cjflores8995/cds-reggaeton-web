@@ -36,6 +36,9 @@ RewriteRule ^envios-y-devoluciones/?$ shipping-returns.php [L,QSA,NC]
 # Cleaner sitemap endpoint.
 RewriteRule ^sitemap\.xml$ sitemap.php [L,QSA,NC]
 
+# Google Merchant Center scheduled product data source.
+RewriteRule ^google-merchant\.xml$ google-merchant.php [L,QSA,NC]
+
 # Human-facing clean URLs that do not exist. Missing assets keep the normal
 # web-server 404 and do not generate customer analytics noise.
 RewriteCond %{REQUEST_FILENAME} !-f

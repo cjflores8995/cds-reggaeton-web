@@ -1,6 +1,7 @@
 <?php
 require_once __DIR__ . '/config.php';
 require_once __DIR__ . '/seo.php';
+require_once __DIR__ . '/product-gtin.php';
 
 function e($value): string
 {
@@ -283,6 +284,16 @@ $price = (float)($product['normalprice'] ?? 0);
 $stock = (int)($product['stock'] ?? 0);
 $cdCondition = trim((string)($product['cd_condition'] ?? 'No especificado'));
 $caseCondition = trim((string)($product['case_condition'] ?? 'No especificado'));
+$gtinResult = productGtinNormalize(
+    $product['gtin'] ??
+    ''
+);
+$gtin = $gtinResult['ok']
+    ? $gtinResult['gtin']
+    : '';
+$gtinProperty = $gtinResult['ok']
+    ? $gtinResult['property']
+    : '';
 $description = trim(strip_tags((string)($product['content'] ?? '')));
 $artistSlug = trim(
     (string)(
@@ -532,6 +543,17 @@ $seoProductJsonLd = [
         ]
     ]
 ];
+
+if(
+    $gtin !== '' &&
+    $gtinProperty !== ''
+){
+    $seoProductJsonLd[
+        '@graph'
+    ][0][
+        $gtinProperty
+    ] = $gtin;
+}
 
 $relatedProducts = [];
 $relatedSql = "
@@ -806,6 +828,12 @@ if ($relatedResult) {
                         <dt>ESTADO DE LA CAJA</dt>
                         <dd><?php echo e($caseCondition); ?></dd>
                     </div>
+                    <?php if($gtin !== ''): ?>
+                        <div>
+                            <dt><?php echo e(productGtinDisplayType($gtin)); ?></dt>
+                            <dd><?php echo e($gtin); ?></dd>
+                        </div>
+                    <?php endif; ?>
                     <div>
                         <dt>UNIDADES</dt>
                         <dd>1</dd>

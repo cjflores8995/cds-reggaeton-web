@@ -461,6 +461,13 @@ $seoProductJsonLd = [
                     'name' =>
                         'Ecuador'
                 ],
+                'shippingDetails' =>
+                    seoOfferShippingDetails(
+                        $servientregaquito,
+                        $servientregaoutsidequito
+                    ),
+                'hasMerchantReturnPolicy' =>
+                    seoMerchantReturnPolicy(),
                 'seller' => [
                     '@type' =>
                         'OnlineStore',

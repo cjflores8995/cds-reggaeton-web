@@ -31,6 +31,13 @@ function artistImageUrl(
     );
 }
 
+$publicWhatsapp =
+    $saleswhatsapp ??
+    $adminwhatsapp ??
+    '';
+$whatsappDisplay = seoWhatsappDisplay($publicWhatsapp);
+$whatsappUrl = seoWhatsappUrl($publicWhatsapp);
+
 $artistSlug =
     trim(
         (string)(
@@ -366,8 +373,12 @@ $jsonLd = [
     >
     <link
         rel="icon"
-        href="<?php echo artistEsc(seoUrl('images/logo.png')); ?>"
+        href="<?php echo artistEsc(seoPublicFaviconUrl()); ?>"
         type="image/png"
+    >
+    <link
+        rel="apple-touch-icon"
+        href="<?php echo artistEsc(seoPublicFaviconUrl()); ?>"
     >
 
     <meta property="og:type" content="website">
@@ -428,11 +439,21 @@ $jsonLd = [
 <body>
     <div class="promo-strip">
         <div class="page-shell promo-strip__inner">
+            <?php if ($whatsappUrl !== '' && $whatsappDisplay !== ''): ?>
+                <a
+                    class="promo-strip__contact"
+                    href="<?php echo artistEsc($whatsappUrl); ?>"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    aria-label="Contactar por WhatsApp al <?php echo artistEsc($whatsappDisplay); ?>"
+                >
+                    WHATSAPP <?php echo artistEsc($whatsappDisplay); ?>
+                </a>
+                <span>•</span>
+            <?php endif; ?>
             <span>ENVÍOS EN ECUADOR</span>
             <span>•</span>
             <span>UNA SOLA UNIDAD POR CD</span>
-            <span>•</span>
-            <span>PEDIDOS POR WHATSAPP</span>
         </div>
     </div>
 

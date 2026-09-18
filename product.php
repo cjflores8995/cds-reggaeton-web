@@ -816,6 +816,9 @@ if ($relatedResult) {
 
                 <p class="single-unit-note">
                     Cada publicación representa un único CD físico. No se permiten cantidades mayores a 1.
+                    <a class="seo-inline-link" href="<?php echo e(seoUrl('envios-y-devoluciones')); ?>">
+                        Ver envíos y devoluciones.
+                    </a>
                 </p>
 
                 <div class="product-seo-summary">

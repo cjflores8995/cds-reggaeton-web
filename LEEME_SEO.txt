@@ -153,6 +153,43 @@ PENDIENTE EN GOOGLE MERCHANT CENTER:
 7. Fase posterior:
    incorporar UPC/EAN/GTIN real como campo opcional del administrador.
 
+
+9. SEO 2B - LANDING PRINCIPAL "CDS DE REGGAETÓN"
+- URL pública:
+  https://reggaetonelreal.com/cds-reggaeton
+- Archivo:
+  cds-reggaeton.php
+- Objetivo:
+  separar la intención de marca/home de la intención genérica
+  "CDs de reggaetón".
+- Title landing:
+  CDs de Reggaetón: catálogo físico en Ecuador | Reggaeton El Real
+- H1:
+  CDS DE REGGAETÓN.
+- Contenido dinámico basado en inventario real:
+  cantidad de CDs disponibles
+  cantidad de artistas
+  rango de años
+  directorio de artistas con conteo
+  resumen por décadas
+  selección diversa de hasta 24 CDs
+- Enlaces internos:
+  home -> /cds-reggaeton
+  footer -> /cds-reggaeton
+  artista -> /cds-reggaeton
+  producto -> /cds-reggaeton
+- Breadcrumbs visibles y JSON-LD conectan:
+  Home > CDs de reggaetón > Artista > Producto
+- Schema:
+  CollectionPage
+  ItemList
+  BreadcrumbList
+- Sitemap incluye /cds-reggaeton.
+- Acceso directo /cds-reggaeton.php redirige 301 a la URL limpia.
+- La homepage queda orientada a marca:
+  Reggaeton El Real | Tienda de CDs físicos en Ecuador
+  para reducir canibalización con la landing genérica.
+
 NOTA SOBRE LASTMOD:
 - No se publica <lastmod> todavía porque la base histórica dispone de fecha de
   creación pero no de una fecha de última modificación fiable para todas las

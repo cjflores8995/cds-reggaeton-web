@@ -498,6 +498,18 @@ $seoProductJsonLd = [
                     'position' =>
                         2,
                     'name' =>
+                        'CDs de reggaetón',
+                    'item' =>
+                        seoUrl(
+                            'cds-reggaeton'
+                        )
+                ],
+                [
+                    '@type' =>
+                        'ListItem',
+                    'position' =>
+                        3,
+                    'name' =>
                         $artist,
                     'item' =>
                         $artistPageUrl
@@ -506,7 +518,7 @@ $seoProductJsonLd = [
                     '@type' =>
                         'ListItem',
                     'position' =>
-                        3,
+                        4,
                     'name' =>
                         (
                             $album !== ''
@@ -707,6 +719,8 @@ if ($relatedResult) {
     <main>
         <div class="page-shell breadcrumb-row">
             <a href="<?php echo e($storeBaseUrl); ?>">TIENDA</a>
+            <span>/</span>
+            <a href="<?php echo e(seoUrl('cds-reggaeton')); ?>">CDS DE REGGAETÓN</a>
             <span>/</span>
             <a href="<?php echo e($artistPageUrl); ?>"><?php echo e($artist); ?></a>
             <span>/</span>

@@ -58,7 +58,7 @@ if((int)($_GET["catalog"] ?? 0) === 1){
         $connection,
         "SELECT " .
             "p.id, p.slug, p.artist, p.album, p.title, p.release_year, " .
-            "p.normalprice, p.stock, p.active, p.picture, p.moreimages, " .
+            "p.normalprice, p.stock, p.active, p.picture, p.moreimages, p.gtin, " .
             "p.tiktok_url, a.name AS artist_name " .
         "FROM $tableposts p " .
         "LEFT JOIN $tableartists a ON a.id = p.artistid " .
@@ -93,6 +93,7 @@ if((int)($_GET["catalog"] ?? 0) === 1){
             "price" => (float)($row["normalprice"] ?? 0),
             "stock" => (int)($row["stock"] ?? 0),
             "active" => (int)($row["active"] ?? 0),
+            "gtin" => trim((string)($row["gtin"] ?? "")),
             "tiktok_url" => trim((string)($row["tiktok_url"] ?? "")),
             "image_count" => productDataImageCount(
                 $row["picture"] ?? "",
@@ -130,7 +131,7 @@ $id = isset($_GET["id"])
 if($id > 0){
     $result = mysqli_query(
         $connection,
-        "SELECT id, artistid, artist, album, title, picture, moreimages, tiktok_url FROM $tableposts WHERE id = $id LIMIT 1"
+        "SELECT id, artistid, artist, album, title, picture, moreimages, gtin, tiktok_url FROM $tableposts WHERE id = $id LIMIT 1"
     );
 
     if(!$result || mysqli_num_rows($result) === 0){
@@ -148,6 +149,7 @@ if($id > 0){
         "artist" => trim((string)($row["artist"] ?? "")),
         "album" => trim((string)($row["album"] ?? "")),
         "title" => trim((string)($row["title"] ?? "")),
+        "gtin" => trim((string)($row["gtin"] ?? "")),
         "tiktok_url" => trim((string)($row["tiktok_url"] ?? "")),
         "slots" => productImageStorageSlotsFromDatabase(
             $row["picture"],

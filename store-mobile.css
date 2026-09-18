@@ -45,6 +45,9 @@ main,
     padding: 7px 16px;
     margin: 0;
     justify-content: center;
+    flex-wrap: wrap;
+    column-gap: 9px;
+    row-gap: 3px;
     text-align: center;
     font-size: 8px;
     line-height: 1.3;

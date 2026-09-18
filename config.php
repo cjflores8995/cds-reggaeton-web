@@ -184,8 +184,15 @@ configEnsurePostColumn(
 configEnsurePostColumn(
     $connection,
     $tableposts,
+    "gtin",
+    "VARCHAR(14) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL DEFAULT '' AFTER release_year"
+);
+
+configEnsurePostColumn(
+    $connection,
+    $tableposts,
     "stock",
-    "TINYINT(1) NOT NULL DEFAULT 1 AFTER release_year"
+    "TINYINT(1) NOT NULL DEFAULT 1 AFTER gtin"
 );
 
 configEnsurePostColumn(

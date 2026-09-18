@@ -141,6 +141,70 @@
     text-transform: uppercase;
 }
 
+/* --------------------------------------------------------------------------
+ * COLLECTION PRODUCT CARDS — match the physical-CD treatment used on home
+ * ----------------------------------------------------------------------- */
+
+.artist-landing.is-collection .artist-product-grid .product-card__image-wrap {
+    isolation: isolate;
+    overflow: hidden;
+    padding: clamp(22px, 2.6vw, 38px);
+    background:
+        linear-gradient(145deg, #fafafa 0%, #f2f2f2 100%);
+}
+
+.artist-landing.is-collection .artist-product-grid .product-card__image-wrap::before {
+    content: "CD FÍSICO · ÚNICA COPIA";
+    position: absolute;
+    z-index: 4;
+    top: 12px;
+    left: 12px;
+    padding: 7px 9px;
+    border: 1px solid rgba(17, 17, 17, .16);
+    background: rgba(255, 255, 255, .94);
+    color: var(--ink);
+    font-size: 8px;
+    font-weight: 800;
+    letter-spacing: .11em;
+    line-height: 1;
+    backdrop-filter: blur(4px);
+}
+
+.artist-landing.is-collection .artist-product-grid .product-card__image-wrap::after {
+    content: "";
+    position: absolute;
+    z-index: 2;
+    inset: clamp(21px, 2.55vw, 37px);
+    pointer-events: none;
+    border: 1px solid rgba(17, 17, 17, .22);
+    box-shadow:
+        9px 10px 0 rgba(255, 255, 255, .78),
+        10px 10px 0 1px rgba(17, 17, 17, .14),
+        0 18px 35px rgba(17, 17, 17, .13),
+        inset 7px 0 0 rgba(255, 255, 255, .16),
+        inset -5px 0 0 rgba(17, 17, 17, .05);
+}
+
+.artist-landing.is-collection .artist-product-grid .product-card__image {
+    position: relative;
+    z-index: 1;
+    object-fit: contain;
+    box-shadow: 0 15px 28px rgba(17, 17, 17, .1);
+}
+
+.artist-landing.is-collection .artist-product-grid .product-card:hover .product-card__image {
+    transform: scale(1.012);
+}
+
+/*
+ * artist.php still renders the legacy "ÚLTIMA COPIA" badge so artist pages
+ * that are not collection-enabled keep their existing behavior. In collection
+ * mode the home-style badge above replaces it to avoid duplicate messaging.
+ */
+.artist-landing.is-collection .artist-product-grid .status-badge {
+    display: none;
+}
+
 @media (max-width: 760px) {
     .artist-collection-promo {
         padding-top: 40px;
@@ -188,5 +252,24 @@
 
     .artist-landing.is-collection .artist-landing__heading h1 {
         font-size: clamp(44px, 14vw, 70px);
+    }
+
+    .artist-landing.is-collection .artist-product-grid .product-card__image-wrap {
+        padding: 24px;
+    }
+
+    .artist-landing.is-collection .artist-product-grid .product-card__image-wrap::after {
+        inset: 23px;
+        box-shadow:
+            6px 7px 0 rgba(255, 255, 255, .8),
+            7px 7px 0 1px rgba(17, 17, 17, .14),
+            0 14px 25px rgba(17, 17, 17, .11);
+    }
+
+    .artist-landing.is-collection .artist-product-grid .product-card__image-wrap::before {
+        top: 8px;
+        left: 8px;
+        padding: 6px 7px;
+        font-size: 7px;
     }
 }

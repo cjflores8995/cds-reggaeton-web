@@ -327,7 +327,7 @@ if($artistCollectionContext === 'product'){
 <?php if($artistCollectionAssetBase !== ''){ ?>
 <link
     rel="stylesheet"
-    href="<?php echo artistCollectionRuntimeEsc($artistCollectionAssetBase); ?>artist-collections.css?v=2"
+    href="<?php echo artistCollectionRuntimeEsc($artistCollectionAssetBase); ?>artist-collections.css?v=3"
 >
 <?php } ?>
 

@@ -1,6 +1,7 @@
 <?php
 require_once __DIR__ . "/config.php";
 require_once __DIR__ . "/seo.php";
+require_once __DIR__ . "/seo-collection-rules.php";
 
 header(
     "Content-Type: application/xml; charset=UTF-8"
@@ -83,7 +84,8 @@ $productResult = mysqli_query(
     "SELECT
         slug,
         picture,
-        moreimages
+        moreimages,
+        release_year
      FROM $tableposts
      WHERE active = 1
        AND stock = 1
@@ -101,6 +103,72 @@ if($productResult){
             $product;
     }
 }
+
+$classicCount = 0;
+$decadeCounts = [];
+
+foreach($products as $sitemapProduct){
+    $yearRaw =
+        trim(
+            (string)(
+                $sitemapProduct["release_year"] ??
+                ""
+            )
+        );
+
+    if(
+        !preg_match(
+            "/^[0-9]{4}$/",
+            $yearRaw
+        )
+    ){
+        continue;
+    }
+
+    $year =
+        (int)$yearRaw;
+
+    if(
+        $year >= seoClassicMinimumYear() &&
+        $year <= seoClassicMaximumYear()
+    ){
+        $classicCount++;
+    }
+
+    $decade =
+        (int)(
+            floor(
+                $year / 10
+            ) * 10
+        );
+
+    if(
+        seoCollectionDecadeIsValid(
+            $decade
+        )
+    ){
+        if(
+            !isset(
+                $decadeCounts[
+                    $decade
+                ]
+            )
+        ){
+            $decadeCounts[
+                $decade
+            ] = 0;
+        }
+
+        $decadeCounts[
+            $decade
+        ]++;
+    }
+}
+
+ksort(
+    $decadeCounts,
+    SORT_NUMERIC
+);
 
 $artists = [];
 
@@ -150,6 +218,20 @@ echo '<?xml version="1.0" encoding="UTF-8"?>';
     <url>
         <loc><?php echo sitemapXml(seoUrl("cds-reggaeton")); ?></loc>
     </url>
+
+    <?php if($classicCount >= seoCollectionMinimumProducts()){ ?>
+        <url>
+            <loc><?php echo sitemapXml(seoClassicCollectionUrl()); ?></loc>
+        </url>
+    <?php } ?>
+
+    <?php foreach($decadeCounts as $decade => $decadeCount){ ?>
+        <?php if($decadeCount >= seoCollectionMinimumProducts()){ ?>
+            <url>
+                <loc><?php echo sitemapXml(seoCollectionDecadeUrl($decade)); ?></loc>
+            </url>
+        <?php } ?>
+    <?php } ?>
 
     <?php foreach($artists as $artist){ ?>
         <url>

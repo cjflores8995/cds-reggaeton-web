@@ -207,6 +207,10 @@ $policyJsonLd = [
                     Cualquier devolución excepcional debe ser coordinada previamente con Reggaeton El Real. No envíes
                     productos de regreso sin confirmación por WhatsApp.
                 </p>
+                <p class="policy-note">
+                    Esta política comercial no limita los derechos irrenunciables que correspondan al consumidor
+                    conforme a la normativa ecuatoriana aplicable.
+                </p>
 
                 <?php if ($whatsappUrl !== "" && $whatsappDisplay !== ""): ?>
                     <a

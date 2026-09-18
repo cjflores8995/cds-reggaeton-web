@@ -24,7 +24,7 @@
             ".shipping-scope-message{margin:12px 0 0;padding:12px 14px;border:1px solid var(--soft-line);background:var(--paper-2);color:var(--ink);font-size:10px;line-height:1.45;}",
             ".shipping-scope-message strong{display:block;margin-bottom:3px;font-size:9px;font-weight:800;letter-spacing:.11em;text-transform:uppercase;}",
             ".cart-shipping-scope{margin:0 0 14px;}",
-            "@media(max-width:700px){.promo-strip__inner.promo-strip__inner--shipping-scope{gap:3px;padding:7px 0;font-size:8px;line-height:1.25;}.promo-strip__inner--shipping-scope .promo-strip__separator{display:none;}.promo-strip__inner--shipping-scope .promo-strip__message{flex:1 1 100%;}.promo-strip__inner--shipping-scope .promo-strip__tertiary{display:none;}}"
+            "@media(max-width:700px){.promo-strip__inner.promo-strip__inner--shipping-scope{gap:3px;padding:7px 0;font-size:8px;line-height:1.25;}.promo-strip__inner--shipping-scope .promo-strip__contact{display:none!important;}.promo-strip__inner--shipping-scope .promo-strip__separator{display:none!important;}.promo-strip__inner--shipping-scope .promo-strip__message{flex:1 1 100%;}.promo-strip__inner--shipping-scope .promo-strip__primary{display:inline-flex!important;}.promo-strip__inner--shipping-scope .promo-strip__secondary{display:none!important;}}"
         ].join("");
 
         document.head.appendChild(style);
@@ -53,31 +53,38 @@
             return;
         }
 
+        var contact = query(
+            ".promo-strip__contact",
+            promo
+        );
+
+        var contactClone = contact
+            ? contact.cloneNode(true)
+            : null;
+
         promo.dataset.shippingScopeReady = "1";
         promo.classList.add(
             "promo-strip__inner--shipping-scope"
         );
         promo.textContent = "";
 
+        if (contactClone) {
+            promo.appendChild(contactClone);
+        }
+
         var messages = [
             {
                 text: "ENVÍOS SOLO DENTRO DE ECUADOR",
-                className: "promo-strip__message"
+                className: "promo-strip__message promo-strip__primary"
             },
             {
                 text: "NO REALIZAMOS ENVÍOS INTERNACIONALES",
-                className: "promo-strip__message"
-            },
-            {
-                text: query(".checkout-page")
-                    ? "SERVIENTREGA"
-                    : "PEDIDOS POR WHATSAPP",
-                className: "promo-strip__message promo-strip__tertiary"
+                className: "promo-strip__message promo-strip__secondary"
             }
         ];
 
-        messages.forEach(function (message, index) {
-            if (index > 0) {
+        messages.forEach(function (message) {
+            if (promo.childNodes.length > 0) {
                 var separator = document.createElement("span");
                 separator.className = "promo-strip__separator";
                 separator.setAttribute("aria-hidden", "true");

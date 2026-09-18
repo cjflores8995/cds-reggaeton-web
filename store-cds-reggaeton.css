@@ -191,6 +191,25 @@ a.reggaeton-category__artist:hover strong {
     text-transform: uppercase;
 }
 
+.reggaeton-category__era--link {
+    color: inherit;
+}
+
+.reggaeton-category__era--link:hover,
+.reggaeton-category__era--link:focus-visible {
+    background: var(--ink);
+    color: var(--white);
+}
+
+.reggaeton-category__era--link:hover small,
+.reggaeton-category__era--link:focus-visible small {
+    color: inherit;
+}
+
+.reggaeton-category__era--classic strong {
+    font-size: clamp(30px, 3.8vw, 48px);
+}
+
 .reggaeton-category__selection {
     padding-top: 74px;
 }

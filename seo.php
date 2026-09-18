@@ -482,28 +482,41 @@ if(!function_exists("seoShippingService")){
         $quitoRate,
         $outsideQuitoRate
     ){
-        $maximumRate = max(
+        $maximumRatePerPound = max(
             (float)$quitoRate,
             (float)$outsideQuitoRate
         );
 
-        return [
-            "@type" =>
-                "ShippingService",
-            "@id" =>
-                seoUrl(
-                    "envios-y-devoluciones#servientrega"
-                ),
-            "name" =>
-                "Servientrega Ecuador",
-            "description" =>
-                "Envíos únicamente dentro de Ecuador. " .
-                "La tarifa depende de la zona y del peso facturable del pedido.",
-            "fulfillmentType" =>
-                "https://schema.org/FulfillmentTypeDelivery",
-            "shippingConditions" => [
+        $shippingConditions = [];
+
+        /*
+         * El checkout acepta hasta 50 CDs y factura una libra por cada grupo
+         * de hasta 5 CDs. Google no permite separar Quito del resto de Ecuador
+         * mediante addressRegion, por lo que publicamos el costo máximo real
+         * aplicable dentro del país para cada banda de cantidad.
+         */
+        for(
+            $billablePounds = 1;
+            $billablePounds <= 10;
+            $billablePounds++
+        ){
+            $minimumItems =
+                (($billablePounds - 1) * 5) + 1;
+
+            $maximumItems =
+                $billablePounds * 5;
+
+            $shippingConditions[] = [
                 "@type" =>
                     "ShippingConditions",
+                "numItems" => [
+                    "@type" =>
+                        "QuantitativeValue",
+                    "minValue" =>
+                        $minimumItems,
+                    "maxValue" =>
+                        $maximumItems
+                ],
                 "shippingDestination" => [
                     "@type" =>
                         "DefinedRegion",
@@ -515,7 +528,8 @@ if(!function_exists("seoShippingService")){
                         "MonetaryAmount",
                     "maxValue" =>
                         round(
-                            $maximumRate,
+                            $maximumRatePerPound *
+                            $billablePounds,
                             2
                         ),
                     "currency" =>
@@ -535,7 +549,26 @@ if(!function_exists("seoShippingService")){
                             "DAY"
                     ]
                 ]
-            ]
+            ];
+        }
+
+        return [
+            "@type" =>
+                "ShippingService",
+            "@id" =>
+                seoUrl(
+                    "envios-y-devoluciones#servientrega"
+                ),
+            "name" =>
+                "Servientrega Ecuador",
+            "description" =>
+                "Envíos únicamente dentro de Ecuador. " .
+                "La tarifa depende de la zona y del peso facturable del pedido. " .
+                "Quito utiliza una tarifa menor que el máximo nacional publicado.",
+            "fulfillmentType" =>
+                "https://schema.org/FulfillmentTypeDelivery",
+            "shippingConditions" =>
+                $shippingConditions
         ];
     }
 }

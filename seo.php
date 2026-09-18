@@ -430,6 +430,138 @@ if(!function_exists("seoPublicFaviconUrl")){
     }
 }
 
+if(!function_exists("seoMerchantReturnPolicy")){
+    function seoMerchantReturnPolicy(){
+        return [
+            "@type" =>
+                "MerchantReturnPolicy",
+            "@id" =>
+                seoUrl(
+                    "envios-y-devoluciones#devoluciones"
+                ),
+            "applicableCountry" =>
+                "EC",
+            "returnPolicyCategory" =>
+                "https://schema.org/MerchantReturnNotPermitted",
+            "merchantReturnLink" =>
+                seoUrl(
+                    "envios-y-devoluciones#devoluciones"
+                )
+        ];
+    }
+}
+
+if(!function_exists("seoOfferShippingDetails")){
+    function seoOfferShippingDetails(
+        $quitoRate,
+        $outsideQuitoRate
+    ){
+        $maximumRate = max(
+            (float)$quitoRate,
+            (float)$outsideQuitoRate
+        );
+
+        return [
+            "@type" =>
+                "OfferShippingDetails",
+            "shippingRate" => [
+                "@type" =>
+                    "MonetaryAmount",
+                "maxValue" =>
+                    round(
+                        $maximumRate,
+                        2
+                    ),
+                "currency" =>
+                    "USD"
+            ],
+            "shippingDestination" => [
+                "@type" =>
+                    "DefinedRegion",
+                "addressCountry" =>
+                    "EC"
+            ],
+            "deliveryTime" => [
+                "@type" =>
+                    "ShippingDeliveryTime",
+                "transitTime" => [
+                    "@type" =>
+                        "QuantitativeValue",
+                    "minValue" =>
+                        1,
+                    "maxValue" =>
+                        3,
+                    "unitCode" =>
+                        "DAY"
+                ]
+            ]
+        ];
+    }
+}
+
+if(!function_exists("seoShippingService")){
+    function seoShippingService(
+        $quitoRate,
+        $outsideQuitoRate
+    ){
+        $maximumRate = max(
+            (float)$quitoRate,
+            (float)$outsideQuitoRate
+        );
+
+        return [
+            "@type" =>
+                "ShippingService",
+            "@id" =>
+                seoUrl(
+                    "envios-y-devoluciones#servientrega"
+                ),
+            "name" =>
+                "Servientrega Ecuador",
+            "description" =>
+                "Envíos únicamente dentro de Ecuador. " .
+                "La tarifa depende de la zona y del peso facturable del pedido.",
+            "fulfillmentType" =>
+                "https://schema.org/FulfillmentTypeDelivery",
+            "shippingConditions" => [
+                "@type" =>
+                    "ShippingConditions",
+                "shippingDestination" => [
+                    "@type" =>
+                        "DefinedRegion",
+                    "addressCountry" =>
+                        "EC"
+                ],
+                "shippingRate" => [
+                    "@type" =>
+                        "MonetaryAmount",
+                    "maxValue" =>
+                        round(
+                            $maximumRate,
+                            2
+                        ),
+                    "currency" =>
+                        "USD"
+                ],
+                "transitTime" => [
+                    "@type" =>
+                        "ServicePeriod",
+                    "duration" => [
+                        "@type" =>
+                            "QuantitativeValue",
+                        "minValue" =>
+                            1,
+                        "maxValue" =>
+                            3,
+                        "unitCode" =>
+                            "DAY"
+                    ]
+                ]
+            ]
+        ];
+    }
+}
+
 if(!function_exists("seoValidUrl")){
     function seoValidUrl($value){
         $value = trim(

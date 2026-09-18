@@ -244,7 +244,14 @@ $seoStoreNode = [
         '@type' => 'Country',
         'name' => 'Ecuador'
     ],
-    'currenciesAccepted' => 'USD'
+    'currenciesAccepted' => 'USD',
+    'hasMerchantReturnPolicy' =>
+        seoMerchantReturnPolicy(),
+    'hasShippingService' =>
+        seoShippingService(
+            $servientregaquito,
+            $servientregaoutsidequito
+        )
 ];
 
 $seoPhoneNumber = seoPhone(

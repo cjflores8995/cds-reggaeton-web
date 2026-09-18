@@ -187,6 +187,13 @@ require __DIR__ . "/artist-collection-runtime.php";
             <p>Compra final por WhatsApp</p>
             <a
                 class="footer-guide-link"
+                href="<?php echo storeFooterEsc($footerAssetBaseUrl); ?>cds-reggaeton"
+            >
+                CDs de reggaetón
+                <span aria-hidden="true">→</span>
+            </a>
+            <a
+                class="footer-guide-link"
                 href="<?php echo storeFooterEsc($footerAssetBaseUrl); ?>envios-y-devoluciones"
             >
                 Envíos y devoluciones

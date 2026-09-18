@@ -1,5 +1,6 @@
 <?php
 require_once __DIR__ . '/config.php';
+require_once __DIR__ . '/seo.php';
 
 function checkoutEsc($value): string
 {
@@ -26,6 +27,12 @@ function checkoutBaseUrl(): string
 }
 
 $storeBaseUrl = checkoutBaseUrl();
+$publicWhatsapp =
+    $saleswhatsapp ??
+    $adminwhatsapp ??
+    '';
+$whatsappDisplay = seoWhatsappDisplay($publicWhatsapp);
+$whatsappUrl = seoWhatsappUrl($publicWhatsapp);
 ?>
 <!DOCTYPE html>
 <html lang="es">
@@ -34,7 +41,8 @@ $storeBaseUrl = checkoutBaseUrl();
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="robots" content="noindex,nofollow,noarchive">
     <meta name="description" content="Finaliza tu compra de CDs de reggaetón y selecciona el envío por Servientrega.">
-    <link rel="icon" href="<?php echo checkoutEsc($storeBaseUrl); ?>images/logo.png" type="image/png">
+    <link rel="icon" href="<?php echo checkoutEsc(seoPublicFaviconUrl()); ?>" type="image/png">
+    <link rel="apple-touch-icon" href="<?php echo checkoutEsc(seoPublicFaviconUrl()); ?>">
     <title>Finalizar compra | <?php echo checkoutEsc($websitetitle); ?></title>
 
     <link rel="stylesheet" href="<?php echo checkoutEsc($storeBaseUrl); ?>store.css?v=2">
@@ -58,11 +66,21 @@ $storeBaseUrl = checkoutBaseUrl();
 <body>
     <div class="promo-strip">
         <div class="page-shell promo-strip__inner">
-            <span>ENVÍOS EN ECUADOR</span>
+            <?php if ($whatsappUrl !== '' && $whatsappDisplay !== ''): ?>
+                <a
+                    class="promo-strip__contact"
+                    href="<?php echo checkoutEsc($whatsappUrl); ?>"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    aria-label="Contactar por WhatsApp al <?php echo checkoutEsc($whatsappDisplay); ?>"
+                >
+                    WHATSAPP <?php echo checkoutEsc($whatsappDisplay); ?>
+                </a>
+                <span>•</span>
+            <?php endif; ?>
+            <span>ENVÍOS SOLO DENTRO DE ECUADOR</span>
             <span>•</span>
             <span>SERVIENTREGA</span>
-            <span>•</span>
-            <span>COMPRA FINAL POR WHATSAPP</span>
         </div>
     </div>
 

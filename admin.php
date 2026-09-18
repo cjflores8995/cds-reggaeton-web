@@ -1698,7 +1698,14 @@ if(isset($_GET["editpost"])){
                                     " " .
                                     $albumName .
                                     " " .
-                                    $title
+                                    $title .
+                                    " " .
+                                    trim(
+                                        (string)(
+                                            $post["gtin"] ??
+                                            ""
+                                        )
+                                    )
                                 );
                                 ?>
 
@@ -1911,7 +1918,14 @@ if(isset($_GET["editpost"])){
                                     " " .
                                     $albumName .
                                     " " .
-                                    $title
+                                    $title .
+                                    " " .
+                                    trim(
+                                        (string)(
+                                            $post["gtin"] ??
+                                            ""
+                                        )
+                                    )
                                 );
 
                                 $soldDate = adminFormatDate(

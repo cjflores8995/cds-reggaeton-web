@@ -2,6 +2,15 @@ Options -MultiViews -Indexes
 
 RewriteEngine On
 
+# Canonical public origin. These rules only affect the real production domain,
+# so localhost and other development hosts are left untouched.
+RewriteCond %{HTTP_HOST} ^www\.reggaetonelreal\.com$ [NC]
+RewriteRule ^ https://reggaetonelreal.com%{REQUEST_URI} [R=301,L,NE]
+
+RewriteCond %{HTTP_HOST} ^reggaetonelreal\.com$ [NC]
+RewriteCond %{HTTPS} !=on
+RewriteRule ^ https://reggaetonelreal.com%{REQUEST_URI} [R=301,L,NE]
+
 # Security Fase 3/6/7 + Admin/System Logs - deny direct web access to
 # runtime/source files and common backup artifacts. Server-side require/include
 # continues to work.

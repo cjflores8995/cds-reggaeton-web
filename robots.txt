@@ -21,6 +21,5 @@ Disallow: /thumbnailgenerator.php
 Disallow: /config.php
 Disallow: /dbcon.php
 
-# IMPORTANT:
-# sitemap.php is dynamic and must be submitted in Google Search Console
-# after the Azure production hostname is known.
+# Canonical production sitemap for search engines.
+Sitemap: https://reggaetonelreal.com/sitemap.xml

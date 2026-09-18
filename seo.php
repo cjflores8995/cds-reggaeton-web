@@ -358,6 +358,78 @@ if(!function_exists("seoPhone")){
     }
 }
 
+if(!function_exists("seoWhatsappDigits")){
+    function seoWhatsappDigits($value){
+        $digits = preg_replace(
+            "/\\D+/",
+            "",
+            (string)$value
+        );
+
+        if(
+            substr(
+                $digits,
+                0,
+                2
+            ) === "00"
+        ){
+            $digits = substr(
+                $digits,
+                2
+            );
+        }
+
+        return $digits;
+    }
+}
+
+if(!function_exists("seoWhatsappDisplay")){
+    function seoWhatsappDisplay($value){
+        $digits = seoWhatsappDigits(
+            $value
+        );
+
+        if(
+            strlen($digits) === 12 &&
+            substr($digits, 0, 3) === "593"
+        ){
+            return
+                "+593 " .
+                substr($digits, 3, 2) .
+                " " .
+                substr($digits, 5, 3) .
+                " " .
+                substr($digits, 8, 4);
+        }
+
+        return
+            $digits === ""
+                ? ""
+                : "+" . $digits;
+    }
+}
+
+if(!function_exists("seoWhatsappUrl")){
+    function seoWhatsappUrl($value){
+        $digits = seoWhatsappDigits(
+            $value
+        );
+
+        return
+            $digits === ""
+                ? ""
+                : "https://wa.me/" . $digits;
+    }
+}
+
+if(!function_exists("seoPublicFaviconUrl")){
+    function seoPublicFaviconUrl(){
+        return seoUrl(
+            "images/branding/originals/reggaeton-el-real-isotipo.png"
+        );
+    }
+}
+
 if(!function_exists("seoValidUrl")){
     function seoValidUrl($value){
         $value = trim(

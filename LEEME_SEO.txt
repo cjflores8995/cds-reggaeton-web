@@ -68,15 +68,20 @@ IMPLEMENTADO:
 
 4. SITEMAP
 - sitemap.php dinámico.
+- Endpoint público:
+  https://reggaetonelreal.com/sitemap.xml
 - Incluye:
   home
   artistas con stock
   productos disponibles
   imágenes de producto
 - Un CD vendido desaparece automáticamente del sitemap.
+- robots.txt declara el sitemap con URL absoluta.
 
 5. ROBOTS / NOINDEX
 - robots.txt bloquea endpoints administrativos.
+- robots.txt declara:
+  Sitemap: https://reggaetonelreal.com/sitemap.xml
 - checkout.php tiene noindex.
 - config.php envía X-Robots-Tag noindex a admin, checkout y endpoints.
 - Productos y artistas públicos sí son indexables.
@@ -94,25 +99,37 @@ IMPLEMENTADO:
 - Miniaturas lazy.
 
 7. CANONICALIZACIÓN
-- index.php?post=... ahora hace 301 permanente hacia product.php?post=...
+- index.php?post=... redirige hacia la URL pública de producto.
 - Home, productos y artistas tienen canonical explícito.
+- Producción normaliza por 301:
+  http://reggaetonelreal.com/* -> https://reggaetonelreal.com/*
+  https://www.reggaetonelreal.com/* -> https://reggaetonelreal.com/*
+- Las reglas anteriores solo aplican al dominio real y no afectan localhost.
 
-PENDIENTE CUANDO EXISTA EL HOST DE AZURE:
+PENDIENTE EN LA CUENTA DE GOOGLE:
 1. Abrir Google Search Console.
-2. Crear propiedad del sitio.
-3. Enviar:
-   https://TU-HOST/sitemap.php
-4. Añadir al robots.txt:
-   Sitemap: https://TU-HOST/sitemap.php
-5. Probar homepage y productos en Google Rich Results Test.
-6. Solicitar indexación de home y 3-5 productos importantes.
-7. Si luego compras dominio, redirigir *.azurewebsites.net al dominio final
-   para evitar dos hosts indexables.
+2. Crear una propiedad de dominio:
+   reggaetonelreal.com
+3. Verificar la propiedad mediante el registro DNS TXT que entregue Google.
+4. Enviar el sitemap:
+   https://reggaetonelreal.com/sitemap.xml
+5. Inspeccionar y solicitar indexación de:
+   https://reggaetonelreal.com/
+   y varias fichas de CDs prioritarios.
+6. Revisar los informes de:
+   Indexación de páginas
+   Sitemaps
+   Fichas de comerciantes
+   Fragmentos de producto
+
+NOTA SOBRE LASTMOD:
+- No se publica <lastmod> todavía porque la base histórica dispone de fecha de
+  creación pero no de una fecha de última modificación fiable para todas las
+  páginas. No debe generarse una fecha artificial.
 
 IMPORTANTE:
 - SEO no garantiza posición #1.
 - No se usó keyword stuffing.
 - No se inventaron reviews ni ratings.
 - No se añadieron meta keywords porque Google no las usa para ranking.
-- Las páginas de producto solo existen en Google mientras stock=1, coherente
-  con la regla de negocio actual de ocultar vendidos.
+- Las páginas de producto indexables corresponden a CDs activos y disponibles.

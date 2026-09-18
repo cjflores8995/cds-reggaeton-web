@@ -106,21 +106,52 @@ IMPLEMENTADO:
   https://www.reggaetonelreal.com/* -> https://reggaetonelreal.com/*
 - Las reglas anteriores solo aplican al dominio real y no afectan localhost.
 
-PENDIENTE EN LA CUENTA DE GOOGLE:
-1. Abrir Google Search Console.
-2. Crear una propiedad de dominio:
-   reggaetonelreal.com
-3. Verificar la propiedad mediante el registro DNS TXT que entregue Google.
-4. Enviar el sitemap:
-   https://reggaetonelreal.com/sitemap.xml
-5. Inspeccionar y solicitar indexación de:
-   https://reggaetonelreal.com/
-   y varias fichas de CDs prioritarios.
-6. Revisar los informes de:
-   Indexación de páginas
-   Sitemaps
-   Fichas de comerciantes
-   Fragmentos de producto
+
+8. GOOGLE MERCHANT CENTER
+- Feed dinámico RSS 2.0:
+  https://reggaetonelreal.com/google-merchant.xml
+- Fuente:
+  google-merchant.php
+- Solo publica productos:
+  active = 1
+  stock = 1
+  normalprice > 0
+  slug definido
+  imagen principal definida
+- Un CD vendido desaparece automáticamente del feed.
+- Campos enviados:
+  id
+  title
+  description
+  link
+  image_link
+  availability = in stock
+  price en USD
+  condition = new/used según el estado real del CD
+  product_type = Música > CDs > Reggaetón
+- No se inventan GTIN, MPN ni brand.
+- No se envía identifier_exists=no automáticamente porque varios CDs pueden
+  tener UPC/EAN real aunque todavía no exista el campo correspondiente en BD.
+- El endpoint envía X-Robots-Tag noindex para que funcione como fuente de datos,
+  no como una página destinada a resultados orgánicos.
+
+GOOGLE SEARCH CONSOLE:
+- Propiedad de dominio reggaetonelreal.com verificada.
+- sitemap.xml enviado y procesado correctamente.
+- Homepage y fichas de producto confirmadas como indexadas.
+- Product y Merchant Listing detectados por Google.
+
+PENDIENTE EN GOOGLE MERCHANT CENTER:
+1. Crear o completar la cuenta de Merchant Center para Reggaeton El Real.
+2. Añadir una fuente de productos mediante URL.
+3. Usar:
+   https://reggaetonelreal.com/google-merchant.xml
+4. Configurar Ecuador como mercado.
+5. Configurar el envío de Servientrega en la cuenta usando las condiciones
+   comerciales reales de la tienda.
+6. Revisar diagnósticos antes de activar fichas gratuitas.
+7. Fase posterior:
+   incorporar UPC/EAN/GTIN real como campo opcional del administrador.
 
 NOTA SOBRE LASTMOD:
 - No se publica <lastmod> todavía porque la base histórica dispone de fecha de

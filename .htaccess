@@ -32,6 +32,7 @@ RewriteRule ^cd/([a-z0-9-]+)/?$ product-route.php?slug=$1 [L,QSA,NC]
 RewriteRule ^artista/([a-z0-9-]+)/?$ artist-route.php?slug=$1 [L,QSA,NC]
 RewriteRule ^como-comprar/?$ como-comprar.php [L,QSA,NC]
 RewriteRule ^envios-y-devoluciones/?$ shipping-returns.php [L,QSA,NC]
+RewriteRule ^cds-reggaeton/?$ cds-reggaeton.php [L,QSA,NC]
 
 # Cleaner sitemap endpoint.
 RewriteRule ^sitemap\.xml$ sitemap.php [L,QSA,NC]

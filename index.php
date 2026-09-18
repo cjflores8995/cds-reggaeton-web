@@ -719,6 +719,14 @@ $seoHomeJsonLd = [
                         Cada publicación corresponde a una sola copia física. Mostramos fotografías reales del ejemplar,
                         su año, estado y precio antes de coordinar la compra y el envío por WhatsApp.
                     </p>
+                    <p>
+                        <a
+                            class="seo-inline-link"
+                            href="<?php echo e(seoUrl('cds-reggaeton')); ?>"
+                        >
+                            Explora nuestra guía y catálogo de CDs de reggaetón en Ecuador.
+                        </a>
+                    </p>
                 </div>
             </div>
         </section>

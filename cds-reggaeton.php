@@ -580,7 +580,7 @@ $jsonLd = [
     >
     <link
         rel="stylesheet"
-        href="<?php echo cdsReggaetonEsc($storeBaseUrl); ?>store-cds-reggaeton.css?v=1"
+        href="<?php echo cdsReggaetonEsc($storeBaseUrl); ?>store-cds-reggaeton.css?v=2"
     >
     <link
         rel="stylesheet"

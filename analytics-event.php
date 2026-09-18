@@ -137,7 +137,7 @@ if(!$event){
 $userAgent = analyticsSafeText($_SERVER["HTTP_USER_AGENT"] ?? "", 512);
 $classification = analyticsPhase7ExtendedBotClassification(
     $userAgent,
-    analyticsTrafficClassification($userAgent)
+    analyticsTrafficClassification($userAgent, $connection)
 );
 $session = analyticsGetOrCreateSession(
     $connection,

@@ -85,6 +85,12 @@ if (!$product) {
 }
 
 $storeBaseUrl = rtrim((string)$baseurl, '/') . '/';
+$publicWhatsapp =
+    $saleswhatsapp ??
+    $adminwhatsapp ??
+    '';
+$whatsappDisplay = seoWhatsappDisplay($publicWhatsapp);
+$whatsappUrl = seoWhatsappUrl($publicWhatsapp);
 $artist = trim(
     (string)(
         $product['artist_name'] ??
@@ -168,6 +174,15 @@ header('X-Robots-Tag: noindex, follow', true);
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link
+        rel="icon"
+        href="<?php echo soldProductEsc(seoPublicFaviconUrl()); ?>"
+        type="image/png"
+    >
+    <link
+        rel="apple-touch-icon"
+        href="<?php echo soldProductEsc(seoPublicFaviconUrl()); ?>"
+    >
     <meta name="robots" content="noindex,follow">
     <title>Vendido · <?php echo soldProductEsc($displayName); ?> | Reggaeton El Real</title>
     <meta
@@ -207,11 +222,21 @@ header('X-Robots-Tag: noindex, follow', true);
 <body class="public-sold-product">
     <div class="promo-strip">
         <div class="page-shell promo-strip__inner">
+            <?php if ($whatsappUrl !== '' && $whatsappDisplay !== ''): ?>
+                <a
+                    class="promo-strip__contact"
+                    href="<?php echo soldProductEsc($whatsappUrl); ?>"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    aria-label="Contactar por WhatsApp al <?php echo soldProductEsc($whatsappDisplay); ?>"
+                >
+                    WHATSAPP <?php echo soldProductEsc($whatsappDisplay); ?>
+                </a>
+                <span>•</span>
+            <?php endif; ?>
             <span>ENVÍOS EN ECUADOR</span>
             <span>•</span>
             <span>UNA SOLA UNIDAD POR CD</span>
-            <span>•</span>
-            <span>PEDIDOS POR WHATSAPP</span>
         </div>
     </div>
 

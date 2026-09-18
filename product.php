@@ -54,7 +54,13 @@ function legacyImageUrl(string $path, string $storeBaseUrl): string
 }
 
 $storeBaseUrl = buildStoreBaseUrl();
-$whatsappNumber = preg_replace('/\D+/', '', (string)$adminwhatsapp);
+$publicWhatsapp =
+    $saleswhatsapp ??
+    $adminwhatsapp ??
+    '';
+$whatsappNumber = seoWhatsappDigits($publicWhatsapp);
+$whatsappDisplay = seoWhatsappDisplay($publicWhatsapp);
+$whatsappUrl = seoWhatsappUrl($publicWhatsapp);
 $productSlug = trim((string)($_GET['slug'] ?? ''));
 
 if ($productSlug === '') {
@@ -551,8 +557,12 @@ if ($relatedResult) {
     >
     <link
         rel="icon"
-        href="<?php echo e(seoUrl('images/logo.png')); ?>"
+        href="<?php echo e(seoPublicFaviconUrl()); ?>"
         type="image/png"
+    >
+    <link
+        rel="apple-touch-icon"
+        href="<?php echo e(seoPublicFaviconUrl()); ?>"
     >
 
     <meta property="og:type" content="product">
@@ -633,11 +643,21 @@ if ($relatedResult) {
 <body>
     <div class="promo-strip">
         <div class="page-shell promo-strip__inner">
+            <?php if ($whatsappUrl !== '' && $whatsappDisplay !== ''): ?>
+                <a
+                    class="promo-strip__contact"
+                    href="<?php echo e($whatsappUrl); ?>"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    aria-label="Contactar por WhatsApp al <?php echo e($whatsappDisplay); ?>"
+                >
+                    WHATSAPP <?php echo e($whatsappDisplay); ?>
+                </a>
+                <span>•</span>
+            <?php endif; ?>
             <span>ENVÍOS EN ECUADOR</span>
             <span>•</span>
             <span>UNA SOLA UNIDAD POR CD</span>
-            <span>•</span>
-            <span>PEDIDOS POR WHATSAPP</span>
         </div>
     </div>
 

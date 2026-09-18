@@ -451,49 +451,27 @@ if(!function_exists("seoMerchantReturnPolicy")){
     }
 }
 
-if(!function_exists("seoOfferShippingDetails")){
-    function seoOfferShippingDetails(
-        $quitoRate,
-        $outsideQuitoRate
-    ){
-        $maximumRate = max(
-            (float)$quitoRate,
-            (float)$outsideQuitoRate
-        );
+if(!function_exists("seoMerchantReturnPolicyReference")){
+    function seoMerchantReturnPolicyReference(){
+        return [
+            "@id" =>
+                seoUrl(
+                    "envios-y-devoluciones#devoluciones"
+                )
+        ];
+    }
+}
 
+if(!function_exists("seoOfferShippingDetails")){
+    function seoOfferShippingDetails(){
         return [
             "@type" =>
                 "OfferShippingDetails",
-            "shippingRate" => [
-                "@type" =>
-                    "MonetaryAmount",
-                "maxValue" =>
-                    round(
-                        $maximumRate,
-                        2
-                    ),
-                "currency" =>
-                    "USD"
-            ],
-            "shippingDestination" => [
-                "@type" =>
-                    "DefinedRegion",
-                "addressCountry" =>
-                    "EC"
-            ],
-            "deliveryTime" => [
-                "@type" =>
-                    "ShippingDeliveryTime",
-                "transitTime" => [
-                    "@type" =>
-                        "QuantitativeValue",
-                    "minValue" =>
-                        1,
-                    "maxValue" =>
-                        3,
-                    "unitCode" =>
-                        "DAY"
-                ]
+            "hasShippingService" => [
+                "@id" =>
+                    seoUrl(
+                        "envios-y-devoluciones#servientrega"
+                    )
             ]
         ];
     }

@@ -98,6 +98,20 @@ button {
     text-align: center;
 }
 
+.promo-strip__contact {
+    display: inline-flex;
+    align-items: center;
+    color: inherit;
+    border-bottom: 1px solid rgba(255, 255, 255, .5);
+    line-height: 1.2;
+    white-space: nowrap;
+}
+
+.promo-strip__contact:hover,
+.promo-strip__contact:focus-visible {
+    border-bottom-color: currentColor;
+}
+
 .site-header {
     position: sticky;
     top: 0;

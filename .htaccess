@@ -18,7 +18,7 @@ RewriteRule ^favicon\.ico$ images/branding/originals/reggaeton-el-real-isotipo.p
 # Security Fase 3/6/7 + Admin/System Logs - deny direct web access to
 # runtime/source files and common backup artifacts. Server-side require/include
 # continues to work.
-RewriteRule ^(?:env(?:\.[^/]+)?\.php|dbcon\.php|config\.php|admin-auth\.php|admin-system-log\.php|admin-cd-audit\.php|admin-image-audit\.php|admin-artist-settings-audit\.php|admin-technical-error-log\.php|admin-upload-security\.php|admin-price-catalog-helper\.php|admin-sales-helper\.php|public-request-security\.php|security-bootstrap\.php|functions\.php|uilang\.php|thumbnailgenerator\.php|artistshelper\.php|artist-collection-runtime\.php|store-admin-sold-preview\.php|slughelper\.php|productimages\.php|seo\.php)$ - [F,L,NC]
+RewriteRule ^(?:env(?:\.[^/]+)?\.php|dbcon\.php|config\.php|admin-auth\.php|admin-system-log\.php|admin-cd-audit\.php|admin-image-audit\.php|admin-artist-settings-audit\.php|admin-technical-error-log\.php|admin-upload-security\.php|admin-price-catalog-helper\.php|admin-sales-helper\.php|public-request-security\.php|security-bootstrap\.php|functions\.php|uilang\.php|thumbnailgenerator\.php|artistshelper\.php|artist-collection-runtime\.php|store-admin-sold-preview\.php|slughelper\.php|productimages\.php|seo\.php|seo-collection-rules\.php)$ - [F,L,NC]
 RewriteRule ^(?:database|\.git)(?:/|$) - [F,L,NC]
 RewriteRule (^|/)\.(?!well-known(?:/|$)) - [F,L]
 RewriteRule \.(?:sql|log|bak|backup|old|orig|save|swp|zip|tar|gz|7z)$ - [F,L,NC]
@@ -33,6 +33,8 @@ RewriteRule ^artista/([a-z0-9-]+)/?$ artist-route.php?slug=$1 [L,QSA,NC]
 RewriteRule ^como-comprar/?$ como-comprar.php [L,QSA,NC]
 RewriteRule ^envios-y-devoluciones/?$ shipping-returns.php [L,QSA,NC]
 RewriteRule ^cds-reggaeton/?$ cds-reggaeton.php [L,QSA,NC]
+RewriteRule ^reggaeton-clasico/?$ seo-collection.php?collection=classic [L,QSA,NC]
+RewriteRule ^decada/((?:19|20)[0-9]0)/?$ seo-collection.php?decade=$1 [L,QSA,NC]
 
 # Cleaner sitemap endpoint.
 RewriteRule ^sitemap\.xml$ sitemap.php [L,QSA,NC]

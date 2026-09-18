@@ -147,6 +147,10 @@ echo '<?xml version="1.0" encoding="UTF-8"?>';
         <loc><?php echo sitemapXml(seoUrl("envios-y-devoluciones")); ?></loc>
     </url>
 
+    <url>
+        <loc><?php echo sitemapXml(seoUrl("cds-reggaeton")); ?></loc>
+    </url>
+
     <?php foreach($artists as $artist){ ?>
         <url>
             <loc><?php echo sitemapXml(

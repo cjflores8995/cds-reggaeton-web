@@ -408,7 +408,7 @@ require __DIR__ . "/artist-collection-runtime.php";
     ></script>
     <script
         defer
-        src="<?php echo storeFooterEsc($footerAssetBaseUrl); ?>store-buying-guide.js?v=1"
+        src="<?php echo storeFooterEsc($footerAssetBaseUrl); ?>store-buying-guide.js?v=2"
     ></script>
 
     <?php if(!$footerDisableAnalytics){ ?>

@@ -185,7 +185,13 @@ require __DIR__ . "/artist-collection-runtime.php";
             <p class="footer-label">COMPRA</p>
             <p>Servientrega · solo Ecuador</p>
             <p>Compra final por WhatsApp</p>
-            <p>No realizamos envíos internacionales</p>
+            <a
+                class="footer-guide-link"
+                href="<?php echo storeFooterEsc($footerAssetBaseUrl); ?>envios-y-devoluciones"
+            >
+                Envíos y devoluciones
+                <span aria-hidden="true">→</span>
+            </a>
         </div>
 
         <div class="site-footer__column">

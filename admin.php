@@ -1438,6 +1438,21 @@ if(isset($_GET["editpost"])){
                                 value="<?php echo adminEsc($editRow["discountprice"]); ?>"
                             >
                         </div>
+
+                        <div class="full">
+                            <label>UPC / EAN / GTIN</label>
+                            <input
+                                type="text"
+                                name="gtin"
+                                inputmode="numeric"
+                                maxlength="24"
+                                placeholder="Ej. 602517838358"
+                                value="<?php echo adminEsc($editRow["gtin"] ?? ""); ?>"
+                            >
+                            <div class="admin-muted" style="margin-top:-7px;margin-bottom:14px;">
+                                Opcional. Usa el código real impreso junto al código de barras del CD.
+                            </div>
+                        </div>
                     </div>
 
                     <div class="admin-artist-anchor"></div>

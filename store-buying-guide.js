@@ -19,18 +19,17 @@
             return configured.replace(/\/?$/, "/");
         }
 
-        var path = String(window.location.pathname || "/");
-        var segments = path.split("/").filter(Boolean);
+        var script = query('script[src*="store-buying-guide.js"]');
 
-        if (segments.length > 0) {
-            segments.pop();
+        if (script && script.src) {
+            try {
+                return new URL("./", script.src).href;
+            } catch (error) {
+                /* Continue with the current origin. */
+            }
         }
 
-        return (
-            window.location.origin +
-            "/" +
-            (segments.length > 0 ? segments.join("/") + "/" : "")
-        );
+        return window.location.origin + "/";
     }
 
     function injectStyles() {
@@ -57,9 +56,29 @@
         var url = baseUrl() + "como-comprar";
 
         queryAll(".main-nav").forEach(function (nav) {
+            var existing = queryAll("a[href]", nav).some(function (link) {
+                try {
+                    var href = new URL(
+                        link.getAttribute("href"),
+                        window.location.href
+                    );
+
+                    return href.pathname
+                        .replace(/\/+$/, "")
+                        .toLowerCase()
+                        .endsWith("/como-comprar");
+                } catch (error) {
+                    return false;
+                }
+            });
+
             if (
+                existing ||
                 query("[data-how-to-buy-link='1']", nav) ||
-                window.location.pathname.toLowerCase().indexOf("/como-comprar") !== -1
+                window.location.pathname
+                    .replace(/\/+$/, "")
+                    .toLowerCase()
+                    .endsWith("/como-comprar")
             ) {
                 return;
             }
@@ -69,13 +88,7 @@
             link.dataset.howToBuyLink = "1";
             link.textContent = "CÓMO COMPRAR";
 
-            var last = nav.lastElementChild;
-
-            if (last) {
-                nav.insertBefore(link, last);
-            } else {
-                nav.appendChild(link);
-            }
+            nav.appendChild(link);
         });
     }
 

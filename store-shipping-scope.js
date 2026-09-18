@@ -24,7 +24,7 @@
             ".shipping-scope-message{margin:12px 0 0;padding:12px 14px;border:1px solid var(--soft-line);background:var(--paper-2);color:var(--ink);font-size:10px;line-height:1.45;}",
             ".shipping-scope-message strong{display:block;margin-bottom:3px;font-size:9px;font-weight:800;letter-spacing:.11em;text-transform:uppercase;}",
             ".cart-shipping-scope{margin:0 0 14px;}",
-            "@media(max-width:700px){.promo-strip__inner.promo-strip__inner--shipping-scope{gap:3px;padding:7px 0;font-size:8px;line-height:1.25;}.promo-strip__inner--shipping-scope .promo-strip__contact{display:none!important;}.promo-strip__inner--shipping-scope .promo-strip__separator{display:none!important;}.promo-strip__inner--shipping-scope .promo-strip__message{flex:1 1 100%;}.promo-strip__inner--shipping-scope .promo-strip__primary{display:inline-flex!important;}.promo-strip__inner--shipping-scope .promo-strip__secondary{display:none!important;}}"
+            "@media(max-width:700px){.promo-strip__inner.promo-strip__inner--shipping-scope{gap:3px;padding:7px 0;font-size:8px;line-height:1.25;justify-content:center;}.promo-strip__inner--shipping-scope .promo-strip__contact{display:inline-flex!important;}.promo-strip__inner--shipping-scope .promo-strip__separator{display:none!important;}.promo-strip__inner--shipping-scope .promo-strip__message{display:none!important;}}"
         ].join("");
 
         document.head.appendChild(style);

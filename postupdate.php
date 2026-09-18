@@ -7,6 +7,7 @@ require_once("productimages.php");
 require_once("product-image-storage.php");
 require_once("artistshelper.php");
 require_once("product-tiktok.php");
+require_once("product-gtin.php");
 
 productTikTokEnsureColumn(
     $connection,
@@ -298,6 +299,25 @@ $tiktokUrl = mysqli_real_escape_string(
     $tiktokResult["url"]
 );
 
+$gtinResult = productGtinNormalize(
+    isset($_POST["gtin"])
+        ? $_POST["gtin"]
+        : ($row["gtin"] ?? "")
+);
+
+if(!$gtinResult["ok"]){
+    postUpdateRespond(
+        false,
+        $gtinResult["message"],
+        $id
+    );
+}
+
+$gtinEscaped = mysqli_real_escape_string(
+    $connection,
+    $gtinResult["gtin"]
+);
+
 /*
  * La disponibilidad se administra exclusivamente desde Inicio.
  * El UPDATE de edición no modifica stock ni sold_at.
@@ -530,6 +550,7 @@ $updateSql =
     "discountprice = '$discountprice', " .
     "options = '$moreoptions', " .
     "moreimages = '$moreimagesEscaped', " .
+    "gtin = '$gtinEscaped', " .
     "tiktok_url = '$tiktokUrl' " .
     "WHERE id = $id";
 

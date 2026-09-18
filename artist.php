@@ -339,6 +339,18 @@ $jsonLd = [
                     'position' =>
                         2,
                     'name' =>
+                        'CDs de reggaetón',
+                    'item' =>
+                        seoUrl(
+                            'cds-reggaeton'
+                        )
+                ],
+                [
+                    '@type' =>
+                        'ListItem',
+                    'position' =>
+                        3,
+                    'name' =>
                         $artistName,
                     'item' =>
                         $canonical
@@ -493,6 +505,10 @@ $jsonLd = [
                 TIENDA
             </a>
             <span>/</span>
+            <a href="<?php echo artistEsc(seoUrl('cds-reggaeton')); ?>">
+                CDS DE REGGAETÓN
+            </a>
+            <span>/</span>
             <span><?php echo artistEsc($artistName); ?></span>
         </div>
 
@@ -603,9 +619,9 @@ $jsonLd = [
             <div class="artist-landing__back">
                 <a
                     class="button button--dark"
-                    href="<?php echo artistEsc(seoUrl('#catalogo')); ?>"
+                    href="<?php echo artistEsc(seoUrl('cds-reggaeton')); ?>"
                 >
-                    VER TODO EL CATÁLOGO
+                    VER CDS DE REGGAETÓN
                 </a>
             </div>
         </section>

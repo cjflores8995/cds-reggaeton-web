@@ -11,6 +11,10 @@ RewriteCond %{HTTP_HOST} ^reggaetonelreal\.com$ [NC]
 RewriteCond %{HTTPS} !=on
 RewriteRule ^ https://reggaetonelreal.com%{REQUEST_URI} [R=301,L,NE]
 
+# The root favicon must represent the public storefront, not the admin area.
+# Keep /favicon.ico stable for crawlers while serving the official storefront isotipo.
+RewriteRule ^favicon\.ico$ images/branding/originals/reggaeton-el-real-isotipo.png [L]
+
 # Security Fase 3/6/7 + Admin/System Logs - deny direct web access to
 # runtime/source files and common backup artifacts. Server-side require/include
 # continues to work.

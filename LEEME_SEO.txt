@@ -231,6 +231,38 @@ PENDIENTE EN GOOGLE MERCHANT CENTER:
 - sitemap.xml calcula las mismas reglas con el stock actual, evitando páginas
   pobres o vacías.
 
+
+11. SEO 2D - UPC / EAN / GTIN
+- Nueva columna opcional en products/posts:
+  gtin VARCHAR(14)
+- La columna se crea automáticamente desde config.php si no existe.
+- Admin:
+  alta de CD -> campo opcional UPC / EAN / GTIN
+  edición de CD -> campo opcional UPC / EAN / GTIN
+  búsqueda administrativa -> permite localizar un CD por GTIN
+- Validación:
+  acepta GTIN de 8, 12, 13 o 14 dígitos
+  ignora espacios y guiones al normalizar
+  comprueba el dígito de control
+  rechaza códigos inválidos
+  un campo vacío sigue siendo válido
+- Ficha pública:
+  muestra el GTIN únicamente cuando existe y es válido
+  identifica el tipo como GTIN-8, UPC / GTIN-12, EAN / GTIN-13 o GTIN-14
+- Product JSON-LD:
+  publica exactamente una de estas propiedades según longitud:
+  gtin8
+  gtin12
+  gtin13
+  gtin14
+- Google Merchant:
+  google-merchant.xml incluye <g:gtin> únicamente para productos con GTIN válido.
+  Los CDs sin identificador guardado continúan en el feed sin inventar
+  identifier_exists=no ni códigos falsos.
+- Helper interno:
+  product-gtin.php
+  bloqueado para acceso web directo mediante .htaccess.
+
 NOTA SOBRE LASTMOD:
 - No se publica <lastmod> todavía porque la base histórica dispone de fecha de
   creación pero no de una fecha de última modificación fiable para todas las

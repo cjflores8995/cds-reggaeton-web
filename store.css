@@ -1289,13 +1289,17 @@ button {
 
     .promo-strip__inner {
         min-height: 32px;
-        justify-content: flex-start;
+        justify-content: center;
         overflow: hidden;
         white-space: nowrap;
     }
 
-    .promo-strip__inner span:nth-child(n+3) {
+    .promo-strip__inner > span {
         display: none;
+    }
+
+    .promo-strip__inner .promo-strip__contact {
+        display: inline-flex !important;
     }
 
     .site-header__main {

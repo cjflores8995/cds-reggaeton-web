@@ -1,5 +1,7 @@
 <?php
 
+require_once __DIR__ . "/analytics-internal-traffic.php";
+
 if(!function_exists("analyticsQuoteIdentifier")){
     function analyticsQuoteIdentifier($value){
         return "`" . str_replace("`", "", (string)$value) . "`";
@@ -78,6 +80,10 @@ if(!function_exists("analyticsEnsureSchema")){
         }
 
         if(!mysqli_query($connection, $eventsSql)){
+            return false;
+        }
+
+        if(!analyticsInternalTrafficEnsureSchema($connection)){
             return false;
         }
 
@@ -346,8 +352,18 @@ if(!function_exists("analyticsIsAdminInternalTest")){
 }
 
 if(!function_exists("analyticsTrafficClassification")){
-    function analyticsTrafficClassification($userAgent){
-        if(analyticsIsAdminInternalTest()){
+    function analyticsTrafficClassification($userAgent, $connection = null){
+        $isInternal = analyticsIsAdminInternalTest();
+
+        if(
+            !$isInternal &&
+            $connection &&
+            function_exists("analyticsInternalTrafficIsCurrentClient")
+        ){
+            $isInternal = analyticsInternalTrafficIsCurrentClient($connection);
+        }
+
+        if($isInternal){
             return [
                 "traffic_type" => "internal_test",
                 "bot_name" => "",

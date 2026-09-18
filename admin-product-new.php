@@ -419,7 +419,7 @@ $imageRoles = [
                             name="gtin"
                             inputmode="numeric"
                             maxlength="24"
-                            placeholder="Ej. 602517838358"
+                            placeholder="Ej. 012345678905"
                             value="<?php echo htmlspecialchars(adminNewValue("gtin"), ENT_QUOTES, "UTF-8"); ?>"
                         >
                         <div class="admin-muted" style="margin-top:-7px;margin-bottom:14px;">

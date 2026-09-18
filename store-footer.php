@@ -393,7 +393,7 @@ require __DIR__ . "/artist-collection-runtime.php";
     ></script>
     <script
         defer
-        src="<?php echo storeFooterEsc($footerAssetBaseUrl); ?>store-shipping-scope.js?v=2"
+        src="<?php echo storeFooterEsc($footerAssetBaseUrl); ?>store-shipping-scope.js?v=3"
     ></script>
     <script
         defer

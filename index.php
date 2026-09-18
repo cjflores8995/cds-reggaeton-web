@@ -114,7 +114,7 @@ $availableCount = count($products);
  * ---------------------------------------------------------------- */
 $seoCanonical = seoUrl();
 $seoTitle =
-    'CDs de Reggaetón en Ecuador | Reggaeton El Real';
+    'Reggaeton El Real | Tienda de CDs físicos en Ecuador';
 
 $priorityArtists = [
     'Daddy Yankee',

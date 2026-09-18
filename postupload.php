@@ -4,6 +4,7 @@ require_once("uilang.php");
 require_once("productimages.php");
 require_once("product-image-storage.php");
 require_once("artistshelper.php");
+require_once("product-gtin.php");
 
 if(isset($_POST["newposttitle"])){
     $newposttitle = mysqli_real_escape_string(
@@ -46,6 +47,27 @@ if(isset($_POST["newposttitle"])){
     $moreoptions = mysqli_real_escape_string(
         $connection,
         isset($_POST["moreoptions"]) ? $_POST["moreoptions"] : ""
+    );
+
+    $gtinResult = productGtinNormalize(
+        $_POST["gtin"] ?? ""
+    );
+
+    if(!$gtinResult["ok"]){
+        echo "<div class='alert'>" .
+            htmlspecialchars(
+                $gtinResult["message"],
+                ENT_QUOTES,
+                "UTF-8"
+            ) .
+            "</div>";
+        echo "<script>$(\"#upploadprogresstitle\").hide()</script>";
+        exit;
+    }
+
+    $gtin = mysqli_real_escape_string(
+        $connection,
+        $gtinResult["gtin"]
     );
 
     $currenttime = round(microtime(true) * 1000);
@@ -177,9 +199,9 @@ if(isset($_POST["newposttitle"])){
     $moreimages = mysqli_real_escape_string($connection, $moreimages);
 
     $sql = "INSERT INTO $tableposts " .
-           "(postid, catid, artistid, title, content, picture, time, normalprice, discountprice, options, moreimages) " .
+           "(postid, catid, artistid, title, content, picture, time, normalprice, discountprice, options, moreimages, gtin) " .
            "VALUES " .
-           "('$postid', $catid, $artistid, '$newposttitle', '$newpostcontent', '$newpicture', '$currenttime', '$normalprice', '$discountprice', '$moreoptions', '$moreimages')";
+           "('$postid', $catid, $artistid, '$newposttitle', '$newpostcontent', '$newpicture', '$currenttime', '$normalprice', '$discountprice', '$moreoptions', '$moreimages', '$gtin')";
 
     $insertResult = mysqli_query($connection, $sql);
 

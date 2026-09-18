@@ -6,6 +6,7 @@ require_once __DIR__ . "/artistshelper.php";
 require_once __DIR__ . "/productimages.php";
 require_once __DIR__ . "/product-image-storage.php";
 require_once __DIR__ . "/product-tiktok.php";
+require_once __DIR__ . "/product-gtin.php";
 
 if(
     !isset($_SESSION["adminusername"]) ||
@@ -68,6 +69,13 @@ if($_SERVER["REQUEST_METHOD"] === "POST"){
     $album = adminNewValue("album");
     $releaseYearRaw = adminNewValue("release_year");
     $priceRaw = adminNewValue("price");
+    $gtinInput = adminNewValue("gtin");
+    $gtinResult = productGtinNormalize(
+        $gtinInput
+    );
+    $gtin = $gtinResult["ok"]
+        ? $gtinResult["gtin"]
+        : "";
     $description = adminNewValue("description");
     $cdCondition = adminNewValue("cd_condition", "Muy buen estado");
     $caseCondition = adminNewValue("case_condition", "Muy buen estado");
@@ -95,6 +103,10 @@ if($_SERVER["REQUEST_METHOD"] === "POST"){
 
     if($price <= 0){
         $errors[] = "El precio debe ser mayor a 0.";
+    }
+
+    if(!$gtinResult["ok"]){
+        $errors[] = $gtinResult["message"];
     }
 
     if(!$tiktokResult["ok"]){
@@ -198,6 +210,7 @@ if($_SERVER["REQUEST_METHOD"] === "POST"){
                 "artist" => $artistName,
                 "album" => $album,
                 "release_year" => $releaseYear,
+                "gtin" => $gtin,
                 "stock" => 1,
                 "cd_condition" => $cdCondition,
                 "case_condition" => $caseCondition,
@@ -399,7 +412,20 @@ $imageRoles = [
                         >
                     </div>
 
-                    <div></div>
+                    <div>
+                        <label>UPC / EAN / GTIN</label>
+                        <input
+                            type="text"
+                            name="gtin"
+                            inputmode="numeric"
+                            maxlength="24"
+                            placeholder="Ej. 602517838358"
+                            value="<?php echo htmlspecialchars(adminNewValue("gtin"), ENT_QUOTES, "UTF-8"); ?>"
+                        >
+                        <div class="admin-muted" style="margin-top:-7px;margin-bottom:14px;">
+                            Opcional. Usa el código real impreso junto al código de barras del CD.
+                        </div>
+                    </div>
 
                     <div>
                         <label>Estado del CD</label>

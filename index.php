@@ -109,6 +109,30 @@ $catalogProducts = $homeRotation['catalog_products'] ?? $products;
 
 $availableCount = count($products);
 
+$currentStoreYear =
+    (int)date("Y");
+
+$currentStoreMonths = [
+    1 => "ENERO",
+    2 => "FEBRERO",
+    3 => "MARZO",
+    4 => "ABRIL",
+    5 => "MAYO",
+    6 => "JUNIO",
+    7 => "JULIO",
+    8 => "AGOSTO",
+    9 => "SEPTIEMBRE",
+    10 => "OCTUBRE",
+    11 => "NOVIEMBRE",
+    12 => "DICIEMBRE"
+];
+
+$currentStoreMonth =
+    $currentStoreMonths[
+        (int)date("n")
+    ] ??
+    "";
+
 /* ------------------------------------------------------------------
  * SEO homepage
  * ---------------------------------------------------------------- */
@@ -488,7 +512,9 @@ $seoHomeJsonLd = [
     <main>
         <section class="hero page-shell">
             <div class="hero__content">
-                <p class="eyebrow">TIENDA DE CDS DE REGGAETÓN / ECUADOR</p>
+                <p class="eyebrow">
+                    CATÁLOGO ACTUALIZADO · ECUADOR · <?php echo e($currentStoreYear); ?>
+                </p>
                 <h1>REGGAETON<br>EL REAL.</h1>
                 <p class="hero__lead">
                     Compra CDs físicos de reggaetón en Ecuador. Ediciones de colección, una sola copia por título, fotos reales y envíos nacionales.
@@ -498,7 +524,15 @@ $seoHomeJsonLd = [
 
             <div class="hero__panel" aria-hidden="true">
                 <span class="hero__number"><?php echo str_pad((string)$availableCount, 3, '0', STR_PAD_LEFT); ?></span>
-                <span class="hero__label">CDs disponibles</span>
+
+                <div class="hero__panel-meta">
+                    <span class="hero__label">CDs disponibles</span>
+                    <span class="hero__freshness">
+                        INVENTARIO EN VIVO ·
+                        <?php echo e($currentStoreMonth); ?>
+                        <?php echo e($currentStoreYear); ?>
+                    </span>
+                </div>
             </div>
         </section>
 

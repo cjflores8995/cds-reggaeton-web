@@ -366,6 +366,14 @@ $seoItemCondition =
         $cdCondition
     );
 
+$seoPrimaryImageAlt =
+    $seoProductDisplayName .
+    ' - portada principal del CD físico';
+
+$seoPrimaryImageId =
+    $seoCanonical .
+    '#primaryimage';
+
 $seoProductJsonLd = [
     '@context' =>
         'https://schema.org',
@@ -544,6 +552,50 @@ $seoProductJsonLd = [
     ]
 ];
 
+$seoProductJsonLd[
+    '@graph'
+][] = [
+    '@type' =>
+        'WebPage',
+    '@id' =>
+        $seoCanonical .
+        '#webpage',
+    'url' =>
+        $seoCanonical,
+    'name' =>
+        $seoTitle,
+    'description' =>
+        $seoDescription,
+    'inLanguage' =>
+        'es-EC',
+    'mainEntity' => [
+        '@id' =>
+            $seoCanonical .
+            '#product'
+    ],
+    'primaryImageOfPage' => [
+        '@id' =>
+            $seoPrimaryImageId
+    ]
+];
+
+$seoProductJsonLd[
+    '@graph'
+][] = [
+    '@type' =>
+        'ImageObject',
+    '@id' =>
+        $seoPrimaryImageId,
+    'url' =>
+        $mainImage,
+    'contentUrl' =>
+        $mainImage,
+    'caption' =>
+        $seoPrimaryImageAlt,
+    'representativeOfPage' =>
+        true
+];
+
 if(
     $gtin !== '' &&
     $gtinProperty !== ''
@@ -626,8 +678,12 @@ if ($relatedResult) {
         content="<?php echo e($mainImage); ?>"
     >
     <meta
+        property="og:image:secure_url"
+        content="<?php echo e($mainImage); ?>"
+    >
+    <meta
         property="og:image:alt"
-        content="<?php echo e($seoProductDisplayName . ' en CD físico'); ?>"
+        content="<?php echo e($seoPrimaryImageAlt); ?>"
     >
     <meta
         property="product:price:amount"
@@ -653,6 +709,10 @@ if ($relatedResult) {
     <meta
         name="twitter:image"
         content="<?php echo e($mainImage); ?>"
+    >
+    <meta
+        name="twitter:image:alt"
+        content="<?php echo e($seoPrimaryImageAlt); ?>"
     >
 
     <script type="application/ld+json"><?php echo seoJsonLd($seoProductJsonLd); ?></script>
@@ -755,7 +815,8 @@ if ($relatedResult) {
                     <img
                         id="productMainImage"
                         src="<?php echo e($mainImage); ?>"
-                        alt="<?php echo e($seoProductDisplayName . ' en CD físico'); ?>"
+                        alt="<?php echo e($seoPrimaryImageAlt); ?>"
+                        itemprop="image"
                         fetchpriority="high"
                         decoding="async"
                     >

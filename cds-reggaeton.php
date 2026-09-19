@@ -568,7 +568,7 @@ $jsonLd = [
 
     <link
         rel="stylesheet"
-        href="<?php echo cdsReggaetonEsc($storeBaseUrl); ?>store.css?v=2"
+        href="<?php echo cdsReggaetonEsc($storeBaseUrl); ?>store.css?v=3"
     >
     <link
         rel="stylesheet"
@@ -584,7 +584,7 @@ $jsonLd = [
     >
     <link
         rel="stylesheet"
-        href="<?php echo cdsReggaetonEsc($storeBaseUrl); ?>store-mobile.css?v=4"
+        href="<?php echo cdsReggaetonEsc($storeBaseUrl); ?>store-mobile.css?v=5"
         media="(max-width: 760px)"
     >
 </head>

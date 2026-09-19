@@ -138,7 +138,7 @@ unset($step);
 
     <script type="application/ld+json"><?php echo seoJsonLd($guideHowToJsonLd); ?></script>
 
-    <link rel="stylesheet" href="<?php echo guideEsc($storeBaseUrl); ?>store.css?v=2">
+    <link rel="stylesheet" href="<?php echo guideEsc($storeBaseUrl); ?>store.css?v=3">
     <link rel="stylesheet" href="<?php echo guideEsc($storeBaseUrl); ?>store-footer.css?v=1">
     <link rel="stylesheet" href="<?php echo guideEsc($storeBaseUrl); ?>como-comprar.css?v=1">
 

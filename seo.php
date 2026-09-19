@@ -424,8 +424,13 @@ if(!function_exists("seoWhatsappUrl")){
 
 if(!function_exists("seoPublicFaviconUrl")){
     function seoPublicFaviconUrl(){
+        /*
+         * Versioned public URL on purpose: Google Search can cache favicons for
+         * a long time. Changing the declared URL gives crawlers a fresh asset
+         * key while the underlying official storefront isotipo stays stable.
+         */
         return seoUrl(
-            "images/branding/originals/reggaeton-el-real-isotipo.png"
+            "favicon-reggaeton-el-real-v2.png"
         );
     }
 }

@@ -80,6 +80,11 @@ $periodLabels = [
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Inventario y Ventas | <?php echo adminSalesPageEsc($websitetitle); ?></title>
+    <link
+        rel="icon"
+        type="image/png"
+        href="<?php echo adminSalesPageEsc($baseurl); ?>admin-favicon-reggaeton-el-real-v1.png"
+    >
     <link rel="stylesheet" type="text/css" href="<?php echo adminSalesPageEsc($baseurl); ?>assets/css/font-awesome.css">
     <link rel="stylesheet" type="text/css" href="<?php echo adminSalesPageEsc($baseurl); ?>admin-modern.css?v=16">
     <link rel="stylesheet" type="text/css" href="<?php echo adminSalesPageEsc($baseurl); ?>admin-sales.css?v=1">

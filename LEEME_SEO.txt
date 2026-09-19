@@ -263,6 +263,34 @@ PENDIENTE EN GOOGLE MERCHANT CENTER:
   product-gtin.php
   bloqueado para acceso web directo mediante .htaccess.
 
+
+12. MINI SEO DE IMÁGENES + FAVICON PÚBLICO V2
+- Fichas de producto:
+  Product.image conserva todas las imágenes disponibles.
+  WebPage.primaryImageOfPage apunta de forma explícita a la imagen principal.
+  Se añade ImageObject con contentUrl, caption y representativeOfPage=true.
+  og:image + og:image:secure_url usan la imagen principal.
+  twitter:image + twitter:image:alt usan la imagen principal.
+  La imagen principal visible usa un alt descriptivo del artista/álbum.
+- Sitemap:
+  mantiene las imágenes de cada producto mediante image:image + image:loc.
+  No se añaden image:title/image:caption porque Google los considera obsoletos.
+- Google Merchant Center:
+  image_link conserva la imagen principal.
+  additional_image_link publica hasta 10 imágenes adicionales únicas.
+- Favicon:
+  el storefront deja de declarar directamente la antigua ruta compartida.
+  Nueva URL pública estable:
+  https://reggaetonelreal.com/favicon-reggaeton-el-real-v2.png
+  Esta URL sirve el isotipo oficial:
+  images/branding/originals/reggaeton-el-real-isotipo.png
+  /favicon.ico continúa resolviendo al mismo isotipo oficial.
+  El cambio de URL es intencional para evitar que Google reutilice indefinidamente
+  la clave de caché histórica asociada al favicon anterior.
+- Después del despliegue:
+  solicitar una sola vez la reindexación de https://reggaetonelreal.com/
+  para que Google vuelva a leer el <link rel="icon">.
+
 NOTA SOBRE LASTMOD:
 - No se publica <lastmod> todavía porque la base histórica dispone de fecha de
   creación pero no de una fecha de última modificación fiable para todas las

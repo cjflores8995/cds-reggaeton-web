@@ -430,7 +430,7 @@ if(!function_exists("seoPublicFaviconUrl")){
          * key while the underlying official storefront isotipo stays stable.
          */
         return seoUrl(
-            "favicon-reggaeton-el-real-v2.png"
+            "favicon-reggaeton-el-real-v3.png"
         );
     }
 }

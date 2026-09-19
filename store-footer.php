@@ -273,7 +273,8 @@ require __DIR__ . "/artist-collection-runtime.php";
 
             <p class="footer-copyright">
                 © <?php echo date("Y"); ?>
-                <?php echo storeFooterEsc($websitetitle ?? "Reggaeton El Real"); ?>
+                <?php echo storeFooterEsc(strtoupper($websitetitle ?? "Reggaeton El Real")); ?>
+                · ECUADOR
             </p>
         </div>
     </div>

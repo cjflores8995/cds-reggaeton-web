@@ -288,6 +288,11 @@ if(!adminIsLoggedIn()){
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <title>Admin Panel | <?php echo adminEsc($websitetitle); ?></title>
+        <link
+            rel="icon"
+            type="image/png"
+            href="<?php echo adminEsc($baseurl); ?>admin-favicon-reggaeton-el-real-v1.png"
+        >
         <link rel="stylesheet" type="text/css" href="<?php echo $baseurl; ?>admin-modern.css?v=16">
     </head>
     <body class="admin-login-page">
@@ -708,25 +713,6 @@ if(isset($_GET["settings"])){
             }
         }
 
-        if(
-            isset($_FILES["favicon"]) &&
-            $_FILES["favicon"]["error"] !== UPLOAD_ERR_NO_FILE
-        ){
-            $extension = strtolower(
-                pathinfo($_FILES["favicon"]["name"], PATHINFO_EXTENSION)
-            );
-
-            if($extension === "ico"){
-                move_uploaded_file(
-                    $_FILES["favicon"]["tmp_name"],
-                    __DIR__ . DIRECTORY_SEPARATOR . "favicon.ico"
-                );
-            }else{
-                $adminMessage = "El favicon debe ser .ico.";
-                $adminMessageType = "error";
-            }
-        }
-
         $json = json_encode(
             $cfg,
             JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES
@@ -789,7 +775,11 @@ if(isset($_GET["editpost"])){
 
     <title>Admin Panel | <?php echo adminEsc($websitetitle); ?></title>
 
-    <link rel="shortcut icon" href="<?php echo adminEsc($baseurl); ?>favicon.ico">
+    <link
+        rel="icon"
+        type="image/png"
+        href="<?php echo adminEsc($baseurl); ?>admin-favicon-reggaeton-el-real-v1.png"
+    >
     <link rel="stylesheet" type="text/css" href="<?php echo adminEsc($baseurl); ?>assets/css/font-awesome.css">
     <link rel="stylesheet" type="text/css" href="<?php echo adminEsc($baseurl); ?>admin-modern.css?v=16">
 
@@ -1343,12 +1333,11 @@ if(isset($_GET["editpost"])){
                         accept="image/jpeg,image/png,image/webp"
                     >
 
-                    <label>Favicon (.ico)</label>
-                    <input
-                        type="file"
-                        name="favicon"
-                        accept=".ico"
-                    >
+                    <label>Favicon</label>
+                    <div class="admin-muted" style="margin-bottom:14px;">
+                        El favicon se administra desde la identidad oficial de Reggaeton El Real
+                        y ya no se reemplaza manualmente desde este panel.
+                    </div>
                 </section>
 
                 <section class="admin-form-card">

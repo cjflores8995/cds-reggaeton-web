@@ -135,6 +135,11 @@ main,
     line-height: 1.45;
 }
 
+.hero__freshness {
+    font-size: 8px;
+    line-height: 1.4;
+}
+
 .hero .button {
     min-height: 50px;
     padding-inline: 20px;

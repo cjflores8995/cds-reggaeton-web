@@ -65,7 +65,11 @@ function analyticsDashboardTabUrl($baseurl, $view, $environment){
 
     <title>Analytics | <?php echo analyticsDashboardEsc($websitetitle); ?></title>
 
-    <link rel="shortcut icon" href="<?php echo analyticsDashboardEsc($baseurl); ?>favicon.ico">
+    <link
+        rel="icon"
+        type="image/png"
+        href="<?php echo analyticsDashboardEsc($baseurl); ?>admin-favicon-reggaeton-el-real-v1.png"
+    >
     <link rel="stylesheet" type="text/css" href="<?php echo analyticsDashboardEsc($baseurl); ?>assets/css/font-awesome.css">
     <link rel="stylesheet" type="text/css" href="<?php echo analyticsDashboardEsc($baseurl); ?>admin-modern.css?v=16">
 

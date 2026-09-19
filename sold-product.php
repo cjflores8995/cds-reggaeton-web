@@ -189,7 +189,7 @@ header('X-Robots-Tag: noindex, follow', true);
         name="description"
         content="<?php echo soldProductEsc($displayName . ' fue parte del catálogo de Reggaeton El Real y actualmente se encuentra vendido.'); ?>"
     >
-    <link rel="stylesheet" href="<?php echo soldProductEsc($storeBaseUrl); ?>store.css?v=2">
+    <link rel="stylesheet" href="<?php echo soldProductEsc($storeBaseUrl); ?>store.css?v=3">
     <link rel="stylesheet" href="<?php echo soldProductEsc($storeBaseUrl); ?>store-branding.css?v=1">
     <link rel="stylesheet" href="<?php echo soldProductEsc($storeBaseUrl); ?>store-footer.css?v=1">
     <link rel="stylesheet" href="<?php echo soldProductEsc($storeBaseUrl); ?>seo.css?v=1">

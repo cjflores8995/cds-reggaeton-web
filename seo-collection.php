@@ -290,7 +290,7 @@ if(
         <title>Colección no disponible | Reggaeton El Real</title>
         <link
             rel="stylesheet"
-            href="<?php echo seoCollectionEsc(seoUrl("store.css?v=2")); ?>"
+            href="<?php echo seoCollectionEsc(seoUrl("store.css?v=3")); ?>"
         >
     </head>
     <body class="simple-error-page">
@@ -654,7 +654,7 @@ $ogImage =
 
     <link
         rel="stylesheet"
-        href="<?php echo seoCollectionEsc($storeBaseUrl); ?>store.css?v=2"
+        href="<?php echo seoCollectionEsc($storeBaseUrl); ?>store.css?v=3"
     >
     <link
         rel="stylesheet"
@@ -670,7 +670,7 @@ $ogImage =
     >
     <link
         rel="stylesheet"
-        href="<?php echo seoCollectionEsc($storeBaseUrl); ?>store-mobile.css?v=4"
+        href="<?php echo seoCollectionEsc($storeBaseUrl); ?>store-mobile.css?v=5"
         media="(max-width:760px)"
     >
 </head>

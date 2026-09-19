@@ -279,14 +279,14 @@ PENDIENTE EN GOOGLE MERCHANT CENTER:
   image_link conserva la imagen principal.
   additional_image_link publica hasta 10 imágenes adicionales únicas.
 - Favicon:
-  el storefront deja de declarar directamente la antigua ruta compartida.
+  se eliminó el favicon.ico físico heredado del template/admin porque el servidor
+  podía servir ese archivo antes de aplicar las reglas de reescritura.
   Nueva URL pública estable:
-  https://reggaetonelreal.com/favicon-reggaeton-el-real-v2.png
-  Esta URL sirve el isotipo oficial:
-  images/branding/originals/reggaeton-el-real-isotipo.png
-  /favicon.ico continúa resolviendo al mismo isotipo oficial.
-  El cambio de URL es intencional para evitar que Google reutilice indefinidamente
-  la clave de caché histórica asociada al favicon anterior.
+  https://reggaetonelreal.com/favicon-reggaeton-el-real-v3.png
+  Esta URL y /favicon.ico sirven ahora el app icon oficial del storefront:
+  images/branding/originals/reggaeton-el-real-app-icon.png
+  La antigua URL v2 se conserva como compatibilidad, pero también sirve el app icon.
+  El cambio de URL es intencional para que Google reciba una nueva clave de caché.
 - Después del despliegue:
   solicitar una sola vez la reindexación de https://reggaetonelreal.com/
   para que Google vuelva a leer el <link rel="icon">.

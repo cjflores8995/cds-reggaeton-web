@@ -3,6 +3,26 @@ require_once __DIR__ . '/config.php';
 require_once __DIR__ . '/seo.php';
 require_once __DIR__ . '/home-rotation.php';
 
+if(!headers_sent()){
+    /*
+     * The homepage contains live inventory counts and current month/year.
+     * Do not let hosting/proxy caches keep an old storefront HTML snapshot.
+     * Static CSS/JS/images remain cacheable through their versioned URLs.
+     */
+    header(
+        'Cache-Control: no-cache, no-store, must-revalidate, max-age=0'
+    );
+    header(
+        'Pragma: no-cache'
+    );
+    header(
+        'Expires: Thu, 01 Jan 1970 00:00:00 GMT'
+    );
+    header(
+        'X-Reggaeton-Frontend-Version: freshness-20260918-2'
+    );
+}
+
 function e($value): string
 {
     return htmlspecialchars((string)$value, ENT_QUOTES, 'UTF-8');

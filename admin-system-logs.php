@@ -681,6 +681,11 @@ $technicalReady =
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>System Logs | <?php echo adminSystemLogsEsc($websitetitle); ?></title>
+    <link
+        rel="icon"
+        type="image/png"
+        href="<?php echo adminSystemLogsEsc($baseurl); ?>admin-favicon-reggaeton-el-real-v1.png"
+    >
     <link rel="stylesheet" type="text/css" href="<?php echo adminSystemLogsEsc($baseurl); ?>assets/css/font-awesome.css">
     <link rel="stylesheet" type="text/css" href="<?php echo adminSystemLogsEsc($baseurl); ?>admin-modern.css?v=16">
     <link rel="stylesheet" type="text/css" href="<?php echo adminSystemLogsEsc($baseurl); ?>admin-system-logs.css?v=1">

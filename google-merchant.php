@@ -203,6 +203,78 @@ function merchantProductCondition($condition){
             : "used";
 }
 
+function merchantAdditionalImages($product){
+    $mainImage =
+        trim(
+            (string)(
+                $product["picture"] ??
+                ""
+            )
+        );
+
+    $images = [];
+    $moreImages =
+        trim(
+            (string)(
+                $product["moreimages"] ??
+                ""
+            )
+        );
+
+    if($moreImages === ""){
+        return [];
+    }
+
+    foreach(
+        explode(
+            ",",
+            $moreImages
+        )
+        as $path
+    ){
+        $path =
+            trim(
+                (string)$path
+            );
+
+        if(
+            $path === "" ||
+            $path === $mainImage
+        ){
+            continue;
+        }
+
+        $url =
+            seoAbsoluteImageUrl(
+                $path
+            );
+
+        if(
+            $url === "" ||
+            in_array(
+                $url,
+                $images,
+                true
+            )
+        ){
+            continue;
+        }
+
+        $images[] =
+            $url;
+
+        if(
+            count(
+                $images
+            ) >= 10
+        ){
+            break;
+        }
+    }
+
+    return $images;
+}
+
 header(
     "Content-Type: application/rss+xml; charset=UTF-8"
 );
@@ -296,6 +368,11 @@ echo "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n";
                 $product["picture"]
             );
 
+        $merchantAdditionalImages =
+            merchantAdditionalImages(
+                $product
+            );
+
         $merchantCondition =
             merchantProductCondition(
                 $product["cd_condition"] ??
@@ -328,6 +405,9 @@ echo "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n";
         <g:description><?php echo merchantXml($merchantDescription); ?></g:description>
         <g:link><?php echo merchantXml($merchantUrl); ?></g:link>
         <g:image_link><?php echo merchantXml($merchantImage); ?></g:image_link>
+        <?php foreach($merchantAdditionalImages as $additionalImage){ ?>
+            <g:additional_image_link><?php echo merchantXml($additionalImage); ?></g:additional_image_link>
+        <?php } ?>
         <g:availability>in stock</g:availability>
         <g:price><?php echo merchantXml($merchantPrice); ?></g:price>
         <g:condition><?php echo merchantXml($merchantCondition); ?></g:condition>

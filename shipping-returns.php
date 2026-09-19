@@ -77,11 +77,11 @@ $policyJsonLd = [
 
     <script type="application/ld+json"><?php echo seoJsonLd($policyJsonLd); ?></script>
 
-    <link rel="stylesheet" href="<?php echo policyEsc($storeBaseUrl); ?>store.css?v=2">
+    <link rel="stylesheet" href="<?php echo policyEsc($storeBaseUrl); ?>store.css?v=3">
     <link rel="stylesheet" href="<?php echo policyEsc($storeBaseUrl); ?>store-branding.css?v=1">
     <link rel="stylesheet" href="<?php echo policyEsc($storeBaseUrl); ?>store-footer.css?v=1">
     <link rel="stylesheet" href="<?php echo policyEsc($storeBaseUrl); ?>store-policy.css?v=1">
-    <link rel="stylesheet" href="<?php echo policyEsc($storeBaseUrl); ?>store-mobile.css?v=4" media="(max-width: 760px)">
+    <link rel="stylesheet" href="<?php echo policyEsc($storeBaseUrl); ?>store-mobile.css?v=5" media="(max-width: 760px)">
 </head>
 <body>
     <div class="promo-strip">

@@ -299,6 +299,11 @@ $imageRoles = [
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Agregar CD | <?php echo htmlspecialchars($websitetitle, ENT_QUOTES, "UTF-8"); ?></title>
+    <link
+        rel="icon"
+        type="image/png"
+        href="<?php echo htmlspecialchars($baseurl, ENT_QUOTES, "UTF-8"); ?>admin-favicon-reggaeton-el-real-v1.png"
+    >
     <link rel="stylesheet" type="text/css" href="<?php echo $baseurl; ?>assets/css/font-awesome.css">
     <link rel="stylesheet" type="text/css" href="<?php echo $baseurl; ?>admin-modern.css?v=10">
 </head>

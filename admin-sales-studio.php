@@ -184,7 +184,11 @@ if(count($artistOptions) > 0){
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
     <title>Sales Studio | <?php echo adminSalesStudioEsc($websitetitle); ?></title>
-    <link rel="shortcut icon" href="<?php echo adminSalesStudioEsc($baseurl); ?>favicon.ico">
+    <link
+        rel="icon"
+        type="image/png"
+        href="<?php echo adminSalesStudioEsc($baseurl); ?>admin-favicon-reggaeton-el-real-v1.png"
+    >
     <link rel="stylesheet" type="text/css" href="<?php echo adminSalesStudioEsc($baseurl); ?>assets/css/font-awesome.css">
     <link rel="stylesheet" type="text/css" href="<?php echo adminSalesStudioEsc($baseurl); ?>admin-modern.css?v=16">
     <link rel="stylesheet" type="text/css" href="<?php echo adminSalesStudioEsc($baseurl); ?>admin-sales-studio.css?v=3">

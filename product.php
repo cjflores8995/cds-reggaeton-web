@@ -135,7 +135,7 @@ if (!$product) {
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <meta name="robots" content="noindex,nofollow,noarchive">
         <title>CD no encontrado | Reggaeton El Real</title>
-        <link rel="stylesheet" href="<?php echo e($storeBaseUrl); ?>store.css?v=2">
+        <link rel="stylesheet" href="<?php echo e($storeBaseUrl); ?>store.css?v=3">
     </head>
     <body class="simple-error-page">
         <main class="simple-error">
@@ -717,7 +717,7 @@ if ($relatedResult) {
 
     <script type="application/ld+json"><?php echo seoJsonLd($seoProductJsonLd); ?></script>
 
-    <link rel="stylesheet" href="<?php echo e($storeBaseUrl); ?>store.css?v=2">
+    <link rel="stylesheet" href="<?php echo e($storeBaseUrl); ?>store.css?v=3">
     <link rel="stylesheet" href="<?php echo e($storeBaseUrl); ?>store-branding.css?v=1">
     <link rel="stylesheet" href="<?php echo e($storeBaseUrl); ?>store-footer.css?v=1">
     <link rel="stylesheet" href="<?php echo e($storeBaseUrl); ?>seo.css?v=1">

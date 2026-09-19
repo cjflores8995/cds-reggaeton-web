@@ -212,7 +212,7 @@ if (
         <title>Artista no disponible | Reggaeton El Real</title>
         <link
             rel="stylesheet"
-            href="<?php echo artistEsc(seoUrl('store.css?v=2')); ?>"
+            href="<?php echo artistEsc(seoUrl('store.css?v=3')); ?>"
         >
     </head>
     <body class="simple-error-page">
@@ -437,7 +437,7 @@ $jsonLd = [
 
     <link
         rel="stylesheet"
-        href="<?php echo artistEsc(seoUrl('store.css?v=2')); ?>"
+        href="<?php echo artistEsc(seoUrl('store.css?v=3')); ?>"
     >
     <link
         rel="stylesheet"

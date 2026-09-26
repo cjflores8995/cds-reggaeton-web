@@ -173,13 +173,13 @@ function analyticsDashboardTabUrl($baseurl, $view, $environment){
 <script defer src="https://cdn.jsdelivr.net/npm/flatpickr@4.6.13/dist/l10n/es.js"></script>
 <script defer src="https://unpkg.com/tabulator-tables@6.5.0/dist/js/tabulator.min.js"></script>
 <?php if($selectedView === "sessions"){ ?>
-    <script defer src="<?php echo analyticsDashboardEsc($baseurl); ?>admin-analytics-sessions.js?v=1"></script>
+    <script defer src="<?php echo analyticsDashboardEsc($baseurl); ?>admin-analytics-sessions.js?v=2"></script>
 <?php }else if($selectedView === "diagnostics"){ ?>
     <script defer src="<?php echo analyticsDashboardEsc($baseurl); ?>admin-analytics-diagnostics.js?v=1"></script>
 <?php }else if($selectedView === "maintenance"){ ?>
     <script defer src="<?php echo analyticsDashboardEsc($baseurl); ?>admin-analytics-maintenance.js?v=2"></script>
 <?php }else{ ?>
-    <script defer src="<?php echo analyticsDashboardEsc($baseurl); ?>admin-analytics-dashboard.js?v=2"></script>
+    <script defer src="<?php echo analyticsDashboardEsc($baseurl); ?>admin-analytics-dashboard.js?v=3"></script>
     <script defer src="<?php echo analyticsDashboardEsc($baseurl); ?>admin-analytics-dashboard-vibrant.js?v=1"></script>
 <?php } ?>
 <script defer src="<?php echo analyticsDashboardEsc($baseurl); ?>admin-analytics-phase6-bridge.js?v=2"></script>

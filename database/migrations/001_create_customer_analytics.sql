@@ -24,6 +24,11 @@ CREATE TABLE IF NOT EXISTS `__TABLE_PREFIX__visitor_sessions` (
     `bot_confidence` TINYINT UNSIGNED NOT NULL DEFAULT 0,
     `ip_address` VARBINARY(16) NULL,
     `ip_hash` BINARY(32) NULL,
+    `country_code` CHAR(2) NOT NULL DEFAULT '',
+    `country_name` VARCHAR(100) NOT NULL DEFAULT '',
+    `region_name` VARCHAR(120) NOT NULL DEFAULT '',
+    `city_name` VARCHAR(120) NOT NULL DEFAULT '',
+    `geo_source` VARCHAR(32) NOT NULL DEFAULT '',
     `user_agent` VARCHAR(512) NOT NULL DEFAULT '',
     `device_type` VARCHAR(16) NOT NULL DEFAULT 'unknown',
     `landing_path` VARCHAR(500) NOT NULL DEFAULT '',
@@ -41,6 +46,7 @@ CREATE TABLE IF NOT EXISTS `__TABLE_PREFIX__visitor_sessions` (
     KEY `idx_analytics_visitor_started` (`visitor_token`, `started_at`),
     KEY `idx_analytics_environment_started` (`environment`, `started_at`),
     KEY `idx_analytics_traffic_started` (`traffic_type`, `started_at`),
+    KEY `idx_analytics_country_started` (`country_code`, `started_at`),
     KEY `idx_analytics_last_seen` (`last_seen_at`)
 ) ENGINE=InnoDB
   DEFAULT CHARSET=utf8mb4

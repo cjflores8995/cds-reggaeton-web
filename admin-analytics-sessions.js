@@ -341,6 +341,36 @@
         return wrapper;
     }
 
+    function countryFlag(code) {
+        code = String(code || "").trim().toUpperCase();
+
+        if (!/^[A-Z]{2}$/.test(code)) {
+            return "🌎";
+        }
+
+        return String.fromCodePoint(
+            127397 + code.charCodeAt(0),
+            127397 + code.charCodeAt(1)
+        );
+    }
+
+    function sessionLocationFormatter(cell) {
+        var data = cell.getRow().getData();
+        var wrapper = document.createElement("div");
+        wrapper.className = "analytics-session-source";
+        var strong = document.createElement("strong");
+        strong.textContent = countryFlag(data.country_code) + " " + String(data.country_name || data.country_code || "Sin identificar");
+        wrapper.appendChild(strong);
+
+        if (data.city_name || data.region_name) {
+            var small = document.createElement("span");
+            small.textContent = [data.city_name, data.region_name].filter(Boolean).join(", ");
+            wrapper.appendChild(small);
+        }
+
+        return wrapper;
+    }
+
     function durationFormatter(cell) {
         return duration(cell.getValue());
     }
@@ -451,6 +481,7 @@
                 { title: "CDs", field: "products_viewed", minWidth: 70, widthGrow: 0.45, headerSort: false },
                 { title: "Búsquedas", field: "searches", minWidth: 85, widthGrow: 0.55, headerSort: false },
                 { title: "Origen", field: "source", minWidth: 130, widthGrow: 0.9, headerSort: false, formatter: sessionSourceFormatter },
+                { title: "País", field: "country_name", minWidth: 150, widthGrow: 1.0, headerSort: false, formatter: sessionLocationFormatter },
                 { title: "Dispositivo", field: "device_type", minWidth: 100, widthGrow: 0.65, headerSort: false },
                 { title: "Duración", field: "duration_seconds", minWidth: 105, widthGrow: 0.65, headerSort: false, formatter: durationFormatter },
                 { title: "Última actividad", field: "last_seen_local", minWidth: 145, widthGrow: 0.9, headerSort: false }
@@ -490,14 +521,15 @@
                     '<td>' + statusBadge(item.status, item.status_label) + '</td>' +
                     '<td>' + number(item.period_events) + '</td>' +
                     '<td>' + esc(item.source) + '</td>' +
+                    '<td>' + esc(countryFlag(item.country_code) + " " + (item.location || item.country_name || item.country_code || "Sin identificar")) + '</td>' +
                     '<td>' + esc(duration(item.duration_seconds)) + '</td>' +
                 '</tr>';
-            }).join("") : '<tr><td colspan="6">No hay sesiones para estos filtros.</td></tr>';
+            }).join("") : '<tr><td colspan="7">No hay sesiones para estos filtros.</td></tr>';
             var page = intValue(payload.page) || 1;
             var pages = Math.max(1, intValue(payload.pages) || 1);
 
             target.innerHTML =
-                '<div class="analytics-dashboard-table-wrap"><table><thead><tr><th>Sesión</th><th>Inicio</th><th>Estado</th><th>Eventos</th><th>Origen</th><th>Duración</th></tr></thead><tbody>' + body + '</tbody></table></div>' +
+                '<div class="analytics-dashboard-table-wrap"><table><thead><tr><th>Sesión</th><th>Inicio</th><th>Estado</th><th>Eventos</th><th>Origen</th><th>País</th><th>Duración</th></tr></thead><tbody>' + body + '</tbody></table></div>' +
                 '<div class="analytics-dashboard-pagination"><button type="button" data-session-prev' + (page <= 1 ? ' disabled' : '') + '>← Anterior</button><span>Página ' + number(page) + ' de ' + number(pages) + '</span><button type="button" data-session-next' + (page >= pages ? ' disabled' : '') + '>Siguiente →</button></div>';
 
             target.querySelectorAll("tbody tr[data-session-id]").forEach(function (row) {
@@ -618,6 +650,8 @@
                         '<div><dt>Tráfico</dt><dd>' + esc(trafficLabel(session.traffic_type)) + '</dd></div>' +
                         '<div><dt>Dispositivo</dt><dd>' + esc(session.device_type || "—") + '</dd></div>' +
                         '<div><dt>Origen</dt><dd>' + esc(session.source || "directo") + '</dd></div>' +
+                        '<div><dt>País</dt><dd>' + esc(countryFlag(session.country_code) + " " + (session.country_name || session.country_code || "Sin identificar")) + '</dd></div>' +
+                        '<div><dt>Ciudad / región</dt><dd>' + esc([session.city_name, session.region_name].filter(Boolean).join(", ") || "—") + '</dd></div>' +
                         '<div><dt>Landing</dt><dd title="' + esc(session.landing_path || "") + '">' + esc(session.landing_path || "—") + '</dd></div>' +
                         '<div><dt>Referrer</dt><dd title="' + esc(session.referrer || "") + '">' + esc(session.referrer || "Directo") + '</dd></div>' +
                         '<div><dt>UTM source</dt><dd>' + esc(session.utm_source || "—") + '</dd></div>' +

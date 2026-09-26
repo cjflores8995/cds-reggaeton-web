@@ -1,5 +1,33 @@
 <?php
 
+if(!function_exists("analyticsSessionsLocationLabel")){
+    function analyticsSessionsLocationLabel($row){
+        $countryCode = strtoupper(trim((string)($row["country_code"] ?? "")));
+        $countryName = analyticsSafeText($row["country_name"] ?? "", 100);
+        $regionName = analyticsSafeText($row["region_name"] ?? "", 120);
+        $cityName = analyticsSafeText($row["city_name"] ?? "", 120);
+
+        $country = $countryName !== ""
+            ? $countryName
+            : ($countryCode !== "" ? $countryCode : "Sin identificar");
+        $parts = [];
+
+        if($cityName !== ""){
+            $parts[] = $cityName;
+        }
+
+        if($regionName !== "" && strcasecmp($regionName, $cityName) !== 0){
+            $parts[] = $regionName;
+        }
+
+        if($country !== "Sin identificar"){
+            $parts[] = $country;
+        }
+
+        return $parts ? implode(", ", $parts) : "Sin identificar";
+    }
+}
+
 if(!function_exists("analyticsSessionsStatus")){
     function analyticsSessionsStatus($flags){
         if((int)($flags["reached_whatsapp"] ?? 0) === 1){
@@ -224,6 +252,7 @@ if(!function_exists("analyticsSessionsList")){
 
         $offset = ($page - 1) * $pageSize;
         $sql = "SELECT s.id, s.traffic_type, s.device_type, s.landing_path, s.referrer, " .
+            "s.country_code, s.country_name, s.region_name, s.city_name, s.geo_source, " .
             "s.utm_source, s.utm_medium, s.utm_campaign, s.started_at, s.last_seen_at, s.event_count, " .
             "COUNT(e.id) AS period_events, " .
             "COUNT(DISTINCT CASE WHEN e.event_type = 'product_view' THEN e.product_id END) AS products_viewed, " .
@@ -236,6 +265,7 @@ if(!function_exists("analyticsSessionsList")){
             "INNER JOIN " . $tables["sessions"] . " s ON s.id = e.session_id " .
             "WHERE " . $baseWhere .
             "GROUP BY s.id, s.traffic_type, s.device_type, s.landing_path, s.referrer, " .
+                "s.country_code, s.country_name, s.region_name, s.city_name, s.geo_source, " .
                 "s.utm_source, s.utm_medium, s.utm_campaign, s.started_at, s.last_seen_at, s.event_count " .
             $havingSql .
             "ORDER BY period_last_event DESC, s.id DESC " .
@@ -266,6 +296,11 @@ if(!function_exists("analyticsSessionsList")){
                     ),
                     "traffic_type" => (string)($row["traffic_type"] ?? ""),
                     "device_type" => (string)($row["device_type"] ?? ""),
+                    "country_code" => strtoupper(trim((string)($row["country_code"] ?? ""))),
+                    "country_name" => analyticsSafeText($row["country_name"] ?? "", 100),
+                    "region_name" => analyticsSafeText($row["region_name"] ?? "", 120),
+                    "city_name" => analyticsSafeText($row["city_name"] ?? "", 120),
+                    "location" => analyticsSessionsLocationLabel($row),
                     "source" => analyticsMetricsNormalizeSource(
                         $row["utm_source"] ?? "",
                         $row["referrer"] ?? ""
@@ -309,6 +344,7 @@ if(!function_exists("analyticsSessionsDetail")){
         $tables = analyticsTables();
         $trafficBaseSql = analyticsMetricsTrafficSql($environment);
         $sql = "SELECT s.id, HEX(s.visitor_token) AS visitor_token, s.traffic_type, s.device_type, " .
+            "s.country_code, s.country_name, s.region_name, s.city_name, s.geo_source, " .
             "s.landing_path, s.referrer, s.utm_source, s.utm_medium, s.utm_campaign, s.utm_content, s.utm_term, " .
             "s.started_at, s.last_seen_at, s.event_count " .
             "FROM " . $tables["sessions"] . " s " .
@@ -422,6 +458,12 @@ if(!function_exists("analyticsSessionsDetail")){
                 "visitor_ref" => $visitorRef,
                 "traffic_type" => (string)($session["traffic_type"] ?? ""),
                 "device_type" => (string)($session["device_type"] ?? ""),
+                "country_code" => strtoupper(trim((string)($session["country_code"] ?? ""))),
+                "country_name" => analyticsSafeText($session["country_name"] ?? "", 100),
+                "region_name" => analyticsSafeText($session["region_name"] ?? "", 120),
+                "city_name" => analyticsSafeText($session["city_name"] ?? "", 120),
+                "location" => analyticsSessionsLocationLabel($session),
+                "geo_source" => analyticsSafeText($session["geo_source"] ?? "", 32),
                 "source" => analyticsMetricsNormalizeSource(
                     $session["utm_source"] ?? "",
                     $session["referrer"] ?? ""

@@ -464,6 +464,58 @@ if(!function_exists("analyticsDashboardActivity")){
     }
 }
 
+if(!function_exists("analyticsDashboardCountries")){
+    function analyticsDashboardCountries($connection, $environment, $range){
+        $tables = analyticsTables();
+        $trafficSql = analyticsMetricsTrafficSql($environment);
+        $sql = "SELECT COALESCE(NULLIF(s.country_code, ''), '--') AS country_code, " .
+            "MAX(NULLIF(s.country_name, '')) AS country_name, " .
+            "COUNT(DISTINCT s.id) AS sessions, " .
+            "COUNT(DISTINCT HEX(s.visitor_token)) AS visitors, " .
+            "SUM(e.event_type = 'product_view') AS product_views, " .
+            "COUNT(DISTINCT CASE WHEN e.event_type = 'checkout_whatsapp' THEN s.id END) AS whatsapp_sessions " .
+            "FROM " . $tables["events"] . " e " .
+            "INNER JOIN " . $tables["sessions"] . " s ON s.id = e.session_id " .
+            "WHERE s.environment = ? AND " . $trafficSql . " " .
+            "AND e.created_at >= ? AND e.created_at < ? " .
+            "GROUP BY COALESCE(NULLIF(s.country_code, ''), '--') " .
+            "ORDER BY sessions DESC, visitors DESC LIMIT 20";
+        $rows = [];
+        $stmt = mysqli_prepare($connection, $sql);
+
+        if(!$stmt){
+            return $rows;
+        }
+
+        mysqli_stmt_bind_param($stmt, "sss", $environment, $range["start_utc"], $range["end_utc"]);
+        mysqli_stmt_execute($stmt);
+        $result = mysqli_stmt_get_result($stmt);
+
+        while($result && ($row = mysqli_fetch_assoc($result))){
+            $code = strtoupper(trim((string)($row["country_code"] ?? "")));
+            $name = analyticsSafeText($row["country_name"] ?? "", 100);
+
+            if($code === "--"){
+                $name = "Sin identificar";
+            }else if($name === ""){
+                $name = $code;
+            }
+
+            $rows[] = [
+                "country_code" => $code,
+                "country_name" => $name,
+                "sessions" => (int)($row["sessions"] ?? 0),
+                "visitors" => (int)($row["visitors"] ?? 0),
+                "product_views" => (int)($row["product_views"] ?? 0),
+                "whatsapp_sessions" => (int)($row["whatsapp_sessions"] ?? 0)
+            ];
+        }
+
+        mysqli_stmt_close($stmt);
+        return $rows;
+    }
+}
+
 if(!function_exists("analyticsDashboardSummary")){
     function analyticsDashboardSummary($connection, $environment, $range){
         $overview = analyticsMetricsOverview($connection, $environment, $range);
@@ -471,6 +523,7 @@ if(!function_exists("analyticsDashboardSummary")){
         $traffic = analyticsMetricsTraffic($connection, $environment, $range);
         $zones = analyticsDashboardZones($connection, $environment, $range);
         $daily = analyticsDashboardDailySeries($connection, $environment, $range);
+        $countries = analyticsDashboardCountries($connection, $environment, $range);
         $topProducts = array_slice($products, 0, 8);
         $opportunities = array_values(array_filter($products, function($product){
             return (int)$product["view_sessions"] >= 2 && (float)$product["conversion"] < 20.0;
@@ -487,6 +540,7 @@ if(!function_exists("analyticsDashboardSummary")){
             "daily" => $daily,
             "zones" => $zones,
             "traffic" => $traffic,
+            "countries" => $countries,
             "top_products" => $topProducts,
             "opportunities" => array_slice($opportunities, 0, 6)
         ];

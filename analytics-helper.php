@@ -1,6 +1,7 @@
 <?php
 
 require_once __DIR__ . "/analytics-internal-traffic.php";
+require_once __DIR__ . "/analytics-geo.php";
 
 if(!function_exists("analyticsQuoteIdentifier")){
     function analyticsQuoteIdentifier($value){
@@ -36,6 +37,11 @@ if(!function_exists("analyticsEnsureSchema")){
             "bot_confidence TINYINT UNSIGNED NOT NULL DEFAULT 0,\n" .
             "ip_address VARBINARY(16) NULL,\n" .
             "ip_hash BINARY(32) NULL,\n" .
+            "country_code CHAR(2) NOT NULL DEFAULT '',\n" .
+            "country_name VARCHAR(100) NOT NULL DEFAULT '',\n" .
+            "region_name VARCHAR(120) NOT NULL DEFAULT '',\n" .
+            "city_name VARCHAR(120) NOT NULL DEFAULT '',\n" .
+            "geo_source VARCHAR(32) NOT NULL DEFAULT '',\n" .
             "user_agent VARCHAR(512) NOT NULL DEFAULT '',\n" .
             "device_type VARCHAR(16) NOT NULL DEFAULT 'unknown',\n" .
             "landing_path VARCHAR(500) NOT NULL DEFAULT '',\n" .
@@ -52,6 +58,7 @@ if(!function_exists("analyticsEnsureSchema")){
             "KEY idx_analytics_visitor_started (visitor_token, started_at),\n" .
             "KEY idx_analytics_environment_started (environment, started_at),\n" .
             "KEY idx_analytics_traffic_started (traffic_type, started_at),\n" .
+            "KEY idx_analytics_country_started (country_code, started_at),\n" .
             "KEY idx_analytics_last_seen (last_seen_at)\n" .
             ") ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci";
 
@@ -80,6 +87,10 @@ if(!function_exists("analyticsEnsureSchema")){
         }
 
         if(!mysqli_query($connection, $eventsSql)){
+            return false;
+        }
+
+        if(!analyticsEnsureGeoSchema($connection)){
             return false;
         }
 
@@ -458,6 +469,9 @@ if(!function_exists("analyticsCreateSession")){
         $now = analyticsUtcNow();
         $ip = analyticsClientIp();
         $ipHash = analyticsIpHashHex($ip);
+        $geo = in_array((string)($classification["traffic_type"] ?? ""), ["human", "internal_test"], true)
+            ? analyticsGeoResolve($connection, $ip, $ipHash)
+            : analyticsGeoEmpty();
         $userAgent = analyticsSafeText($_SERVER["HTTP_USER_AGENT"] ?? "", 512);
         $deviceType = analyticsDeviceType($userAgent);
 
@@ -465,10 +479,11 @@ if(!function_exists("analyticsCreateSession")){
 
         $sql = "INSERT INTO " . $tables["sessions"] . " (" .
             "visitor_token, session_token, environment, traffic_type, bot_name, bot_category, bot_confidence, " .
-            "ip_address, ip_hash, user_agent, device_type, landing_path, referrer, " .
+            "ip_address, ip_hash, country_code, country_name, region_name, city_name, geo_source, " .
+            "user_agent, device_type, landing_path, referrer, " .
             "utm_source, utm_medium, utm_campaign, utm_content, utm_term, started_at, last_seen_at" .
             ") VALUES (" .
-            "UNHEX(?), UNHEX(?), ?, ?, ?, ?, ?, INET6_ATON(NULLIF(?, '')), UNHEX(NULLIF(?, '')), ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?" .
+            "UNHEX(?), UNHEX(?), ?, ?, ?, ?, ?, INET6_ATON(NULLIF(?, '')), UNHEX(NULLIF(?, '')), ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?" .
             ")";
 
         $stmt = mysqli_prepare($connection, $sql);
@@ -477,7 +492,7 @@ if(!function_exists("analyticsCreateSession")){
             return null;
         }
 
-        $types = str_repeat("s", 20);
+        $types = str_repeat("s", 25);
         $botName = $classification["bot_name"];
         $botCategory = $classification["bot_category"];
         $trafficType = $classification["traffic_type"];
@@ -501,6 +516,11 @@ if(!function_exists("analyticsCreateSession")){
             $botConfidence,
             $ip,
             $ipHash,
+            $geo["country_code"],
+            $geo["country_name"],
+            $geo["region_name"],
+            $geo["city_name"],
+            $geo["source"],
             $userAgent,
             $deviceType,
             $landingPath,

@@ -72,6 +72,19 @@
         return Number.isFinite(parsed) ? parsed : 0;
     }
 
+    function countryFlag(code) {
+        code = String(code || "").trim().toUpperCase();
+
+        if (!/^[A-Z]{2}$/.test(code)) {
+            return "🌎";
+        }
+
+        return String.fromCodePoint(
+            127397 + code.charCodeAt(0),
+            127397 + code.charCodeAt(1)
+        );
+    }
+
     function floatValue(value) {
         var parsed = Number.parseFloat(String(value == null ? 0 : value));
         return Number.isFinite(parsed) ? parsed : 0;
@@ -441,6 +454,7 @@
                 chartPanel("Origen del tráfico", "Sesiones por fuente de adquisición.", "analyticsSourcesChart", "") +
                 chartPanel("Intención por zona", "Clics de compra por WhatsApp según destino.", "analyticsZonesChart", "is-doughnut") +
             '</div>' +
+            chartPanel("Visitantes por país", "Sesiones humanas por país aproximado según la IP de la visita.", "analyticsCountriesChart", "analytics-dashboard-chart-panel--full") +
             '<section class="analytics-dashboard-panel analytics-dashboard-products-highlight">' +
                 '<header><div><h2>Productos con más atención</h2><p>Los CDs que concentran mayor interés en el período.</p></div>' +
                     '<a href="?view=products&environment=' + encodeURIComponent(environment) + '">Ver productos</a></header>' +
@@ -460,6 +474,7 @@
         var overview = summary.overview || {};
         var sources = ((summary.traffic || {}).sources) || [];
         var zones = Array.isArray(summary.zones) ? summary.zones : [];
+        var countries = Array.isArray(summary.countries) ? summary.countries : [];
         var products = Array.isArray(summary.top_products) ? summary.top_products.slice(0, 8) : [];
         var base;
 
@@ -552,6 +567,42 @@
                     borderRadius: 2,
                     barThickness: 16
                 }]
+            },
+            options: base
+        });
+
+        base = chartBaseOptions();
+        base.indexAxis = "y";
+        base.plugins.legend.position = "bottom";
+        base.scales = {
+            x: { beginAtZero: true, ticks: { precision: 0 } },
+            y: { grid: { display: false } }
+        };
+
+        createChart("countries", "#analyticsCountriesChart", {
+            type: "bar",
+            data: {
+                labels: countries.slice(0, 10).map(function (item) {
+                    return countryFlag(item.country_code) + " " + String(item.country_name || item.country_code || "Sin identificar");
+                }),
+                datasets: [
+                    {
+                        label: "Sesiones",
+                        data: countries.slice(0, 10).map(function (item) { return intValue(item.sessions); }),
+                        backgroundColor: colors.ink,
+                        borderWidth: 0,
+                        borderRadius: 2,
+                        barThickness: 15
+                    },
+                    {
+                        label: "WhatsApp",
+                        data: countries.slice(0, 10).map(function (item) { return intValue(item.whatsapp_sessions); }),
+                        backgroundColor: colors.light,
+                        borderWidth: 0,
+                        borderRadius: 2,
+                        barThickness: 15
+                    }
+                ]
             },
             options: base
         });

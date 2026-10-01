@@ -614,6 +614,7 @@ if(!function_exists("seoSameAs")){
         global
             $socialtiktok,
             $socialyoutube,
+            $socialtelegram,
             $socialinstagram,
             $socialfacebook;
 
@@ -623,6 +624,9 @@ if(!function_exists("seoSameAs")){
             ),
             seoValidUrl(
                 $socialyoutube ?? ""
+            ),
+            seoValidUrl(
+                $socialtelegram ?? ""
             ),
             seoValidUrl(
                 $socialinstagram ?? ""

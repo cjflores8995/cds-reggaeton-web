@@ -38,26 +38,29 @@
 }
 
 .footer-social-links a {
-    min-height: 40px;
+    min-height: 48px;
     display: flex;
     align-items: center;
     justify-content: space-between;
     gap: 18px;
     border-bottom: 1px solid #2d2d2d;
     color: #ffffff;
-    font-size: 11px;
-    font-weight: 700;
+    font-size: 12px;
+    font-weight: 800;
     letter-spacing: .08em;
     text-transform: uppercase;
-    transition: opacity .15s ease;
+    transition: opacity .15s ease, padding-left .15s ease;
 }
 
 .footer-social-links a:first-child {
     border-top: 1px solid #2d2d2d;
 }
 
-.footer-social-links a:hover {
-    opacity: .62;
+.footer-social-links a:hover,
+.footer-social-links a:focus-visible {
+    opacity: 1;
+    padding-left: 6px;
+    outline: none;
 }
 
 .footer-whatsapp-link {

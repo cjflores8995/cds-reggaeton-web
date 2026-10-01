@@ -83,6 +83,10 @@ $footerYouTube = storeFooterSafeUrl(
     $socialyoutube ?? ""
 );
 
+$footerTelegram = storeFooterSafeUrl(
+    $socialtelegram ?? ""
+);
+
 $footerInstagram = storeFooterSafeUrl(
     $socialinstagram ?? ""
 );
@@ -119,6 +123,7 @@ if($footerWhatsappNumber !== ""){
 $footerHasSocials =
     $footerTikTok !== "" ||
     $footerYouTube !== "" ||
+    $footerTelegram !== "" ||
     $footerInstagram !== "" ||
     $footerFacebook !== "";
 
@@ -224,6 +229,18 @@ require __DIR__ . "/artist-collection-runtime.php";
                             rel="noopener noreferrer"
                         >
                             <span>YouTube</span>
+                            <span aria-hidden="true">↗</span>
+                        </a>
+                    <?php } ?>
+
+                    <?php if($footerTelegram !== ""){ ?>
+                        <a
+                            href="<?php echo storeFooterEsc($footerTelegram); ?>"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            aria-label="Unirse al grupo de Telegram de Reggaeton El Real"
+                        >
+                            <span>Telegram</span>
                             <span aria-hidden="true">↗</span>
                         </a>
                     <?php } ?>

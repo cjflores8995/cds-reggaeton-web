@@ -355,7 +355,7 @@ $cfg->servientregaquito = 2.60;
 $cfg->servientregaoutsidequito = 5.90;
 $cfg->socialtiktok = "https://www.tiktok.com/@reggaeton.el.real";
 $cfg->socialyoutube = "https://www.youtube.com/@instrumentalesyalgomas7923";
-$cfg->socialtelegram = "https://t.me/+EXwezeNaFNk3ZmYx";
+$cfg->socialtelegram = "https://t.me/reggaetonelreal";
 $cfg->socialinstagram = "";
 $cfg->socialfacebook = "";
 $cfg->currencysymbol = "$";
@@ -570,7 +570,7 @@ if(!isset($cfg->socialyoutube)){
 }
 
 if(!isset($cfg->socialtelegram) || trim((string)$cfg->socialtelegram) === ""){
-    $cfg->socialtelegram = "https://t.me/+EXwezeNaFNk3ZmYx";
+    $cfg->socialtelegram = "https://t.me/reggaetonelreal";
 }
 
 if(!isset($cfg->socialinstagram)){

@@ -78,6 +78,35 @@ $whatsappNumber = seoWhatsappDigits($publicWhatsapp);
 $whatsappDisplay = seoWhatsappDisplay($publicWhatsapp);
 $whatsappUrl = seoWhatsappUrl($publicWhatsapp);
 
+$storeSocialLinks = [
+    [
+        'label' => 'TikTok',
+        'handle' => '@reggaeton.el.real',
+        'url' => trim((string)($socialtiktok ?? ''))
+    ],
+    [
+        'label' => 'YouTube',
+        'handle' => '@instrumentalesyalgomas7923',
+        'url' => trim((string)($socialyoutube ?? ''))
+    ],
+    [
+        'label' => 'Telegram',
+        'handle' => '@reggaetonelreal',
+        'url' => trim((string)($socialtelegram ?? ''))
+    ]
+];
+
+$storeSocialLinks = array_values(
+    array_filter(
+        $storeSocialLinks,
+        static function (array $social): bool {
+            return
+                $social['url'] !== '' &&
+                filter_var($social['url'], FILTER_VALIDATE_URL) !== false;
+        }
+    )
+);
+
 $products = [];
 $productSql = "SELECT * FROM $tableposts WHERE active = 1 AND stock = 1 ORDER BY id DESC";
 $productResult = mysqli_query($connection, $productSql);
@@ -446,6 +475,7 @@ $seoHomeJsonLd = [
     <link rel="stylesheet" href="<?php echo e($storeBaseUrl); ?>store.css?v=3">
     <link rel="stylesheet" href="<?php echo e($storeBaseUrl); ?>store-branding.css?v=1">
     <link rel="stylesheet" href="<?php echo e($storeBaseUrl); ?>store-footer.css?v=1">
+    <link rel="stylesheet" href="<?php echo e($storeBaseUrl); ?>store-social-highlight.css?v=1">
     <link rel="stylesheet" href="<?php echo e($storeBaseUrl); ?>catalog-toolbar.css?v=1">
     <link rel="stylesheet" href="<?php echo e($storeBaseUrl); ?>catalog-carousel.css?v=2">
     <link rel="stylesheet" href="<?php echo e($storeBaseUrl); ?>seo.css?v=1">
@@ -514,6 +544,22 @@ $seoHomeJsonLd = [
             </nav>
 
             <div class="header-actions">
+                <?php if (count($storeSocialLinks) > 0): ?>
+                    <nav class="header-social-links" aria-label="Redes sociales">
+                        <?php foreach ($storeSocialLinks as $social): ?>
+                            <a
+                                href="<?php echo e($social['url']); ?>"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                aria-label="<?php echo e($social['label']); ?> de Reggaeton El Real"
+                            >
+                                <?php echo e($social['label']); ?>
+                                <span aria-hidden="true">↗</span>
+                            </a>
+                        <?php endforeach; ?>
+                    </nav>
+                <?php endif; ?>
+
                 <button class="icon-button js-focus-search" type="button" aria-label="Buscar">
                     <svg viewBox="0 0 24 24" aria-hidden="true">
                         <circle cx="11" cy="11" r="6.5"></circle>
@@ -555,6 +601,35 @@ $seoHomeJsonLd = [
                 </div>
             </div>
         </section>
+
+        <?php if (count($storeSocialLinks) > 0): ?>
+            <section class="social-highlight" aria-labelledby="socialHighlightTitle">
+                <div class="page-shell social-highlight__shell">
+                    <div class="social-highlight__intro">
+                        <p class="eyebrow">REDES SOCIALES</p>
+                        <h2 id="socialHighlightTitle">Síguenos.</h2>
+                    </div>
+
+                    <nav class="social-highlight__links" aria-label="Síguenos en redes sociales">
+                        <?php foreach ($storeSocialLinks as $socialIndex => $social): ?>
+                            <a
+                                class="social-highlight__link"
+                                href="<?php echo e($social['url']); ?>"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                            >
+                                <span class="social-highlight__index">
+                                    <?php echo e(str_pad((string)($socialIndex + 1), 2, '0', STR_PAD_LEFT)); ?>
+                                </span>
+                                <strong><?php echo e($social['label']); ?></strong>
+                                <span class="social-highlight__handle"><?php echo e($social['handle']); ?></span>
+                                <span class="social-highlight__arrow" aria-hidden="true">↗</span>
+                            </a>
+                        <?php endforeach; ?>
+                    </nav>
+                </div>
+            </section>
+        <?php endif; ?>
 
         <?php require __DIR__ . '/home-featured-view.php'; ?>
 

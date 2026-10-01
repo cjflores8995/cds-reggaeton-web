@@ -355,6 +355,7 @@ $cfg->servientregaquito = 2.60;
 $cfg->servientregaoutsidequito = 5.90;
 $cfg->socialtiktok = "https://www.tiktok.com/@reggaeton.el.real";
 $cfg->socialyoutube = "https://www.youtube.com/@instrumentalesyalgomas7923";
+$cfg->socialtelegram = "https://t.me/+EXwezeNaFNk3ZmYx";
 $cfg->socialinstagram = "";
 $cfg->socialfacebook = "";
 $cfg->currencysymbol = "$";
@@ -568,6 +569,10 @@ if(!isset($cfg->socialyoutube)){
     $cfg->socialyoutube = "https://www.youtube.com/@instrumentalesyalgomas7923";
 }
 
+if(!isset($cfg->socialtelegram) || trim((string)$cfg->socialtelegram) === ""){
+    $cfg->socialtelegram = "https://t.me/+EXwezeNaFNk3ZmYx";
+}
+
 if(!isset($cfg->socialinstagram)){
     $cfg->socialinstagram = "";
 }
@@ -729,6 +734,7 @@ $servientregaquito = round((float)$cfg->servientregaquito, 2);
 $servientregaoutsidequito = round((float)$cfg->servientregaoutsidequito, 2);
 $socialtiktok = trim((string)$cfg->socialtiktok);
 $socialyoutube = trim((string)$cfg->socialyoutube);
+$socialtelegram = trim((string)$cfg->socialtelegram);
 $socialinstagram = trim((string)$cfg->socialinstagram);
 $socialfacebook = trim((string)$cfg->socialfacebook);
 $currencysymbol = str_replace("u20b9", "₹", (string)$cfg->currencysymbol);

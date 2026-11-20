@@ -585,12 +585,38 @@ body.admin-dashmix-enabled .admin-home-no-results strong {
         margin-top: 4px;
     }
 
+    /* Mobile dashboard counters: three compact cards in one row. */
     body.admin-dashmix-enabled .admin-home-summary {
-        grid-template-columns: 1fr;
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 8px;
+        width: 100%;
+        max-width: 100%;
     }
 
     body.admin-dashmix-enabled .admin-home-summary__item {
-        min-height: 94px;
+        min-width: 0;
+        min-height: 92px;
+        padding: 15px 5px 13px;
+        border: 1px solid #dfe3ea;
+        border-radius: 16px;
+        text-align: center;
+        box-shadow: 0 2px 6px rgba(16, 24, 40, .04);
+    }
+
+    body.admin-dashmix-enabled .admin-home-summary__item::before {
+        display: none;
+    }
+
+    body.admin-dashmix-enabled .admin-home-summary__item span {
+        margin-bottom: 10px;
+        font-size: clamp(8px, 2.1vw, 10px);
+        letter-spacing: 0;
+        white-space: nowrap;
+    }
+
+    body.admin-dashmix-enabled .admin-home-summary__item strong {
+        font-size: clamp(23px, 6vw, 30px);
     }
 
     body.admin-dashmix-enabled .admin-home-tools,

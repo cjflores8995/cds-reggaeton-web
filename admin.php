@@ -293,7 +293,7 @@ if(!adminIsLoggedIn()){
             type="image/png"
             href="<?php echo adminEsc($baseurl); ?>admin-favicon-reggaeton-el-real-v1.png"
         >
-        <link rel="stylesheet" type="text/css" href="<?php echo $baseurl; ?>admin-modern.css?v=16">
+        <link rel="stylesheet" type="text/css" href="<?php echo $baseurl; ?>admin-modern.css?v=17">
     </head>
     <body class="admin-login-page">
         <div class="admin-login-card">
@@ -781,7 +781,7 @@ if(isset($_GET["editpost"])){
         href="<?php echo adminEsc($baseurl); ?>admin-favicon-reggaeton-el-real-v1.png"
     >
     <link rel="stylesheet" type="text/css" href="<?php echo adminEsc($baseurl); ?>assets/css/font-awesome.css">
-    <link rel="stylesheet" type="text/css" href="<?php echo adminEsc($baseurl); ?>admin-modern.css?v=16">
+    <link rel="stylesheet" type="text/css" href="<?php echo adminEsc($baseurl); ?>admin-modern.css?v=17">
 
     <script src="<?php echo adminEsc($baseurl); ?>jquery.min.js"></script>
     <script src="<?php echo adminEsc($baseurl); ?>jquery.form.js"></script>
@@ -1586,23 +1586,34 @@ if(isset($_GET["editpost"])){
                 </div>
             </section>
 
-            <section class="admin-home-tools">
-                <label
-                    class="admin-home-search"
-                    for="adminCdSearch"
-                >
-                    <i
-                        class="fa fa-search"
-                        aria-hidden="true"
-                    ></i>
-
-                    <input
-                        id="adminCdSearch"
-                        type="search"
-                        placeholder="Buscar por CD o artista"
-                        autocomplete="off"
-                    >
-                </label>
+            <section class="admin-home-tools" aria-label="Buscar CDs">
+                <div class="admin-home-search" role="search">
+                    <label class="admin-home-search__label" for="adminCdSearch">
+                        Buscador de CDs
+                    </label>
+                    <div class="admin-home-search__field">
+                        <i class="fa fa-search" aria-hidden="true"></i>
+                        <input
+                            id="adminCdSearch"
+                            type="search"
+                            placeholder="Buscar artista, álbum o CD..."
+                            autocomplete="off"
+                            aria-describedby="adminCdSearchHint"
+                        >
+                        <button
+                            id="adminCdClearSearch"
+                            class="admin-home-search__clear"
+                            type="button"
+                            aria-label="Limpiar búsqueda"
+                            hidden
+                        >
+                            <i class="fa fa-times" aria-hidden="true"></i>
+                        </button>
+                    </div>
+                    <span class="admin-home-search__hint" id="adminCdSearchHint">
+                        Búsqueda instantánea entre todos tus CDs
+                    </span>
+                </div>
 
                 <div class="admin-home-visible-count">
                     <strong id="adminCdVisibleCount">
@@ -2311,6 +2322,7 @@ if(isset($_GET["editpost"])){
 
     $(function(){
         var $search = $("#adminCdSearch");
+        var $clearSearch = $("#adminCdClearSearch");
         var $cards = $("[data-admin-cd-card]");
         var $count = $("#adminCdVisibleCount");
         var $noResults = $("#adminCdNoResults");
@@ -2344,6 +2356,10 @@ if(isset($_GET["editpost"])){
                 : query
                     .split(/\s+/)
                     .filter(Boolean);
+
+            if($clearSearch.length > 0){
+                $clearSearch.prop("hidden", query === "");
+            }
 
             var visible = 0;
 
@@ -2394,6 +2410,12 @@ if(isset($_GET["editpost"])){
             "input search",
             filterAdminCds
         );
+
+        $clearSearch.on("click", function(){
+            $search.val("");
+            filterAdminCds();
+            $search.trigger("focus");
+        });
 
         filterAdminCds();
     });

@@ -222,10 +222,119 @@
         showView(initialView);
     }
 
+    // Vista de filas desplegables. Reutiliza las acciones del CD original;
+    // no duplica formularios y funciona con el admin.php antiguo o actualizado.
+    function prepareCdAccordion() {
+        var rows = Array.prototype.slice.call(
+            document.querySelectorAll('.admin-inventory-section .admin-cd-grid .admin-cd-card')
+        );
+
+        if (!rows.length) {
+            return;
+        }
+
+        rows.forEach(function (card, index) {
+            if (card.classList.contains('rer-cd-accordion-ready')) {
+                return;
+            }
+
+            var body = card.querySelector('.admin-cd-card__body');
+            var title = card.querySelector('.admin-cd-card__title');
+            var artist = card.querySelector('.admin-cd-card__artist');
+            var price = card.querySelector('.admin-cd-card__meta strong');
+            var date = card.querySelector('.admin-cd-card__meta span');
+
+            if (!body || !title) {
+                return;
+            }
+
+            var isSold = card.classList.contains('admin-cd-card--sold') ||
+                Boolean(card.closest('.admin-inventory-section--sold'));
+            var isHidden = Boolean(card.querySelector('.is-hidden-status'));
+            var status = isSold ? 'Vendido' : (isHidden ? 'Oculto' : 'Disponible');
+            var dateText = date ? date.textContent.trim() : '';
+            var dateLabel = isSold ? 'Fecha de venta' : 'Fecha de publicación';
+
+            if (isSold) {
+                dateText = dateText.replace(/^Vendido\\s*/i, '').trim();
+            }
+
+            var toggle = document.createElement('button');
+            toggle.type = 'button';
+            toggle.className = 'rer-cd-accordion-toggle';
+            toggle.id = 'rer-cd-accordion-toggle-' + index;
+            toggle.setAttribute('aria-expanded', 'false');
+            toggle.setAttribute('aria-controls', 'rer-cd-accordion-panel-' + index);
+            toggle.setAttribute('aria-label', 'Mostrar detalles de ' + title.textContent.trim());
+
+            var identity = document.createElement('span');
+            identity.className = 'rer-cd-accordion-identity';
+
+            var name = document.createElement('span');
+            name.className = 'rer-cd-accordion-title';
+            name.textContent = title.textContent.trim();
+            identity.appendChild(name);
+
+            var performer = document.createElement('span');
+            performer.className = 'rer-cd-accordion-artist';
+            performer.textContent = artist && artist.textContent.trim()
+                ? artist.textContent.trim()
+                : 'Sin artista';
+            identity.appendChild(performer);
+
+            var amount = document.createElement('span');
+            amount.className = 'rer-cd-accordion-price';
+            amount.textContent = price ? price.textContent.trim() : '';
+
+            var chevron = document.createElement('i');
+            chevron.className = 'fa fa-chevron-down rer-cd-accordion-chevron';
+            chevron.setAttribute('aria-hidden', 'true');
+
+            toggle.appendChild(identity);
+            toggle.appendChild(amount);
+            toggle.appendChild(chevron);
+
+            var facts = document.createElement('div');
+            facts.className = 'rer-cd-accordion-facts';
+            var state = document.createElement('span');
+            state.className = 'rer-cd-accordion-status';
+            state.textContent = 'Estado: ' + status;
+            var dateInfo = document.createElement('span');
+            dateInfo.textContent = dateLabel + ': ' + (dateText || 'No registrada');
+            facts.appendChild(state);
+            facts.appendChild(dateInfo);
+            body.insertBefore(facts, body.firstChild);
+
+            body.id = 'rer-cd-accordion-panel-' + index;
+            body.setAttribute('role', 'region');
+            body.setAttribute('aria-labelledby', toggle.id);
+            card.insertBefore(toggle, card.firstChild);
+            card.classList.add('rer-cd-accordion-ready');
+
+            toggle.addEventListener('click', function () {
+                var wasOpen = card.classList.contains('is-cd-expanded');
+
+                rows.forEach(function (other) {
+                    other.classList.remove('is-cd-expanded');
+                    var otherToggle = other.querySelector('.rer-cd-accordion-toggle');
+                    if (otherToggle) {
+                        otherToggle.setAttribute('aria-expanded', 'false');
+                    }
+                });
+
+                if (!wasOpen) {
+                    card.classList.add('is-cd-expanded');
+                    toggle.setAttribute('aria-expanded', 'true');
+                }
+            });
+        });
+    }
+
     function init() {
         restoreLayoutPreference();
         bindCoreControls();
         ensureCdCatalogViewSwitch();
+        prepareCdAccordion();
     }
 
     window.ReggaetonAdminDashmix = {

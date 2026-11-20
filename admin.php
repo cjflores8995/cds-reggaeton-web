@@ -293,7 +293,7 @@ if(!adminIsLoggedIn()){
             type="image/png"
             href="<?php echo adminEsc($baseurl); ?>admin-favicon-reggaeton-el-real-v1.png"
         >
-        <link rel="stylesheet" type="text/css" href="<?php echo $baseurl; ?>admin-modern.css?v=17">
+        <link rel="stylesheet" type="text/css" href="<?php echo $baseurl; ?>admin-modern.css?v=18">
     </head>
     <body class="admin-login-page">
         <div class="admin-login-card">
@@ -781,7 +781,7 @@ if(isset($_GET["editpost"])){
         href="<?php echo adminEsc($baseurl); ?>admin-favicon-reggaeton-el-real-v1.png"
     >
     <link rel="stylesheet" type="text/css" href="<?php echo adminEsc($baseurl); ?>assets/css/font-awesome.css">
-    <link rel="stylesheet" type="text/css" href="<?php echo adminEsc($baseurl); ?>admin-modern.css?v=17">
+    <link rel="stylesheet" type="text/css" href="<?php echo adminEsc($baseurl); ?>admin-modern.css?v=18">
 
     <script src="<?php echo adminEsc($baseurl); ?>jquery.min.js"></script>
     <script src="<?php echo adminEsc($baseurl); ?>jquery.form.js"></script>

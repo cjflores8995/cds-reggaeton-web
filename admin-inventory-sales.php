@@ -28,8 +28,27 @@ function adminSalesPageDate($value){
         : date("d-m-Y H:i", $timestamp);
 }
 
+function adminSalesPageUrl($baseurl, $params = [], $fragment = ""){
+    $params = array_filter($params, function($value){
+        return $value !== null && $value !== "";
+    });
+    $query = http_build_query($params, "", "&", PHP_QUERY_RFC3986);
+
+    return $baseurl . "admin-inventory-sales.php" .
+        ($query !== "" ? "?" . $query : "") .
+        ($fragment !== "" ? "#" . $fragment : "");
+}
+
 $ready = adminSalesEnsureReady($connection);
 $period = adminSalesPeriod($_GET["period"] ?? "all");
+$inventorySearch = isset($_GET["inventory_search"]) && is_string($_GET["inventory_search"])
+    ? substr(trim($_GET["inventory_search"]), 0, 120)
+    : "";
+$salesSearch = isset($_GET["sales_search"]) && is_string($_GET["sales_search"])
+    ? substr(trim($_GET["sales_search"]), 0, 120)
+    : "";
+$currentSaleDateTime = (new DateTimeImmutable("now", new DateTimeZone("America/Guayaquil")))
+    ->format("Y-m-d\\TH:i");
 $productId = max(0, (int)($_GET["product_id"] ?? 0));
 $selectedProduct = $ready && $productId > 0
     ? adminSalesFindProduct($connection, $productId)
@@ -50,10 +69,10 @@ $summary = $ready
     ];
 
 $availableProducts = $ready
-    ? adminSalesAvailableProducts($connection)
+    ? adminSalesAvailableProducts($connection, $inventorySearch)
     : [];
 $history = $ready
-    ? adminSalesHistory($connection, $period, 250)
+    ? adminSalesHistory($connection, $period, 250, $salesSearch)
     : [];
 
 $flash = null;
@@ -87,7 +106,7 @@ $periodLabels = [
     >
     <link rel="stylesheet" type="text/css" href="<?php echo adminSalesPageEsc($baseurl); ?>assets/css/font-awesome.css">
     <link rel="stylesheet" type="text/css" href="<?php echo adminSalesPageEsc($baseurl); ?>admin-modern.css?v=16">
-    <link rel="stylesheet" type="text/css" href="<?php echo adminSalesPageEsc($baseurl); ?>admin-sales.css?v=1">
+    <link rel="stylesheet" type="text/css" href="<?php echo adminSalesPageEsc($baseurl); ?>admin-sales.css?v=2">
 </head>
 <body>
 <div class="admin-page-shell">
@@ -130,7 +149,7 @@ $periodLabels = [
         <nav class="sales-periods" aria-label="Periodo financiero">
             <?php foreach($periodLabels as $key => $label){ ?>
                 <a
-                    href="<?php echo adminSalesPageEsc($baseurl . "admin-inventory-sales.php?period=" . $key); ?>"
+                    href="<?php echo adminSalesPageEsc(adminSalesPageUrl($baseurl, ["period" => $key, "inventory_search" => $inventorySearch, "sales_search" => $salesSearch])); ?>"
                     class="<?php echo $period === $key ? "is-active" : ""; ?>"
                 >
                     <?php echo adminSalesPageEsc($label); ?>
@@ -192,6 +211,9 @@ $periodLabels = [
                         <input type="hidden" name="admin_csrf" value="<?php echo adminSalesPageEsc(adminAuthCsrfToken()); ?>">
                         <input type="hidden" name="sales_action" value="register_sale">
                         <input type="hidden" name="product_id" value="<?php echo (int)$selectedProduct["id"]; ?>">
+                        <input type="hidden" name="period" value="<?php echo adminSalesPageEsc($period); ?>">
+                        <input type="hidden" name="inventory_search" value="<?php echo adminSalesPageEsc($inventorySearch); ?>">
+                        <input type="hidden" name="sales_search" value="<?php echo adminSalesPageEsc($salesSearch); ?>">
 
                         <label>Precio real de venta (USD)</label>
                         <input
@@ -200,6 +222,16 @@ $periodLabels = [
                             min="0.01"
                             step="0.01"
                             value="<?php echo adminSalesPageEsc(number_format((float)($selectedProduct["normalprice"] ?? 0), 2, ".", "")); ?>"
+                            required
+                        >
+
+                        <label for="sale-datetime">Fecha y hora de venta (Ecuador)</label>
+                        <input
+                            id="sale-datetime"
+                            type="datetime-local"
+                            name="sale_datetime"
+                            value="<?php echo adminSalesPageEsc($currentSaleDateTime); ?>"
+                            max="<?php echo adminSalesPageEsc($currentSaleDateTime); ?>"
                             required
                         >
 
@@ -220,10 +252,15 @@ $periodLabels = [
                         </div>
                     </div>
 
+                    <p class="admin-muted">Fecha de venta: <strong><?php echo adminSalesPageEsc(adminSalesPageDate($selectedSale["sold_at"] ?? "")); ?></strong></p>
+
                     <form method="post" action="admin-sales-action.php">
                         <input type="hidden" name="admin_csrf" value="<?php echo adminSalesPageEsc(adminAuthCsrfToken()); ?>">
                         <input type="hidden" name="sales_action" value="revert_sale">
                         <input type="hidden" name="product_id" value="<?php echo (int)$selectedProduct["id"]; ?>">
+                        <input type="hidden" name="period" value="<?php echo adminSalesPageEsc($period); ?>">
+                        <input type="hidden" name="inventory_search" value="<?php echo adminSalesPageEsc($inventorySearch); ?>">
+                        <input type="hidden" name="sales_search" value="<?php echo adminSalesPageEsc($salesSearch); ?>">
                         <button class="admin-modern-button secondary" type="submit" onclick="return confirm('¿Revertir esta venta? El CD volverá a aparecer como disponible.');">
                             Revertir venta y restaurar CD
                         </button>
@@ -232,7 +269,7 @@ $periodLabels = [
             </section>
         <?php } ?>
 
-        <section class="sales-section">
+        <section class="sales-section" id="inventario-disponible">
             <div class="sales-section-heading">
                 <div>
                     <span>01</span>
@@ -241,8 +278,23 @@ $periodLabels = [
                 <strong><?php echo count($availableProducts); ?> CDs</strong>
             </div>
 
+            <form class="sales-search-form" method="get" action="admin-inventory-sales.php#inventario-disponible" role="search">
+                <input type="hidden" name="period" value="<?php echo adminSalesPageEsc($period); ?>">
+                <input type="hidden" name="sales_search" value="<?php echo adminSalesPageEsc($salesSearch); ?>">
+                <label for="inventory-search">Buscar CD disponible</label>
+                <div class="sales-search-row">
+                    <input id="inventory-search" type="search" name="inventory_search"
+                        value="<?php echo adminSalesPageEsc($inventorySearch); ?>"
+                        placeholder="Artista, álbum o código del CD" maxlength="120">
+                    <button type="submit" class="admin-modern-button">Buscar</button>
+                    <?php if($inventorySearch !== ""){ ?>
+                        <a class="admin-modern-button secondary" href="<?php echo adminSalesPageEsc(adminSalesPageUrl($baseurl, ["period" => $period, "sales_search" => $salesSearch], "inventario-disponible")); ?>">Limpiar</a>
+                    <?php } ?>
+                </div>
+            </form>
+
             <?php if(count($availableProducts) === 0){ ?>
-                <div class="admin-empty">No hay CDs disponibles.</div>
+                <div class="admin-empty"><?php echo $inventorySearch !== "" ? "No se encontraron CDs disponibles con esa búsqueda." : "No hay CDs disponibles."; ?></div>
             <?php }else{ ?>
                 <div class="sales-table-wrap">
                     <table class="sales-table">
@@ -261,7 +313,7 @@ $periodLabels = [
                                     <td><?php echo adminSalesPageEsc($product["album_name"] ?: $product["title"]); ?></td>
                                     <td><?php echo adminSalesPageMoney($product["normalprice"] ?? 0); ?></td>
                                     <td>
-                                        <a class="sales-link" href="<?php echo adminSalesPageEsc($baseurl . "admin-inventory-sales.php?product_id=" . (int)$product["id"] . "#venta-seleccionada"); ?>">
+                                        <a class="sales-link" href="<?php echo adminSalesPageEsc(adminSalesPageUrl($baseurl, ["product_id" => (int)$product["id"], "period" => $period, "inventory_search" => $inventorySearch, "sales_search" => $salesSearch], "venta-seleccionada")); ?>">
                                             Registrar venta
                                         </a>
                                     </td>
@@ -273,7 +325,7 @@ $periodLabels = [
             <?php } ?>
         </section>
 
-        <section class="sales-section">
+        <section class="sales-section" id="historial-ventas">
             <div class="sales-section-heading">
                 <div>
                     <span>02</span>
@@ -282,14 +334,29 @@ $periodLabels = [
                 <strong><?php echo count($history); ?> registros</strong>
             </div>
 
+            <form class="sales-search-form" method="get" action="admin-inventory-sales.php#historial-ventas" role="search">
+                <input type="hidden" name="period" value="<?php echo adminSalesPageEsc($period); ?>">
+                <input type="hidden" name="inventory_search" value="<?php echo adminSalesPageEsc($inventorySearch); ?>">
+                <label for="sales-search">Buscar CD vendido</label>
+                <div class="sales-search-row">
+                    <input id="sales-search" type="search" name="sales_search"
+                        value="<?php echo adminSalesPageEsc($salesSearch); ?>"
+                        placeholder="Artista, álbum o código del CD" maxlength="120">
+                    <button type="submit" class="admin-modern-button">Buscar</button>
+                    <?php if($salesSearch !== ""){ ?>
+                        <a class="admin-modern-button secondary" href="<?php echo adminSalesPageEsc(adminSalesPageUrl($baseurl, ["period" => $period, "inventory_search" => $inventorySearch], "historial-ventas")); ?>">Limpiar</a>
+                    <?php } ?>
+                </div>
+            </form>
+
             <?php if(count($history) === 0){ ?>
-                <div class="admin-empty">No hay ventas registradas para este periodo.</div>
+                <div class="admin-empty"><?php echo $salesSearch !== "" ? "No se encontraron ventas con esa búsqueda y periodo." : "No hay ventas registradas para este periodo."; ?></div>
             <?php }else{ ?>
                 <div class="sales-table-wrap">
                     <table class="sales-table">
                         <thead>
                             <tr>
-                                <th>Fecha</th>
+                                <th>Fecha de venta</th>
                                 <th>Artista</th>
                                 <th>CD</th>
                                 <th>Publicado</th>
@@ -316,7 +383,7 @@ $periodLabels = [
                                     </td>
                                     <td>
                                         <?php if($completed){ ?>
-                                            <a class="sales-link" href="<?php echo adminSalesPageEsc($baseurl . "admin-inventory-sales.php?product_id=" . (int)$sale["product_id"] . "#venta-seleccionada"); ?>">
+                                            <a class="sales-link" href="<?php echo adminSalesPageEsc(adminSalesPageUrl($baseurl, ["product_id" => (int)$sale["product_id"], "period" => $period, "inventory_search" => $inventorySearch, "sales_search" => $salesSearch], "venta-seleccionada")); ?>">
                                                 Gestionar
                                             </a>
                                         <?php } ?>

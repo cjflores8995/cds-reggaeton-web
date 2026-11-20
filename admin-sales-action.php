@@ -33,6 +33,20 @@ function adminSalesActionRedirect($status, $productId = 0){
         $url .= "&product_id=" . (int)$productId;
     }
 
+    foreach(["period", "inventory_search", "sales_search"] as $field){
+        $value = isset($_POST[$field]) && is_string($_POST[$field])
+            ? substr(trim($_POST[$field]), 0, 120)
+            : "";
+
+        if($field === "period"){
+            $value = adminSalesPeriod($value);
+        }
+
+        if($value !== ""){
+            $url .= "&" . rawurlencode($field) . "=" . rawurlencode($value);
+        }
+    }
+
     header("Location: " . $url);
     exit;
 }
@@ -55,10 +69,15 @@ if($action === "register_sale"){
         ? (float)$salePriceRaw
         : 0;
 
+    $saleDatetime = isset($_POST["sale_datetime"]) && is_string($_POST["sale_datetime"])
+        ? trim($_POST["sale_datetime"])
+        : "";
+
     $result = adminSalesRegister(
         $connection,
         $productId,
-        $salePrice
+        $salePrice,
+        $saleDatetime
     );
 
     adminSystemLogWrite([
@@ -71,7 +90,8 @@ if($action === "register_sale"){
         "detail" => (string)($result["message"] ?? "Venta no registrada."),
         "context_data" => [
             "product_id" => $productId,
-            "sale_price" => $salePrice
+            "sale_price" => $salePrice,
+            "sale_datetime" => $saleDatetime
         ]
     ]);
 

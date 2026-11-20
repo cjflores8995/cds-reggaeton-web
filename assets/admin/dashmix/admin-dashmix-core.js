@@ -309,7 +309,7 @@
             var dateLabel = isSold ? 'Fecha de venta' : 'Fecha de publicación';
 
             if (isSold) {
-                dateText = dateText.replace(/^Vendido\\s*/i, '').trim();
+                dateText = dateText.replace(/^Vendido\s*/i, '').trim();
             }
 
             var toggle = document.createElement('button');

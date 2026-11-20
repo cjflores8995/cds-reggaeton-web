@@ -1623,6 +1623,22 @@ if(isset($_GET["editpost"])){
                 </div>
             </section>
 
+            <?php if($totalCdCount > 0){ ?>
+                <div class="admin-cd-view-switch" role="group" aria-label="Visualización del catálogo de CDs">
+                    <span>Visualizar CDs como</span>
+                    <div class="admin-cd-view-switch__options">
+                        <button type="button" class="is-active" data-admin-cd-view-option="cards" aria-pressed="true">
+                            <i class="fa fa-th-large" aria-hidden="true"></i>
+                            Tarjetas
+                        </button>
+                        <button type="button" data-admin-cd-view-option="table" aria-pressed="false">
+                            <i class="fa fa-list" aria-hidden="true"></i>
+                            Tabla
+                        </button>
+                    </div>
+                </div>
+            <?php } ?>
+
             <?php if($totalCdCount === 0){ ?>
                 <div class="admin-empty">
                     No hay CDs publicados todavía.
@@ -1651,6 +1667,13 @@ if(isset($_GET["editpost"])){
                             No hay CDs disponibles.
                         </div>
                     <?php }else{ ?>
+                        <div class="admin-cd-table-head" aria-hidden="true">
+                            <span>Portada</span>
+                            <span>Artista</span>
+                            <span>Álbum</span>
+                            <span>Fecha / precio</span>
+                            <span>Acciones</span>
+                        </div>
                         <div class="admin-cd-grid">
                             <?php foreach($availablePosts as $post){ ?>
                                 <?php
@@ -1879,6 +1902,13 @@ if(isset($_GET["editpost"])){
                             pero ya no aparecen en la tienda pública.
                         </p>
 
+                        <div class="admin-cd-table-head" aria-hidden="true">
+                            <span>Portada</span>
+                            <span>Artista</span>
+                            <span>Álbum</span>
+                            <span>Fecha / precio</span>
+                            <span>Acciones</span>
+                        </div>
                         <div class="admin-cd-grid">
                             <?php foreach($soldPosts as $post){ ?>
                                 <?php
@@ -2327,10 +2357,48 @@ if(isset($_GET["editpost"])){
         var $count = $("#adminCdVisibleCount");
         var $noResults = $("#adminCdNoResults");
         var $sections = $("[data-admin-cd-section]");
+        var $viewButtons = $("[data-admin-cd-view-option]");
+        var viewStorageKey = "rer.admin.cdCatalogView";
 
         if($search.length === 0 || $cards.length === 0){
             return;
         }
+
+        function applyCdView(mode){
+            var view = mode === "table" ? "table" : "cards";
+
+            $sections.attr("data-cd-view", view);
+
+            $viewButtons.each(function(){
+                var $button = $(this);
+                var active = $button.attr("data-admin-cd-view-option") === view;
+                $button.toggleClass("is-active", active);
+                $button.attr("aria-pressed", active ? "true" : "false");
+            });
+        }
+
+        var initialView = "cards";
+
+        try{
+            initialView = window.localStorage.getItem(viewStorageKey) === "table"
+                ? "table"
+                : "cards";
+        }catch(error){
+            // La selección sigue funcionando sin almacenamiento local.
+        }
+
+        applyCdView(initialView);
+
+        $viewButtons.on("click", function(){
+            var nextView = $(this).attr("data-admin-cd-view-option");
+            applyCdView(nextView);
+
+            try{
+                window.localStorage.setItem(viewStorageKey, nextView);
+            }catch(error){
+                // Los navegadores privados pueden bloquear el almacenamiento.
+            }
+        });
 
         function normalizeAdminSearch(value){
             var text = String(value || "")

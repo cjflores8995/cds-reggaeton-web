@@ -840,6 +840,40 @@ tr:hover td{
     line-height:1.4;
 }
 
+/* Compatibilidad con la plantilla anterior que usaba <label class="admin-home-search">. */
+label.admin-home-search{
+    flex-direction:row;
+    align-items:center;
+    gap:14px;
+    background:#f0f6ff;
+}
+
+label.admin-home-search > i{
+    flex:none;
+    color:#0765d4;
+    font-size:20px;
+}
+
+label.admin-home-search > input[type="search"]{
+    flex:1 1 auto;
+    min-width:0;
+    min-height:56px;
+    margin:0;
+    padding:0 16px;
+    border:3px solid #0765d4;
+    border-radius:12px;
+    outline:none;
+    background:#fff;
+    box-shadow:0 0 0 4px rgba(7,101,212,.13);
+    color:#1f2937;
+    font-size:14px;
+}
+
+label.admin-home-search > input[type="search"]:focus{
+    border-color:#003f97;
+    box-shadow:0 0 0 5px rgba(7,101,212,.23);
+}
+
 .admin-home-visible-count{
     min-width:92px;
     display:flex;

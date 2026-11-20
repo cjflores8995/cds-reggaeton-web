@@ -2459,14 +2459,12 @@ if(isset($_GET["editpost"])){
             $sections.each(function(){
                 var $section = $(this);
 
-                var sectionHasVisibleCards =
-                    $section
-                        .find("[data-admin-cd-card]:visible")
-                        .length > 0;
+                var sectionHasMatchingCards =
+                    $section.find("[data-admin-cd-card]").filter(function(){
+                        return this.style.display !== "none";
+                    }).length > 0;
 
-                $section.toggle(
-                    sectionHasVisibleCards
-                );
+                $section.toggle(sectionHasMatchingCards);
             });
 
             $count.text(visible);

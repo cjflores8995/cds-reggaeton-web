@@ -977,6 +977,15 @@ body.admin-dashmix-enabled .admin-inventory-section[data-cd-view="table"] .admin
 }
 
 
+/* Las fichas originales no muestran la información repetida del acordeón. */
+body.admin-dashmix-enabled .rer-cd-accordion-facts {
+    display: none !important;
+}
+
+body.admin-dashmix-enabled .admin-inventory-section[data-cd-view="table"] .rer-cd-accordion-facts {
+    display: flex !important;
+}
+
 /* Modo Tabla: filas desplegables compactas. La vista Tarjetas permanece intacta. */
 body.admin-dashmix-enabled .rer-cd-accordion-toggle {
     display: none !important;

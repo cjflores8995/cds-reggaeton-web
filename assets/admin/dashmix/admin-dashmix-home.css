@@ -673,3 +673,305 @@ body.admin-dashmix-enabled .admin-home-no-results strong {
         transition: none !important;
     }
 }
+
+
+/* ---------------------------------------------------------
+   CATÁLOGO DE CDs: alternar tarjetas / tabla sin duplicar
+   las fichas, filtros ni formularios originales.
+   --------------------------------------------------------- */
+body.admin-dashmix-enabled .admin-cd-view-switch {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin: 0 0 18px;
+    padding: 12px 14px;
+    border: 1px solid var(--rer-dm-border);
+    border-radius: 12px;
+    background: #fff;
+    box-shadow: var(--rer-dm-shadow);
+}
+
+body.admin-dashmix-enabled .admin-cd-view-switch > span {
+    color: #5b6573;
+    font-size: 12px;
+    font-weight: 650;
+}
+
+body.admin-dashmix-enabled .admin-cd-view-switch__options {
+    display: flex;
+    gap: 5px;
+    padding: 4px;
+    border: 1px solid #dce3ed;
+    border-radius: 10px;
+    background: #f3f6fa;
+}
+
+body.admin-dashmix-enabled .admin-cd-view-switch__options button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+    min-height: 37px;
+    padding: 8px 14px;
+    border: 1px solid transparent;
+    border-radius: 7px;
+    background: transparent;
+    color: #4f5b69;
+    font-size: 12px;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+body.admin-dashmix-enabled .admin-cd-view-switch__options button.is-active {
+    border-color: #0a67cd;
+    background: #0864c8;
+    color: #fff;
+}
+
+body.admin-dashmix-enabled .admin-cd-view-switch__options button:focus-visible {
+    outline: 3px solid rgba(6, 101, 208, .3);
+    outline-offset: 2px;
+}
+
+body.admin-dashmix-enabled .admin-cd-table-head {
+    display: none;
+}
+
+body.admin-dashmix-enabled .admin-inventory-section[data-cd-view="table"] .admin-cd-table-head {
+    display: grid;
+    grid-template-columns: 74px minmax(0, 1fr) minmax(0, 1.5fr) minmax(0, 1fr) minmax(0, 1.6fr);
+    gap: 12px;
+    align-items: center;
+    margin: 0;
+    padding: 11px 12px;
+    border: 1px solid #dce2e9;
+    border-bottom: 0;
+    border-radius: 10px 10px 0 0;
+    background: #f5f7fa;
+    color: #677282;
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: .04em;
+    text-transform: uppercase;
+}
+
+body.admin-dashmix-enabled .admin-inventory-section[data-cd-view="table"] .admin-cd-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    overflow: hidden;
+    border: 1px solid #dce2e9;
+    border-radius: 0 0 10px 10px;
+    background: #fff;
+}
+
+body.admin-dashmix-enabled .admin-inventory-section[data-cd-view="table"] .admin-cd-card {
+    display: grid;
+    grid-template-columns: 74px minmax(0, 1fr);
+    gap: 12px;
+    align-items: center;
+    width: 100%;
+    min-height: 110px;
+    margin: 0;
+    padding: 12px;
+    border: 0;
+    border-bottom: 1px solid #e6eaf0;
+    border-radius: 0;
+    background: #fff;
+    box-shadow: none;
+    transform: none;
+}
+
+body.admin-dashmix-enabled .admin-inventory-section[data-cd-view="table"] .admin-cd-card:last-child {
+    border-bottom: 0;
+}
+
+body.admin-dashmix-enabled .admin-inventory-section[data-cd-view="table"] .admin-cd-card:hover {
+    background: #f8fbff;
+    box-shadow: none;
+    transform: none;
+}
+
+body.admin-dashmix-enabled .admin-inventory-section[data-cd-view="table"] .admin-cd-card__image-wrap {
+    display: block;
+    width: 74px;
+    height: 74px;
+    overflow: hidden;
+    aspect-ratio: auto;
+    border: 0;
+    border-radius: 8px;
+}
+
+body.admin-dashmix-enabled .admin-inventory-section[data-cd-view="table"] .admin-cd-card__photo-status {
+    top: 3px;
+    right: 3px;
+    width: 27px;
+    height: 27px;
+    border-width: 1px;
+    font-size: 11px;
+}
+
+body.admin-dashmix-enabled .admin-inventory-section[data-cd-view="table"] .admin-cd-card__photo-status.cover-only {
+    font-size: 7px;
+}
+
+body.admin-dashmix-enabled .admin-inventory-section[data-cd-view="table"] .admin-cd-card__status {
+    top: auto;
+    bottom: 4px;
+    left: 3px;
+    padding: 3px 4px;
+    font-size: 7px;
+}
+
+body.admin-dashmix-enabled .admin-inventory-section[data-cd-view="table"] .admin-cd-card__body {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.5fr) minmax(0, 1fr) minmax(0, 1.6fr);
+    grid-template-areas:
+        "artist title meta actions"
+        "artist title meta inventory"
+        "artist title meta delete";
+    align-items: center;
+    column-gap: 12px;
+    row-gap: 5px;
+    min-width: 0;
+    min-height: 0;
+    padding: 0;
+}
+
+body.admin-dashmix-enabled .admin-inventory-section[data-cd-view="table"] .admin-cd-card__artist {
+    grid-area: artist;
+    min-width: 0;
+    margin: 0;
+    overflow-wrap: anywhere;
+    white-space: normal;
+    font-size: 10px;
+}
+
+body.admin-dashmix-enabled .admin-inventory-section[data-cd-view="table"] .admin-cd-card__title {
+    grid-area: title;
+    display: block;
+    min-width: 0;
+    min-height: 0;
+    margin: 0;
+    overflow: visible;
+    overflow-wrap: anywhere;
+    font-size: 13px;
+    -webkit-line-clamp: unset;
+}
+
+body.admin-dashmix-enabled .admin-inventory-section[data-cd-view="table"] .admin-cd-card__meta {
+    grid-area: meta;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 5px;
+    min-width: 0;
+    margin: 0;
+    font-size: 10px;
+}
+
+body.admin-dashmix-enabled .admin-inventory-section[data-cd-view="table"] .admin-cd-card__meta strong {
+    font-size: 14px;
+}
+
+body.admin-dashmix-enabled .admin-inventory-section[data-cd-view="table"] .admin-cd-card__actions {
+    grid-area: actions;
+    display: flex;
+    gap: 5px;
+    min-width: 0;
+    margin: 0;
+}
+
+body.admin-dashmix-enabled .admin-inventory-section[data-cd-view="table"] .admin-cd-card__button {
+    flex: 1 1 auto;
+    min-height: 30px;
+    padding: 6px;
+    font-size: 9px;
+}
+
+body.admin-dashmix-enabled .admin-inventory-section[data-cd-view="table"] .admin-cd-card__inventory-form {
+    grid-area: inventory;
+    margin: 0;
+}
+
+body.admin-dashmix-enabled .admin-inventory-section[data-cd-view="table"] .admin-cd-card__inventory-button {
+    min-height: 30px;
+    padding: 6px;
+    font-size: 9px;
+}
+
+body.admin-dashmix-enabled .admin-inventory-section[data-cd-view="table"] .admin-cd-card__delete {
+    grid-area: delete;
+    margin: 0;
+    font-size: 9px;
+}
+
+@media (max-width: 950px) {
+    body.admin-dashmix-enabled .admin-inventory-section[data-cd-view="table"] .admin-cd-table-head {
+        display: none;
+    }
+
+    body.admin-dashmix-enabled .admin-inventory-section[data-cd-view="table"] .admin-cd-grid {
+        border-radius: 10px;
+    }
+
+    body.admin-dashmix-enabled .admin-inventory-section[data-cd-view="table"] .admin-cd-card {
+        grid-template-columns: 72px minmax(0, 1fr);
+        align-items: start;
+        gap: 12px;
+        padding: 12px 10px;
+    }
+
+    body.admin-dashmix-enabled .admin-inventory-section[data-cd-view="table"] .admin-cd-card__image-wrap {
+        width: 72px;
+        height: 72px;
+    }
+
+    body.admin-dashmix-enabled .admin-inventory-section[data-cd-view="table"] .admin-cd-card__body {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr);
+        grid-template-areas: "artist" "title" "meta" "actions" "inventory" "delete";
+        gap: 8px;
+    }
+
+    body.admin-dashmix-enabled .admin-inventory-section[data-cd-view="table"] .admin-cd-card__artist {
+        font-size: 10px;
+    }
+
+    body.admin-dashmix-enabled .admin-inventory-section[data-cd-view="table"] .admin-cd-card__title {
+        font-size: 14px;
+    }
+
+    body.admin-dashmix-enabled .admin-inventory-section[data-cd-view="table"] .admin-cd-card__meta {
+        flex-direction: row;
+        flex-wrap: wrap;
+        align-items: center;
+        justify-content: space-between;
+    }
+
+    body.admin-dashmix-enabled .admin-inventory-section[data-cd-view="table"] .admin-cd-card__actions {
+        flex-wrap: wrap;
+    }
+
+    body.admin-dashmix-enabled .admin-inventory-section[data-cd-view="table"] .admin-cd-card__delete {
+        margin-top: 2px;
+    }
+}
+
+@media (max-width: 520px) {
+    body.admin-dashmix-enabled .admin-cd-view-switch {
+        align-items: stretch;
+        flex-direction: column;
+        gap: 9px;
+    }
+
+    body.admin-dashmix-enabled .admin-cd-view-switch__options {
+        width: 100%;
+    }
+
+    body.admin-dashmix-enabled .admin-cd-view-switch__options button {
+        flex: 1 1 50%;
+    }
+}

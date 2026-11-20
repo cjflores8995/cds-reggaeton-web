@@ -730,10 +730,10 @@ tr:hover td{
     flex-direction:column;
     gap:9px;
     margin:0;
-    padding:16px;
-    border:0;
+    padding:18px;
+    border:1px solid #c1d9fa;
     border-right:1px solid var(--admin-line);
-    background:#f7faff;
+    background:#f0f6ff;
 }
 
 .admin-home-search__label{
@@ -751,22 +751,22 @@ tr:hover td{
     align-items:center;
     gap:12px;
     width:100%;
-    min-height:52px;
-    padding:0 12px;
-    border:2px solid #0969ce;
+    min-height:56px;
+    padding:0 14px;
+    border:3px solid #0765d4;
     border-radius:12px;
     background:#fff;
-    box-shadow:0 2px 6px rgba(15,23,42,.06);
+    box-shadow:0 0 0 4px rgba(7,101,212,.13),0 4px 10px rgba(15,23,42,.07);
     transition:border-color .15s ease,box-shadow .15s ease;
 }
 
 .admin-home-search__field:hover{
-    border-color:#075bb4;
+    border-color:#034fbb;
 }
 
 .admin-home-search__field:focus-within{
-    border-color:#0058b0;
-    box-shadow:0 0 0 4px rgba(9,105,206,.14);
+    border-color:#003f97;
+    box-shadow:0 0 0 5px rgba(7,101,212,.23),0 4px 12px rgba(15,23,42,.11);
 }
 
 .admin-home-search__field > i{
@@ -799,7 +799,7 @@ tr:hover td{
 }
 
 .admin-home-search__field input[type="search"]::placeholder{
-    color:#5d6676;
+    color:#4b5563;
     opacity:1;
 }
 

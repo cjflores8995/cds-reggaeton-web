@@ -2444,7 +2444,12 @@ if(isset($_GET["editpost"])){
                     }
                 );
 
-                $card.toggle(matches);
+                // Eliminar el display inline al mostrar para respetar grid / table.
+                if(matches){
+                    $card[0].style.removeProperty("display");
+                }else{
+                    $card[0].style.display = "none";
+                }
 
                 if(matches){
                     visible++;

@@ -1128,11 +1128,24 @@ label.admin-home-search > input[type="search"]:focus{
 @media(max-width:700px){
     .admin-home-summary{
         width:100%;
-        grid-template-columns:repeat(3,1fr);
+        max-width:100%;
+        grid-template-columns:repeat(3,minmax(0,1fr));
     }
 
     .admin-home-summary__item{
         min-width:0;
+        padding:13px 8px;
+        text-align:center;
+    }
+
+    .admin-home-summary__item span{
+        font-size:9px;
+        letter-spacing:.02em;
+        white-space:nowrap;
+    }
+
+    .admin-home-summary__item strong{
+        font-size:clamp(19px,4.5vw,25px);
     }
 
     .admin-home-tools{
@@ -1160,7 +1173,7 @@ label.admin-home-search > input[type="search"]:focus{
 
 @media(max-width:440px){
     .admin-home-summary{
-        grid-template-columns:1fr;
+        grid-template-columns:repeat(3,minmax(0,1fr));
     }
 
     .admin-cd-grid{

@@ -276,25 +276,43 @@ if(!function_exists("adminSalesSummary")){
 }
 
 if(!function_exists("adminSalesAvailableProducts")){
-    function adminSalesAvailableProducts($connection){
+    function adminSalesAvailableProducts($connection, $search = ""){
         global $tableposts, $tableartists;
 
         $rows = [];
-        $result = mysqli_query(
-            $connection,
+        $search = substr(trim((string)$search), 0, 120);
+        $sql =
             "SELECT p.id, p.postid, p.title, p.album, p.artist, " .
             "p.normalprice, p.time, a.name AS artist_name " .
             "FROM $tableposts p " .
             "LEFT JOIN $tableartists a ON a.id = p.artistid " .
-            "WHERE COALESCE(p.stock, 1) = 1 " .
-            "ORDER BY p.id DESC"
-        );
+            "WHERE COALESCE(p.stock, 1) = 1 ";
 
-        if(!$result){
+        if($search !== ""){
+            $sql .= "AND (p.title LIKE ? OR p.album LIKE ? OR p.artist LIKE ? " .
+                "OR a.name LIKE ? OR p.postid LIKE ?) ";
+        }
+
+        $sql .= "ORDER BY p.id DESC";
+        $statement = mysqli_prepare($connection, $sql);
+
+        if(!$statement){
             return $rows;
         }
 
-        while($row = mysqli_fetch_assoc($result)){
+        if($search !== ""){
+            $like = "%" . str_replace(["\\", "%", "_"], ["\\\\", "\\%", "\\_"], $search) . "%";
+            mysqli_stmt_bind_param($statement, "sssss", $like, $like, $like, $like, $like);
+        }
+
+        if(!mysqli_stmt_execute($statement)){
+            mysqli_stmt_close($statement);
+            return $rows;
+        }
+
+        $result = mysqli_stmt_get_result($statement);
+
+        while($result && ($row = mysqli_fetch_assoc($result))){
             if(trim((string)($row["artist_name"] ?? "")) === ""){
                 $row["artist_name"] = trim((string)($row["artist"] ?? ""));
             }
@@ -303,38 +321,63 @@ if(!function_exists("adminSalesAvailableProducts")){
             $rows[] = $row;
         }
 
-        mysqli_free_result($result);
+        if($result){
+            mysqli_free_result($result);
+        }
+
+        mysqli_stmt_close($statement);
         return $rows;
     }
 }
 
 if(!function_exists("adminSalesHistory")){
-    function adminSalesHistory($connection, $period = "all", $limit = 200){
+    function adminSalesHistory($connection, $period = "all", $limit = 200, $search = ""){
         $salesTable = adminSalesTable();
         $period = adminSalesPeriod($period);
         $condition = adminSalesPeriodCondition($period, "sold_at");
         $limit = max(1, min(500, (int)$limit));
+        $search = substr(trim((string)$search), 0, 120);
         $rows = [];
 
-        $result = mysqli_query(
-            $connection,
+        $sql =
             "SELECT id, product_id, product_postid, artist_name, album_name, " .
             "listed_price, sale_price, cost_basis, sold_at, status, source, reverted_at " .
             "FROM $salesTable " .
-            "WHERE $condition " .
-            "ORDER BY sold_at DESC, id DESC " .
-            "LIMIT $limit"
-        );
+            "WHERE $condition ";
 
-        if(!$result){
+        if($search !== ""){
+            $sql .= "AND (artist_name LIKE ? OR album_name LIKE ? " .
+                "OR product_postid LIKE ? OR CAST(product_id AS CHAR) LIKE ?) ";
+        }
+
+        $sql .= "ORDER BY sold_at DESC, id DESC LIMIT $limit";
+        $statement = mysqli_prepare($connection, $sql);
+
+        if(!$statement){
             return $rows;
         }
 
-        while($row = mysqli_fetch_assoc($result)){
+        if($search !== ""){
+            $like = "%" . str_replace(["\\", "%", "_"], ["\\\\", "\\%", "\\_"], $search) . "%";
+            mysqli_stmt_bind_param($statement, "ssss", $like, $like, $like, $like);
+        }
+
+        if(!mysqli_stmt_execute($statement)){
+            mysqli_stmt_close($statement);
+            return $rows;
+        }
+
+        $result = mysqli_stmt_get_result($statement);
+
+        while($result && ($row = mysqli_fetch_assoc($result))){
             $rows[] = $row;
         }
 
-        mysqli_free_result($result);
+        if($result){
+            mysqli_free_result($result);
+        }
+
+        mysqli_stmt_close($statement);
         return $rows;
     }
 }
@@ -407,7 +450,7 @@ if(!function_exists("adminSalesActiveSaleForProduct")){
 }
 
 if(!function_exists("adminSalesRegister")){
-    function adminSalesRegister($connection, $productId, $salePrice){
+    function adminSalesRegister($connection, $productId, $salePrice, $saleDatetime = ""){
         global $tableposts, $tableartists;
 
         $productId = (int)$productId;
@@ -420,6 +463,27 @@ if(!function_exists("adminSalesRegister")){
                 "message" => "Producto o precio de venta no válido."
             ];
         }
+
+        $timezone = new DateTimeZone("America/Guayaquil");
+        $now = new DateTimeImmutable("now", $timezone);
+        $saleDatetime = trim((string)$saleDatetime);
+        $soldDate = $saleDatetime === ""
+            ? $now
+            : DateTimeImmutable::createFromFormat("!Y-m-d\\TH:i", $saleDatetime, $timezone);
+
+        if(
+            !$soldDate ||
+            ($saleDatetime !== "" && $soldDate->format("Y-m-d\\TH:i") !== $saleDatetime) ||
+            $soldDate > $now ||
+            $soldDate < new DateTimeImmutable("2000-01-01 00:00:00", $timezone)
+        ){
+            return [
+                "ok" => false,
+                "message" => "Fecha de venta no válida. Utiliza una fecha real, no futura."
+            ];
+        }
+
+        $soldAtSql = "'" . $soldDate->format("Y-m-d H:i:s") . "'";
 
         if(!mysqli_begin_transaction($connection)){
             return [
@@ -493,7 +557,7 @@ if(!function_exists("adminSalesRegister")){
                     "'$albumEscaped', " .
                     number_format($listedPrice, 2, ".", "") . ", " .
                     number_format($salePrice, 2, ".", "") . ", " .
-                    "0.00, NOW(), 'completed', 'admin'" .
+                    "0.00, " . $soldAtSql . ", 'completed', 'admin'" .
                 ")";
 
             if(!mysqli_query($connection, $insertSql)){
@@ -502,7 +566,7 @@ if(!function_exists("adminSalesRegister")){
 
             if(!mysqli_query(
                 $connection,
-                "UPDATE $tableposts SET stock = 0, sold_at = NOW() WHERE id = $productId"
+                "UPDATE $tableposts SET stock = 0, sold_at = $soldAtSql WHERE id = $productId"
             )){
                 throw new RuntimeException("No se pudo actualizar el inventario del CD.");
             }

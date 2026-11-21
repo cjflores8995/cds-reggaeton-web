@@ -96,6 +96,16 @@
     letter-spacing: -.045em;
 }
 
+.social-highlight__icon {
+    display: none;
+}
+
+.social-highlight__icon-svg {
+    display: block;
+    width: 100%;
+    height: 100%;
+}
+
 .social-highlight__handle {
     margin-top: 9px;
     color: var(--muted);
@@ -146,39 +156,65 @@
 
 @media (max-width: 640px) {
     .social-highlight__intro {
-        padding: 28px 22px;
-    }
-
-    .social-highlight__intro h2 {
-        font-size: 44px;
-    }
-
-    .social-highlight__links {
-        grid-template-columns: 1fr;
-    }
-
-    .social-highlight__link {
-        min-height: 102px;
-        padding: 22px 22px 18px;
-        border-right: 0;
-        border-bottom: 1px solid var(--soft-line);
-    }
-
-    .social-highlight__link:last-child {
+        min-height: auto;
+        padding: 22px 22px 12px;
         border-bottom: 0;
     }
 
-    .social-highlight__index {
-        top: 18px;
-        left: 22px;
+    .social-highlight__intro h2 {
+        font-size: 40px;
+    }
+
+    /* Tres redes en una sola fila, sin tarjetas ni divisiones. */
+    .social-highlight__links {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 0;
+        padding: 6px 8px 16px;
+    }
+
+    .social-highlight__link {
+        min-width: 0;
+        min-height: 108px;
+        padding: 12px 4px;
+        align-items: center;
+        justify-content: center;
+        gap: 9px;
+        border: 0;
+        background: transparent;
+        text-align: center;
+    }
+
+    .social-highlight__link:last-child {
+        border: 0;
+    }
+
+    .social-highlight__icon {
+        display: flex;
+        width: 64px;
+        height: 64px;
+        align-items: center;
+        justify-content: center;
+        flex: none;
     }
 
     .social-highlight__link strong {
-        font-size: 28px;
+        font-size: 13px;
+        font-weight: 800;
+        line-height: 1.2;
+        letter-spacing: 0;
     }
 
+    .social-highlight__index,
+    .social-highlight__handle,
     .social-highlight__arrow {
-        top: 18px;
-        right: 22px;
+        display: none;
+    }
+
+    .social-highlight__link:hover,
+    .social-highlight__link:focus-visible {
+        background: #f7f7f7;
+        color: var(--ink);
+        outline: 2px solid var(--soft-line);
+        outline-offset: -2px;
     }
 }

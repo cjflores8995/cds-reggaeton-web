@@ -525,7 +525,7 @@ $adminNavigation = [
 <?php if($adminActiveSection === "home"){ ?>
     <script
         defer
-        src="<?php echo adminMenuEsc($baseurl . "admin-home-enhancements.js?v=3"); ?>"
+        src="<?php echo adminMenuEsc($baseurl . "admin-home-enhancements.js?v=4"); ?>"
     ></script>
     <script
         defer

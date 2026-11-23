@@ -65,7 +65,11 @@
             ".admin-home-status-control{flex:0 1 170px;}",
             ".admin-home-tools--catalog-filters .admin-home-visible-count{flex:0 0 auto;}",
             "@media(max-width:900px){.admin-home-tools--catalog-filters .admin-home-search{flex-basis:100%;border-bottom:1px solid var(--admin-line);}.admin-home-sort-control{flex:1 1 260px;}.admin-home-status-control{flex:1 1 180px;}}",
-            "@media(max-width:700px){.admin-home-tools.admin-home-tools--catalog-filters{display:flex;}.admin-home-tools--catalog-filters .admin-home-search,.admin-home-select-control,.admin-home-tools--catalog-filters .admin-home-visible-count{flex:1 1 100%;width:100%;border-right:0;border-bottom:1px solid var(--admin-line);}.admin-home-select-control{justify-content:space-between;}.admin-home-select-control select{flex:1;text-align:right;}.admin-home-tools--catalog-filters .admin-home-visible-count{min-height:48px;border-bottom:0;}}"
+            "@media(max-width:700px){.admin-home-tools.admin-home-tools--catalog-filters{display:flex;}.admin-home-tools--catalog-filters .admin-home-search,.admin-home-select-control,.admin-home-tools--catalog-filters .admin-home-visible-count{flex:1 1 100%;width:100%;border-right:0;border-bottom:1px solid var(--admin-line);}.admin-home-select-control{justify-content:space-between;}.admin-home-select-control select{flex:1;text-align:right;}.admin-home-tools--catalog-filters .admin-home-visible-count{min-height:48px;border-bottom:0;}}",
+            ".admin-home-summary__item--link{display:block;color:inherit;text-decoration:none;cursor:pointer;transition:background-color .15s ease;}",
+            ".admin-home-summary__item--link:hover{background:#f3f7fd;}",
+            ".admin-home-summary__item--link:focus-visible{outline:2px solid #0864c8;outline-offset:-3px;}",
+            "#adminCdSoldSection{scroll-margin-top:90px;}"
         ].join("");
 
         document.head.appendChild(style);
@@ -506,6 +510,32 @@
             "change",
             applyFilters
         );
+
+        var soldSummaryLink = query("[data-admin-cd-summary='sold']");
+        if (soldSummaryLink) {
+            soldSummaryLink.addEventListener("click", function (event) {
+                event.preventDefault();
+
+                // Mostrar únicamente los CDs vendidos, incluso si había una búsqueda previa.
+                search.value = "";
+                var clearSearch = query("#adminCdClearSearch");
+                if (clearSearch) {
+                    clearSearch.hidden = true;
+                }
+
+                statusControl.select.value = "sold";
+                applyFilters();
+
+                var soldSection = query("#adminCdSoldSection");
+                var target = soldSection && soldSection.style.display !== "none"
+                    ? soldSection
+                    : noResults;
+
+                if (target) {
+                    target.scrollIntoView({ behavior: "smooth", block: "start" });
+                }
+            });
+        }
 
         applyFilters();
 

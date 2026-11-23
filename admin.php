@@ -1580,10 +1580,15 @@ if(isset($_GET["editpost"])){
                     <strong><?php echo $availableCdCount; ?></strong>
                 </div>
 
-                <div class="admin-home-summary__item">
+                <a
+                    class="admin-home-summary__item admin-home-summary__item--link"
+                    href="#adminCdSoldSection"
+                    data-admin-cd-summary="sold"
+                    aria-label="Ver CDs vendidos"
+                >
                     <span>Vendidos</span>
                     <strong><?php echo $soldCdCount; ?></strong>
-                </div>
+                </a>
             </section>
 
             <section class="admin-home-tools" aria-label="Buscar CDs">
@@ -1881,6 +1886,7 @@ if(isset($_GET["editpost"])){
 
                 <?php if($soldCdCount > 0){ ?>
                     <section
+                        id="adminCdSoldSection"
                         class="admin-inventory-section admin-inventory-section--sold"
                         data-admin-cd-section
                     >
